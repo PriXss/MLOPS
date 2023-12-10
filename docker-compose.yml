@@ -8,11 +8,15 @@ services:
     image: 'bitnami/minio:latest'
     ports:
       - '9090:9090'
+      - '9091:9091'
     environment:
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=admin
+      - MINIO_DEFAULT_BUCKETS=bucket_name
     networks:
       - mlops
+    volumes:
+      - 'minio-data:/data'
 
 
 
