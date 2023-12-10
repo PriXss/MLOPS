@@ -13,7 +13,7 @@ services:
       - mlops
     volumes:
       - 'minio-data:/data'
-    command: server --console-adress ":9090" /data
+    command: server --console-address ":9090" /data
     restart: always
 
 
