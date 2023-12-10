@@ -1,7 +1,6 @@
 [core]
     remote = minio
 ['remote "minio"']
-    url = s3://data
-    endpointurl = https://85.215.53.91:9090
+    url = s3://http://85.215.53.91:9090/data
     access_key_id = test
     secret_access_key = testtesttest
