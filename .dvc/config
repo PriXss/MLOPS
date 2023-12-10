@@ -4,4 +4,4 @@
     url = s3://data
     access_key_id = test
     secret_access_key = testpassword
-    endpointurl = http://85.215.53.91:9090
+    endpointurl = http://85.215.53.91:9000
