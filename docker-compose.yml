@@ -1,0 +1,21 @@
+version: "3.0"
+
+
+services:
+  minio:
+    image: 'bitnami/minio:latest'
+    ports:
+      - '8000:8000'
+      - '8001:8001'
+    networks:
+      - mlops
+
+
+
+
+
+
+networks:
+  mlops:
+    driver: bridge
+
