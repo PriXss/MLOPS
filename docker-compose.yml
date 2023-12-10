@@ -23,6 +23,11 @@ services:
 
 
 
+volumes:
+  minio-data:
+    driver: local
+
+
 networks:
   mlops:
     driver: bridge
