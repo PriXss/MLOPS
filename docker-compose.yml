@@ -2,11 +2,15 @@ version: "3.0"
 
 
 services:
+
+
   minio:
     image: 'bitnami/minio:latest'
     ports:
-      - '8000:8000'
-      - '8001:8001'
+      - '9090:9090'
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=admin
     networks:
       - mlops
 
