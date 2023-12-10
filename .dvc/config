@@ -1,4 +1,7 @@
 [core]
-    remote = myremote
-['remote "myremote"']
-    url = /tmp/dvc
+    remote = minio
+['remote "minio"']
+    url = s3://data
+    endpointurl = https://85.215.53.91:9090
+    access_key_id = test
+    secret_access_key = testtesttest
