@@ -1,0 +1,30 @@
+stages:
+  collectData:
+    cmd: python3 src/data_extraction.py 
+    deps:
+    - src/data_extraction.py
+    outs:
+    - data/collectedStockdata
+  
+  collectModel:
+    cmd: python3 src/collectModel.py
+    deps:
+    - src/collectModel.py
+    outs:
+    - data/collectedModellData
+
+  train:
+    cmd: python3 src/train.py
+    deps:
+    - src/train.py
+    outs:
+    - data/results
+  
+  resultAnalysis:
+    cmd: python3 src/analyseResults.py
+    deps:
+    - src/analyseResults.py
+    outs:
+    - data/analysis
+
+
