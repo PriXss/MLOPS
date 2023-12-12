@@ -1,0 +1,1 @@
+print("Datensatz wurde collected und kann im ML Prozess verwendet werden")
