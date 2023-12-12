@@ -61,19 +61,30 @@ class Scraper:
 
     def _process_dataframe(self, df, row_limit):
         """
-        Verarbeitet den DataFrame, ersetzt Umlaute und transformiert Komma in Punkt.
+        Verarbeitet den DataFrame, setzt die Daten richtig, ersetzt Umlaute und transformiert Komma in Punkt.
         """
-        print("Original Daten vor Konvertierung:")
-        print(df["Datum"])
 
         current_year = pd.to_datetime("today").year
+
+        # Konvertiert die Ganzzahlen in Strings
+        df["Datum"] = df["Datum"].astype(str)
+
+        # Fügt führende Nullen hinzu, wenn Monat oder Tag kleiner als 10 ist
+        df["Datum"] = df["Datum"].apply(lambda x: x.zfill(6))
+
+        # Teilt die Daten in Jahr, Monat und Tag auf
+        df["Jahr"] = df["Datum"].str[4:]
+        df["Monat"] = df["Datum"].str[2:4]
+        df["Tag"] = df["Datum"].str[:2]
+
+        # Fügt die Teile wieder zusammen und fügt das Jahr hinzu
+        df["Datum"] = df.apply(lambda row: f"{row['Jahr']}-{row['Monat']}-{row['Tag']}", axis=1)
         df["Datum"] = df["Datum"].apply(
-            lambda x: x if isinstance(x, pd.Timestamp) else f"{x}.{current_year}" if len(str(x)) == 5 else x)
+            lambda x: pd.to_datetime(f"{x}.{current_year}", format="%Y-%m-%d", errors="coerce") if len(
+                str(x)) == 10 else x
+        )
 
-        print("Daten nach Konvertierung:")
-        print(df["Datum"])
-
-        df["Datum"] = pd.to_datetime(df["Datum"], format="%d.%m.%y", errors="coerce")
+        df = df.drop(["Jahr", "Monat", "Tag"], axis=1)
         df.columns = [self._replace_umlauts(col) for col in df.columns]
         df = self._replace_comma_with_dot(df)
         return df.head(row_limit)
