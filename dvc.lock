@@ -1,0 +1,19 @@
+schema: '2.0'
+stages:
+  collectDataStage:
+    cmd: python3 src/collectData.py data/test.csv
+    deps:
+    - path: data/test.csv
+      hash: md5
+      md5: 73d56d05a3f6efeff78f3826b9115621
+      size: 117
+    - path: src/collectData.py
+      hash: md5
+      md5: 18c1cb7ca9bb6f821a82b80b43f72c73
+      size: 199
+    outs:
+    - path: data/collected
+      hash: md5
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
