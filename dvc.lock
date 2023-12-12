@@ -9,8 +9,8 @@ stages:
       size: 117
     - path: src/collectData.py
       hash: md5
-      md5: 18c1cb7ca9bb6f821a82b80b43f72c73
-      size: 199
+      md5: 62b3ddbd014ba7cc3160855161a63bf7
+      size: 291
     outs:
     - path: data/collected
       hash: md5

@@ -3,13 +3,14 @@ import os as os
 import csv as csv
 
 
-
-print("Datensatz wurde collected und kann im ML Prozess verwendet werden")
-
 data_path = os.path.join('data', 'collected')
 os.makedirs(data_path, exist_ok=True)
 
-df= pd.read_csv(r"./test.csv")
 
-print(df)
+dataframe = pd.read_csv('test.csv')
+
+dataframe.to_csv('collected.csv')
+
+print("Datensatz wurde collected und kann im ML Prozess verwendet werden")
+
 
