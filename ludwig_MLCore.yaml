@@ -1,0 +1,43 @@
+input_features:
+  -
+    name: Datum
+    type: timeseries
+    encoder: rnn
+    cell_type: lstm
+    num_layers: 2
+    state_size: 64
+    preprocessing:
+      time_format: "%Y-%m-%d %H:%M:%S"
+    reduce_output: null
+
+  -
+    name: Eroeffnung
+    type: numerical
+    preprocessing:
+      numerical:
+        replace_decimals: false
+
+  -
+    name: Tageshoch
+    type: numerical
+
+  -
+    name: Tagestief
+    type: numerical
+
+
+output_features:
+  -
+    name: Schluss
+    type: numerical
+
+training:
+  epochs: 15
+
+model:
+  type: timeseries
+
+preprocessing:
+  fill_missing: false
+
+output_directory: ../results

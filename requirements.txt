@@ -1,2 +1,6 @@
+mlflow
+ludwig
 pandas
 selenium==4.9.0
+
+minio
