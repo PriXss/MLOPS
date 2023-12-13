@@ -1,0 +1,55 @@
+{
+    "Eroeffnung": {
+        "mean": 10.425432205200195,
+        "preprocessing": {
+            "computed_fill_value": 0.0,
+            "computed_outlier_fill_value": 0.0,
+            "fill_value": 0.0,
+            "missing_value_strategy": "fill_with_const",
+            "normalization": "zscore",
+            "outlier_strategy": null,
+            "outlier_threshold": 3.0
+        },
+        "std": 1.0791854858398438
+    },
+    "Schluss": {
+        "preprocessing": {
+            "computed_fill_value": 0.0,
+            "computed_outlier_fill_value": 0.0,
+            "fill_value": 0.0,
+            "missing_value_strategy": "drop_row",
+            "normalization": null,
+            "outlier_strategy": null,
+            "outlier_threshold": 3.0
+        }
+    },
+    "Tageshoch": {
+        "mean": 10.729267120361328,
+        "preprocessing": {
+            "computed_fill_value": 0.0,
+            "computed_outlier_fill_value": 0.0,
+            "fill_value": 0.0,
+            "missing_value_strategy": "fill_with_const",
+            "normalization": "zscore",
+            "outlier_strategy": null,
+            "outlier_threshold": 3.0
+        },
+        "std": 1.0218156576156616
+    },
+    "Tagestief": {
+        "mean": 10.180400848388672,
+        "preprocessing": {
+            "computed_fill_value": 0.0,
+            "computed_outlier_fill_value": 0.0,
+            "fill_value": 0.0,
+            "missing_value_strategy": "fill_with_const",
+            "normalization": "zscore",
+            "outlier_strategy": null,
+            "outlier_threshold": 3.0
+        },
+        "std": 1.0553494691848755
+    },
+    "checksum": "4UScWTRnC6L9UvFaRqzzfA==",
+    "data_train_hdf5_fp": "C:\\Users\\simon\\PycharmProjects\\Docker_LudwigMLCore\\src\\../data\\data.training.hdf5",
+    "dataset_src": "C:\\Users\\simon\\PycharmProjects\\Docker_LudwigMLCore\\src\\../data/data.csv"
+}
