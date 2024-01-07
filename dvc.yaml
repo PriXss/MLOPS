@@ -1,13 +1,13 @@
 stages:
   collectDataStage:
-    cmd: python3 src/collectData.py data/test.csv
+    cmd: python3 src/collectData.py data/testtest.csv
     deps:
-    - data/test.csv
+    - data/testtest.csv
     - src/collectData.py
     outs:
     - data/collected
   dataAnalysisStage:
-    cmd: pythin3 src/src/dataAnalysis.py data/collected data/analysed
+    cmd: python3 src/src/dataAnalysis.py data/collected data/analysed
     deps:
     - data/collected
     - src/dataAnalysis.py

@@ -7,7 +7,7 @@ data_path = os.path.join('data', 'collected')
 os.makedirs(data_path, exist_ok=True)
 
 
-dataframe = pd.read_csv('test.csv')
+dataframe = pd.read_csv('testtest.csv')
 
 dataframe.to_csv('collected.csv')
 
