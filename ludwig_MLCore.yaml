@@ -1,30 +1,25 @@
 input_features:
-  -
-    name: Datum
-    type: timeseries
-    encoder: rnn
-    cell_type: lstm
-    num_layers: 2
-    state_size: 64
-    preprocessing:
-      time_format: "%Y-%m-%d %H:%M:%S"
-    reduce_output: null
 
-  -
-    name: Eroeffnung
+  - name: Tag
     type: numerical
     preprocessing:
-      numerical:
-        replace_decimals: false
+      zscore:
+        enabled: true
 
-  -
-    name: Tageshoch
+  - name: Monat
     type: numerical
+    preprocessing:
+      zscore:
+        enabled: true
 
-  -
-    name: Tagestief
+  - name: Jahr
     type: numerical
+    preprocessing:
+      zscore:
+        enabled: false
 
+  - name: Schluss
+    type: numerical
 
 output_features:
   -
@@ -36,6 +31,21 @@ training:
 
 model:
   type: timeseries
+
+combiner:
+    type: sequence_concat
+    dropout: 0.0
+    num_fc_layers: 0
+    output_size: 256
+    norm: null
+    activation: relu
+    flatten_inputs: false
+    residual: false
+    use_bias: true
+    bias_initializer: zeros
+    weights_initializer: xavier_uniform
+    norm_params: null
+    fc_layers: null
 
 preprocessing:
   fill_missing: false

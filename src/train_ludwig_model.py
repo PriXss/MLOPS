@@ -23,7 +23,8 @@ class MLFlowTrainer:
     def train_model(self):
         # Trainiert das Ludwig-Modell
         model = LudwigModel(config=self.ludwig_config_path)
-        train_stats = model.train(dataset=self.dataset_path)
+        # Aufteilung der Daten(train_set, test_set, validation_set)
+        model.train(dataset=self.dataset_path, split=[0.8, 0.1, 0.1])
 
         # Speichert das Modell
         model_dir = os.path.join(self.models_dir, self.model_name)
@@ -39,7 +40,7 @@ class MLFlowTrainer:
 if __name__ == "__main__":
     # Pfade anpassen
     ludwig_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../ludwig_MLCore.yaml")
-    dataset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/data.csv")
+    dataset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/transformierte_datei.csv")
 
     # Instanz der Klasse erstellen und das Modell trainieren
     trainer = MLFlowTrainer(ludwig_config_path, dataset_path)
