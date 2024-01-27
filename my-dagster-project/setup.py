@@ -7,10 +7,9 @@ setup(
         "dagster",
         "dagster-cloud",
         "pandas",
-        "boto3",
         "dvc",
-        "subprocess",
-        
+        "subprocess"
+
 
     ],
     extras_require={"dev": ["dagster-webserver", "pytest"]},
