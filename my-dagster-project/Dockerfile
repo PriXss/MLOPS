@@ -14,9 +14,11 @@ COPY my_dagster_project ./my_dagster_project
 COPY pyproject.toml .
 COPY setup.cfg .
 COPY setup.py .
-COPY ../../dvc/config ./dvc
+
 
 
 EXPOSE 3000
 
 CMD ["dvc", "init","dagster-webserver", "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000"]
+
+COPY ../../dvc/config ./dvc
