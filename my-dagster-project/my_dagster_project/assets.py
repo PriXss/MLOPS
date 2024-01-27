@@ -1,4 +1,3 @@
-
 import os
 import csv
 from dagster import asset
@@ -30,9 +29,3 @@ def version_with_DVC_Container() -> None:
     subprocess.run(['dvc', 'commit'])
     subprocess.run(['git', 'add' '.'])
     subprocess.run(['git', 'commit', '-m', 'Added new siemens data'])
-
-
-
-    
-
-
