@@ -17,4 +17,4 @@ COPY setup.py .
 
 EXPOSE 3000
 
-CMD ["dvc", "init", "--no-scm","dagster-webserver", "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000"]
+CMD ["dvc", "init --no-scm","dagster-webserver", "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000"]
