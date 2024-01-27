@@ -21,4 +21,4 @@ EXPOSE 3000
 
 CMD ["dvc", "init","dagster-webserver", "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000"]
 
-COPY ../../dvc/config ./dvc
+COPY ../dvc/config ./dvc
