@@ -5,6 +5,8 @@ ENV DAGSTER_HOME=/usr/src/app
 
 
 RUN pip install dagster dagster-webserver dagit dagster-postgres SQLAlchemy==1.4.49 pandas pyarrow
+RUN pip install dvc
+RUN dvc init
 
 # Copy our code and workspace to /usr/src/app
 COPY dagster.yaml .

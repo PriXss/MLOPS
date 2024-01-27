@@ -5,7 +5,11 @@ setup(
     packages=find_packages(exclude=["my_dagster_project_tests"]),
     install_requires=[
         "dagster",
-        "dagster-cloud"
+        "dagster-cloud",
+        "pandas",
+        "boto3",
+        "dvc",
+
     ],
     extras_require={"dev": ["dagster-webserver", "pytest"]},
 )
