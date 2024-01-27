@@ -5,7 +5,6 @@ ENV DAGSTER_HOME=/usr/src/app
 
 
 RUN pip install dagster dagster-webserver dagit dagster-postgres SQLAlchemy==1.4.49 pandas pyarrow
-RUN pip install dvc
 
 # Copy our code and workspace to /usr/src/app
 COPY dagster.yaml .
@@ -17,4 +16,4 @@ COPY setup.py .
 
 EXPOSE 3000
 
-CMD ["dvc", "init --no-scm","dagster-webserver", "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000"]
+CMD ["dagster-webserver", "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000"]

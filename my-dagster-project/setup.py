@@ -9,6 +9,8 @@ setup(
         "pandas",
         "boto3",
         "dvc",
+        "subprocess",
+        
 
     ],
     extras_require={"dev": ["dagster-webserver", "pytest"]},
