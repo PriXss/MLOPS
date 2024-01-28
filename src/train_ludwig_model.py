@@ -2,8 +2,9 @@ import mlflow
 import os
 from ludwig.api import LudwigModel
 
+
 class MLFlowTrainer:
-    def __init__(self, ludwig_config_path, dataset_path, model_name="Prognose_Kurs"):
+    def __init__(self, ludwig_config_path, dataset_path, model_name="Test_Kurs"):
         self.ludwig_config_path = ludwig_config_path
         self.dataset_path = dataset_path
         self.model_name = model_name
