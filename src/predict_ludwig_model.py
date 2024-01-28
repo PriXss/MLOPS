@@ -14,13 +14,20 @@ class ModelPredictor:
     def predict(self, data):
         # Mache Vorhersagen auf den Daten
         predictions = self.model.predict(data)
-        return predictions
+        # Extrahiere die Vorhersagen aus dem Tupel
+        predictions_df = predictions[0]
+        return predictions_df
+
+    def save_predictions(self, predictions, output_path):
+        # Speichere Vorhersagen in einer CSV-Datei
+        predictions.to_csv(output_path, index=False)
 
 
 if __name__ == "__main__":
     # Pfade anpassen
-    model_dir = "Pfad_zu_deinem_trainierten_Modell"
-    data_path = "Pfad_zu_deinen_neuen_Daten.csv"
+    model_dir = "../models/Prognose_Kurs"
+    data_path = "../data/transformierte_datei.csv"
+    output_path = "../data/predicition.csv"
 
     # Lade den trainierten Modell
     predictor = ModelPredictor(model_dir)
@@ -31,4 +38,6 @@ if __name__ == "__main__":
 
     # Mache Vorhersagen auf den neuen Daten
     predictions = predictor.predict(new_data)
-    print(predictions)
+
+    # Speichere Vorhersagen in einer CSV-Datei
+    predictor.save_predictions(predictions, output_path)
