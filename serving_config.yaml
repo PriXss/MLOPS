@@ -1,0 +1,11 @@
+serving:
+  logging_level: INFO
+  use_gpu: false
+  gpu_memory_limit: 0.2
+  port: 8000
+  timeout: 120
+  workers: 1
+  model_name: Prognose_Kurs
+
+model:
+  load_model: ../models/Prognose_Kurs

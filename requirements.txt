@@ -1,6 +1,7 @@
-mlflow
-ludwig
-pandas
+mlflow~=2.8.1
+ludwig~=0.8.6
+pandas~=2.0.3
 selenium==4.9.0
 
 minio
+requests~=2.31.0
