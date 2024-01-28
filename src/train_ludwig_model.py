@@ -14,9 +14,6 @@ class MLFlowTrainer:
         self.models_dir = os.path.abspath("../models")
         self.results_dir = os.path.join(self.script_dir, "../models", model_name)
 
-        # Erstellt das models-Verzeichnis, wenn es nicht existiert
-        os.makedirs(self.models_dir, exist_ok=True)
-
         # Setzt das mlflow-Tracking-Verzeichnis für das gesamte Projekt
         self.project_tracking_dir = os.path.abspath("../mlflow_tracking")
         mlflow.set_tracking_uri(f"file://{self.project_tracking_dir}")

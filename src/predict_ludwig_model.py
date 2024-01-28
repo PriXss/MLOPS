@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 from ludwig.api import LudwigModel
 
@@ -29,7 +28,7 @@ if __name__ == "__main__":
     data_path = "../data/transformierte_datei.csv"
     output_path = "../data/predicition.csv"
 
-    # Lade den trainierten Modell
+    # Lade das trainierte Modell
     predictor = ModelPredictor(model_dir)
     predictor.load_model()
 
