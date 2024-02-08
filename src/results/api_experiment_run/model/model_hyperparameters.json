@@ -640,14 +640,45 @@
     "input_features": [
         {
             "active": true,
-            "column": "Schluss",
+            "column": "Datum",
+            "encoder": {
+                "activation": "relu",
+                "bias_initializer": "zeros",
+                "dropout": 0.0,
+                "embedding_size": 10,
+                "embeddings_on_cpu": false,
+                "fc_layers": null,
+                "norm": null,
+                "norm_params": null,
+                "num_fc_layers": 0,
+                "output_size": 10,
+                "saved_weights_in_checkpoint": true,
+                "skip": false,
+                "type": "embed",
+                "use_bias": true,
+                "weights_initializer": "xavier_uniform"
+            },
+            "name": "Datum",
+            "preprocessing": {
+                "computed_fill_value": "",
+                "datetime_format": null,
+                "fill_value": "",
+                "missing_value_strategy": "fill_with_const"
+            },
+            "proc_column": "Datum_KreTWx",
+            "tied": null,
+            "type": "date"
+        },
+        {
+            "active": true,
+            "column": "Eroeffnung",
             "encoder": {
                 "input_size": 1,
                 "saved_weights_in_checkpoint": true,
                 "skip": false,
                 "type": "passthrough"
             },
-            "name": "Schluss",
+            "name": "Eroeffnung",
             "preprocessing": {
                 "computed_fill_value": 0.0,
                 "computed_outlier_fill_value": 0.0,
@@ -657,7 +688,99 @@
                 "outlier_strategy": null,
                 "outlier_threshold": 3.0
             },
-            "proc_column": "Schluss_sMoadH",
+            "proc_column": "Eroeffnung_sMoadH",
+            "tied": null,
+            "type": "number"
+        },
+        {
+            "active": true,
+            "column": "Tageshoch",
+            "encoder": {
+                "input_size": 1,
+                "saved_weights_in_checkpoint": true,
+                "skip": false,
+                "type": "passthrough"
+            },
+            "name": "Tageshoch",
+            "preprocessing": {
+                "computed_fill_value": 0.0,
+                "computed_outlier_fill_value": 0.0,
+                "fill_value": 0.0,
+                "missing_value_strategy": "fill_with_const",
+                "normalization": "zscore",
+                "outlier_strategy": null,
+                "outlier_threshold": 3.0
+            },
+            "proc_column": "Tageshoch_sMoadH",
+            "tied": null,
+            "type": "number"
+        },
+        {
+            "active": true,
+            "column": "Tagestief",
+            "encoder": {
+                "input_size": 1,
+                "saved_weights_in_checkpoint": true,
+                "skip": false,
+                "type": "passthrough"
+            },
+            "name": "Tagestief",
+            "preprocessing": {
+                "computed_fill_value": 0.0,
+                "computed_outlier_fill_value": 0.0,
+                "fill_value": 0.0,
+                "missing_value_strategy": "fill_with_const",
+                "normalization": "zscore",
+                "outlier_strategy": null,
+                "outlier_threshold": 3.0
+            },
+            "proc_column": "Tagestief_sMoadH",
+            "tied": null,
+            "type": "number"
+        },
+        {
+            "active": true,
+            "column": "Umsatz",
+            "encoder": {
+                "input_size": 1,
+                "saved_weights_in_checkpoint": true,
+                "skip": false,
+                "type": "passthrough"
+            },
+            "name": "Umsatz",
+            "preprocessing": {
+                "computed_fill_value": 0.0,
+                "computed_outlier_fill_value": 0.0,
+                "fill_value": 0.0,
+                "missing_value_strategy": "fill_with_const",
+                "normalization": "zscore",
+                "outlier_strategy": null,
+                "outlier_threshold": 3.0
+            },
+            "proc_column": "Umsatz_sMoadH",
+            "tied": null,
+            "type": "number"
+        },
+        {
+            "active": true,
+            "column": "Umsatz in Stueck",
+            "encoder": {
+                "input_size": 1,
+                "saved_weights_in_checkpoint": true,
+                "skip": false,
+                "type": "passthrough"
+            },
+            "name": "Umsatz in Stueck",
+            "preprocessing": {
+                "computed_fill_value": 0.0,
+                "computed_outlier_fill_value": 0.0,
+                "fill_value": 0.0,
+                "missing_value_strategy": "fill_with_const",
+                "normalization": "zscore",
+                "outlier_strategy": null,
+                "outlier_threshold": 3.0
+            },
+            "proc_column": "Umsatz_in_Stueck_sMoadH",
             "tied": null,
             "type": "number"
         }
@@ -680,7 +803,7 @@
                 "fc_output_size": 256,
                 "fc_use_bias": true,
                 "fc_weights_initializer": "xavier_uniform",
-                "input_size": 1,
+                "input_size": 74,
                 "num_fc_layers": 0,
                 "type": "regressor",
                 "use_bias": true,
@@ -688,7 +811,7 @@
             },
             "default_validation_metric": "mean_squared_error",
             "dependencies": [],
-            "input_size": 1,
+            "input_size": 74,
             "loss": {
                 "type": "mean_squared_error",
                 "weight": 1.0
@@ -726,7 +849,7 @@
         "undersample_majority": null
     },
     "trainer": {
-        "batch_size": 4,
+        "batch_size": 32,
         "bucketing_field": null,
         "checkpoints_per_epoch": 0,
         "compile": false,
@@ -734,8 +857,8 @@
         "effective_batch_size": "auto",
         "enable_gradient_checkpointing": false,
         "enable_profiling": false,
-        "epochs": 15,
-        "eval_batch_size": 1,
+        "epochs": 100,
+        "eval_batch_size": 4,
         "evaluate_training_set": false,
         "gradient_accumulation_steps": 1,
         "gradient_clipping": {

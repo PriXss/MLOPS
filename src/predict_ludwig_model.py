@@ -20,11 +20,17 @@ class ModelPredictor:
     def save_predictions(self, predictions, output_path):
         # Speichere Vorhersagen in einer CSV-Datei
         predictions.to_csv(output_path, index=False)
+        print("Vorhersagen wurden erfolgreich in", output_path, "gespeichert.")
+
+    def print_predictions(self, predictions_df):
+        # Gebe die Vorhersagen über die Konsole aus
+        print("Vorhersagen:")
+        print(predictions_df)
 
 
 if __name__ == "__main__":
     # Pfade anpassen
-    model_dir = "../models/Prognose_Kurs"
+    model_dir = "../models/deep_lstm"
     data_path = "../data/transformierte_datei.csv"
     output_path = "../data/predicition.csv"
 
@@ -37,6 +43,9 @@ if __name__ == "__main__":
 
     # Mache Vorhersagen auf den neuen Daten
     predictions = predictor.predict(new_data)
+
+    # Gebe die Vorhersagen über die Konsole aus
+    predictor.print_predictions(predictions)
 
     # Speichere Vorhersagen in einer CSV-Datei
     predictor.save_predictions(predictions, output_path)

@@ -1,5 +1,6 @@
 {
-    "command": "C:\\Users\\simon\\PycharmProjects\\Docker_LudwigMLCore\\src\\train_ludwig_model.py",
+    "command": "C:\\Users\\simon\\PycharmProjects\\MLOPS\\src\\train_ludwig_model.py",
+    "commit_hash": "6241f0208c12",
     "compute": {
         "num_nodes": 1
     },
@@ -649,47 +650,134 @@
                 "encoder": {
                     "activation": "relu",
                     "bias_initializer": "zeros",
-                    "conv_layers": null,
                     "dropout": 0.0,
-                    "embedding_size": 256,
+                    "embedding_size": 10,
                     "embeddings_on_cpu": false,
-                    "embeddings_trainable": true,
                     "fc_layers": null,
-                    "filter_size": 3,
-                    "max_sequence_length": null,
                     "norm": null,
                     "norm_params": null,
-                    "num_conv_layers": null,
-                    "num_fc_layers": null,
-                    "num_filters": 256,
-                    "output_size": 256,
-                    "pool_function": "max",
-                    "pool_size": null,
-                    "pretrained_embeddings": null,
-                    "reduce_output": null,
-                    "representation": "dense",
-                    "should_embed": true,
+                    "num_fc_layers": 0,
+                    "output_size": 10,
                     "skip": false,
-                    "type": "parallel_cnn",
+                    "type": "embed",
                     "use_bias": true,
-                    "vocab": null,
                     "weights_initializer": "xavier_uniform"
                 },
                 "name": "Datum",
                 "preprocessing": {
-                    "cache_encoder_embeddings": false,
                     "computed_fill_value": "",
+                    "datetime_format": null,
                     "fill_value": "",
-                    "missing_value_strategy": "fill_with_const",
-                    "padding": "right",
-                    "padding_value": 0.0,
-                    "timeseries_length_limit": 256,
-                    "tokenizer": "space",
-                    "window_size": 0
+                    "missing_value_strategy": "fill_with_const"
                 },
-                "proc_column": "Datum_XJMv7q",
+                "proc_column": "Datum_KreTWx",
                 "tied": null,
-                "type": "timeseries"
+                "type": "date"
+            },
+            {
+                "active": true,
+                "column": "Eroeffnung",
+                "encoder": {
+                    "skip": false,
+                    "type": "passthrough"
+                },
+                "name": "Eroeffnung",
+                "preprocessing": {
+                    "computed_fill_value": 0.0,
+                    "computed_outlier_fill_value": 0.0,
+                    "fill_value": 0.0,
+                    "missing_value_strategy": "fill_with_const",
+                    "normalization": "zscore",
+                    "outlier_strategy": null,
+                    "outlier_threshold": 3.0
+                },
+                "proc_column": "Eroeffnung_sMoadH",
+                "tied": null,
+                "type": "number"
+            },
+            {
+                "active": true,
+                "column": "Tageshoch",
+                "encoder": {
+                    "skip": false,
+                    "type": "passthrough"
+                },
+                "name": "Tageshoch",
+                "preprocessing": {
+                    "computed_fill_value": 0.0,
+                    "computed_outlier_fill_value": 0.0,
+                    "fill_value": 0.0,
+                    "missing_value_strategy": "fill_with_const",
+                    "normalization": "zscore",
+                    "outlier_strategy": null,
+                    "outlier_threshold": 3.0
+                },
+                "proc_column": "Tageshoch_sMoadH",
+                "tied": null,
+                "type": "number"
+            },
+            {
+                "active": true,
+                "column": "Tagestief",
+                "encoder": {
+                    "skip": false,
+                    "type": "passthrough"
+                },
+                "name": "Tagestief",
+                "preprocessing": {
+                    "computed_fill_value": 0.0,
+                    "computed_outlier_fill_value": 0.0,
+                    "fill_value": 0.0,
+                    "missing_value_strategy": "fill_with_const",
+                    "normalization": "zscore",
+                    "outlier_strategy": null,
+                    "outlier_threshold": 3.0
+                },
+                "proc_column": "Tagestief_sMoadH",
+                "tied": null,
+                "type": "number"
+            },
+            {
+                "active": true,
+                "column": "Umsatz",
+                "encoder": {
+                    "skip": false,
+                    "type": "passthrough"
+                },
+                "name": "Umsatz",
+                "preprocessing": {
+                    "computed_fill_value": 0.0,
+                    "computed_outlier_fill_value": 0.0,
+                    "fill_value": 0.0,
+                    "missing_value_strategy": "fill_with_const",
+                    "normalization": "zscore",
+                    "outlier_strategy": null,
+                    "outlier_threshold": 3.0
+                },
+                "proc_column": "Umsatz_sMoadH",
+                "tied": null,
+                "type": "number"
+            },
+            {
+                "active": true,
+                "column": "Umsatz in Stueck",
+                "encoder": {
+                    "skip": false,
+                    "type": "passthrough"
+                },
+                "name": "Umsatz in Stueck",
+                "preprocessing": {
+                    "computed_fill_value": 0.0,
+                    "computed_outlier_fill_value": 0.0,
+                    "fill_value": 0.0,
+                    "missing_value_strategy": "fill_with_const",
+                    "normalization": "zscore",
+                    "outlier_strategy": null,
+                    "outlier_threshold": 3.0
+                },
+                "proc_column": "Umsatz_in_Stueck_sMoadH",
+                "tied": null,
+                "type": "number"
             }
         ],
         "ludwig_version": "0.8.6",
@@ -756,7 +844,7 @@
             "undersample_majority": null
         },
         "trainer": {
-            "batch_size": "auto",
+            "batch_size": 32,
             "bucketing_field": null,
             "checkpoints_per_epoch": 0,
             "compile": false,
@@ -764,7 +852,7 @@
             "effective_batch_size": "auto",
             "enable_gradient_checkpointing": false,
             "enable_profiling": false,
-            "epochs": 15,
+            "epochs": 100,
             "eval_batch_size": null,
             "evaluate_training_set": false,
             "gradient_accumulation_steps": "auto",
@@ -826,7 +914,7 @@
         }
     },
     "data_format": "csv",
-    "dataset": "C:\\Users\\simon\\PycharmProjects\\Docker_LudwigMLCore\\src\\../data/data.csv",
+    "dataset": "C:\\Users\\simon\\PycharmProjects\\MLOPS\\src\\../data/data.csv",
     "ludwig_version": "0.8.6",
     "random_seed": 42,
     "torch_version": "2.1.1+cpu"

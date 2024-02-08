@@ -5,3 +5,4 @@ selenium==4.9.0
 
 minio
 requests~=2.31.0
+boto3

@@ -4,4 +4,5 @@ pandas~=2.0.3
 selenium==4.9.0
 
 minio
+boto3
 requests~=2.31.0
