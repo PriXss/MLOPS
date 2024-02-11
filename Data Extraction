@@ -1,0 +1,67 @@
+#Importieren von Bibliotheken
+from alpha_vantage.timeseries import TimeSeries
+import pandas as pd
+import os
+
+
+#Definieren von API Key und Symbol
+api_key = 'CEKRMJCF4Q07KVAC'
+symbol = 'TSLA'
+
+#TimeSeries definieren im Pandas Format
+ts =TimeSeries(key=api_key, output_format='pandas')
+
+#URL anwählen
+url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}'
+
+#Daten
+data, meta_data = ts.get_daily(symbol = symbol, outputsize='full')
+
+#DataFrame
+df = pd.DataFrame(data)
+
+# Spalte mit dem Symbol hinzufügen, Anmerkunge: Spalte Symbol zeigt Kürzel der Aktie, evtl. nicht nötig für Output
+df['Symbol'] = symbol
+
+
+print(data)
+
+# DataFrame als CSV exportieren
+csv_filename = 'output_ML.csv'
+df.to_csv(csv_filename, index=True)
+
+#Speicherung der CSV Datei
+csv_filepath = os.path.join(output_directory, csv_filename)
+output_directory = 'XXX'   # wohon speichern?
+
+
+# Erfolgsmeldung ausgeben
+print(f'Daten wurden als {csv_filename} exportiert.')
+
+# Aktuelles Arbeitsverzeichnis ausgeben
+print("Aktuelles Arbeitsverzeichnis:", os.getcwd())
+
+#importe für S3 hochladen
+import boto3
+from botocore.exceptions import NoCredentialsError
+
+# Minio S3-Konfiguration
+minio_access_key = 'Platzhalter_MINIO_ACCESS_KEY'
+minio_secret_key = 'Platzhalter_MINIO_SECRET_KEY'
+minio_endpoint = 'Platzhalter_MINIO_ENDPOINT'
+minio_bucket = 'Platzhalter_MINIO_BUCKET'
+minio_object_name = 'output.csv'  # Der Name, den die Datei im Bucket haben soll
+
+# S3-Verbindung herstellen
+s3 = boto3.client('s3', aws_access_key_id=minio_access_key, aws_secret_access_key=minio_secret_key, endpoint_url=minio_endpoint)
+
+# CSV-Datei auf Minio S3 hochladen
+try:
+    s3.upload_file(csv_filepath, minio_bucket, minio_object_name)
+    print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
+except FileNotFoundError:
+    print(f'Die Datei {csv_filepath} wurde nicht gefunden.')
+except NoCredentialsError:
+    print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
+except Exception as e:
+    print(f'Ein Fehler ist aufgetreten: {str(e)}')
