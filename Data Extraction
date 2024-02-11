@@ -46,10 +46,10 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 
 # Minio S3-Konfiguration
-minio_access_key = 'Platzhalter_MINIO_ACCESS_KEY'
-minio_secret_key = 'Platzhalter_MINIO_SECRET_KEY'
-minio_endpoint = 'Platzhalter_MINIO_ENDPOINT'
-minio_bucket = 'Platzhalter_MINIO_BUCKET'
+minio_access_key = test
+minio_secret_key = testpassword
+minio_endpoint = http://85.215.53.91:9000
+minio_bucket = s3://data
 minio_object_name = 'output.csv'  # Der Name, den die Datei im Bucket haben soll
 
 # S3-Verbindung herstellen
