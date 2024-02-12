@@ -44,16 +44,19 @@ class MLFlowTrainer:
     def save_model_to_s3(self, model):
         s3 = boto3.client('s3')
 
-        # Temporäres Verzeichnis erstellen
+        # Temporäre Verzeichnisse erstellen
         with tempfile.TemporaryDirectory() as temp_dir_model, tempfile.TemporaryDirectory() as temp_dir_api:
             # Modell speichern
             model_path = os.path.join(temp_dir_model, 'model')
             model.save(model_path)
 
-            # Ludwig speichert auch den Ordner 'api_experiment_run'
-            api_experiment_run_path = os.path.join(temp_dir_api, 'api_experiment_run')
+            # Kopiere den Inhalt von 'api_experiment_run' in das temporäre Verzeichnis
+            api_experiment_run_src = os.path.join(os.getcwd(), 'results', 'api_experiment_run')
+            if os.path.exists(api_experiment_run_src):
+                api_experiment_run_dst = os.path.join(temp_dir_api, 'api_experiment_run')
+                shutil.copytree(api_experiment_run_src, api_experiment_run_dst)
 
-            # Verzeichnis in Zip-Datei komprimieren
+            # Verzeichnisse in Zip-Dateien komprimieren
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             model_zip_file_name = f"trained_model_{timestamp}.zip"
             api_zip_file_name = f"api_experiment_run_{timestamp}.zip"
@@ -62,16 +65,17 @@ class MLFlowTrainer:
             api_zip_file_path = os.path.join(temp_dir_api, api_zip_file_name)
 
             for folder, zip_file_path in [(model_path, model_zip_file_path),
-                                          (api_experiment_run_path, api_zip_file_path)]:
-                with zipfile.ZipFile(zip_file_path, 'w') as zipf:
-                    for root, dirs, files in os.walk(folder):
-                        for file in files:
-                            zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder))
+                                          (api_experiment_run_dst, api_zip_file_path)]:
+                if folder:
+                    with zipfile.ZipFile(zip_file_path, 'w') as zipf:
+                        for root, dirs, files in os.walk(folder):
+                            for file in files:
+                                zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder))
 
-            # Zip-Datei in den S3-Bucket hochladen
-            s3.upload_file(zip_file_path, self.model_bucket_url, model_zip_file_name)
-            s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
-
+            # Zip-Dateien in die S3-Buckets hochladen
+            s3.upload_file(model_zip_file_path, self.model_bucket_url, model_zip_file_name)
+            if api_experiment_run_dst:
+                s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
 
 
 if __name__ == "__main__":
