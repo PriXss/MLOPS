@@ -45,22 +45,33 @@ class MLFlowTrainer:
         s3 = boto3.client('s3')
 
         # Temporäres Verzeichnis erstellen
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory() as temp_dir_model, tempfile.TemporaryDirectory() as temp_dir_api:
             # Modell speichern
-            model_path = os.path.join(temp_dir, 'model')
+            model_path = os.path.join(temp_dir_model, 'model')
             model.save(model_path)
+
+            # Ludwig speichert auch den Ordner 'api_experiment_run'
+            api_experiment_run_path = os.path.join(temp_dir_api, 'api_experiment_run')
 
             # Verzeichnis in Zip-Datei komprimieren
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            zip_file_name = f"trained_model_{timestamp}.zip"
-            zip_file_path = os.path.join(temp_dir, zip_file_name)
-            with zipfile.ZipFile(zip_file_path, 'w') as zipf:
-                for root, dirs, files in os.walk(model_path):
-                    for file in files:
-                        zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), model_path))
+            model_zip_file_name = f"trained_model_{timestamp}.zip"
+            api_zip_file_name = f"api_experiment_run_{timestamp}.zip"
+
+            model_zip_file_path = os.path.join(temp_dir_model, model_zip_file_name)
+            api_zip_file_path = os.path.join(temp_dir_api, api_zip_file_name)
+
+            for folder, zip_file_path in [(model_path, model_zip_file_path),
+                                          (api_experiment_run_path, api_zip_file_path)]:
+                with zipfile.ZipFile(zip_file_path, 'w') as zipf:
+                    for root, dirs, files in os.walk(folder):
+                        for file in files:
+                            zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder))
 
             # Zip-Datei in den S3-Bucket hochladen
-            s3.upload_file(zip_file_path, self.model_bucket_url, zip_file_name)
+            s3.upload_file(zip_file_path, self.model_bucket_url, model_zip_file_name)
+            s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
+
 
 
 if __name__ == "__main__":
