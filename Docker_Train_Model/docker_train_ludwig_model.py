@@ -3,7 +3,11 @@ import pandas as pd
 from ludwig.api import LudwigModel
 import configparser
 import boto3
-from io import StringIO
+import shutil
+import tempfile
+import zipfile
+from datetime import datetime
+
 
 class MLFlowTrainer:
     def __init__(self, ludwig_config_path, model_bucket_url, dataset_path, model_name="deep_lstm"):
@@ -13,7 +17,7 @@ class MLFlowTrainer:
         self.model_name = model_name
 
         # Setzen der Bucket-URLs
-        self.data_bucket_url = "s3://data"
+        self.data_bucket_url = "data"
         self.access_key_id = "test"
         self.secret_access_key = "testpassword"
         self.endpoint_url = "http://85.215.53.91:9000"
@@ -39,9 +43,24 @@ class MLFlowTrainer:
 
     def save_model_to_s3(self, model):
         s3 = boto3.client('s3')
-        with open('model.pkl', 'wb') as f:
-            model.save(f.name)
-            s3.upload_file(f.name, self.model_bucket_url, 'trained_model.pkl')
+
+        # Temporäres Verzeichnis erstellen
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Modell speichern
+            model_path = os.path.join(temp_dir, 'model')
+            model.save(model_path)
+
+            # Verzeichnis in Zip-Datei komprimieren
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            zip_file_name = f"trained_model_{timestamp}.zip"
+            zip_file_path = os.path.join(temp_dir, zip_file_name)
+            with zipfile.ZipFile(zip_file_path, 'w') as zipf:
+                for root, dirs, files in os.walk(model_path):
+                    for file in files:
+                        zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), model_path))
+
+            # Zip-Datei in den S3-Bucket hochladen
+            s3.upload_file(zip_file_path, self.model_bucket_url, zip_file_name)
 
 
 if __name__ == "__main__":
@@ -49,7 +68,7 @@ if __name__ == "__main__":
     ludwig_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../ludwig_MLCore.yaml")
     model_name = "Test_Model"
     dataset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/data.csv")
-    model_bucket_url = "s3://data"
+    model_bucket_url = "models"
 
     # Instanz der Klasse erstellen und das Modell trainieren
     trainer = MLFlowTrainer(ludwig_config_path, model_bucket_url, dataset_path, model_name)
