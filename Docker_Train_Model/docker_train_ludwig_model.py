@@ -36,7 +36,7 @@ class MLFlowTrainer:
         # Trainieren des Ludwig-Modells
         # Aufteilung der Daten(train_set, test_set, validation_set)
         model = LudwigModel(config=self.ludwig_config_path)
-        model.train(dataset=data, split=[0.8, 0.1, 0.1])
+        model.train(dataset=data, split=[0.8, 0.1, 0.1], skip_save_processed_input=True)
 
         # Speichern des Modells im Bucket
         self.save_model_to_s3(model)
