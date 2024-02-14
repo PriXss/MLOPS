@@ -1,20 +1,18 @@
 import os
 import pandas as pd
 from ludwig.api import LudwigModel
-import configparser
 import boto3
 import shutil
 import tempfile
 import zipfile
 from datetime import datetime
 
-
 class MLFlowTrainer:
-    def __init__(self, ludwig_config_path, model_bucket_url, dataset_path, model_name="deep_lstm"):
-        self.ludwig_config_path = ludwig_config_path
+    def __init__(self,model_bucket_url, model_name="", ludwig_config_file_name=""):
+        self.ludwig_config_bucket_url = "modelconfigs"
         self.model_bucket_url = model_bucket_url
-        self.dataset_path = dataset_path
         self.model_name = model_name
+        self.ludwig_config_file_name = ludwig_config_file_name
 
         # Setzen der Bucket-URLs
         self.data_bucket_url = "data"
@@ -33,13 +31,21 @@ class MLFlowTrainer:
         obj = s3.get_object(Bucket=self.data_bucket_url, Key='data.csv')
         data = pd.read_csv(obj['Body'])
 
-        # Trainieren des Ludwig-Modells
-        # Aufteilung der Daten(train_set, test_set, validation_set)
-        model = LudwigModel(config=self.ludwig_config_path)
-        model.train(dataset=data, split=[0.8, 0.1, 0.1], skip_save_processed_input=True)
+        # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
+        temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
+        try:
+            # Ludwig-Konfigurationsdatei aus dem Bucket herunterladen und lokal speichern
+            s3.download_fileobj(Bucket=self.ludwig_config_bucket_url, Key=self.ludwig_config_file_name, Fileobj=temp_ludwig_config_file)
+            temp_ludwig_config_file.close()
 
-        # Speichern des Modells im Bucket
-        self.save_model_to_s3(model)
+            # Ludwig-Modell trainieren
+            model = LudwigModel(config=temp_ludwig_config_file.name)
+            model.train(dataset=data, split=[0.8, 0.1, 0.1], skip_save_processed_input=True)
+
+            # Modell speichern und hochladen
+            self.save_model_to_s3(model)
+        finally:
+            os.unlink(temp_ludwig_config_file.name)
 
     def save_model_to_s3(self, model):
         s3 = boto3.client('s3')
@@ -58,8 +64,8 @@ class MLFlowTrainer:
 
             # Verzeichnisse in Zip-Dateien komprimieren
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            model_zip_file_name = f"trained_model_{timestamp}.zip"
-            api_zip_file_name = f"api_experiment_run_{timestamp}.zip"
+            model_zip_file_name = f"trained_model_{model_name}_{timestamp}.zip"
+            api_zip_file_name = f"api_experiment_run_{model_name}_{timestamp}.zip"
 
             model_zip_file_path = os.path.join(temp_dir_model, model_zip_file_name)
             api_zip_file_path = os.path.join(temp_dir_api, api_zip_file_name)
@@ -80,11 +86,11 @@ class MLFlowTrainer:
 
 if __name__ == "__main__":
     # Pfade anpassen
-    ludwig_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../ludwig_MLCore.yaml")
+    ludwig_config_file_name = "ludwig_MLCore.yaml"  # Name der Ludwig-Konfigurationsdatei
     model_name = "Test_Model"
-    dataset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../data/data.csv")
     model_bucket_url = "models"
 
     # Instanz der Klasse erstellen und das Modell trainieren
-    trainer = MLFlowTrainer(ludwig_config_path, model_bucket_url, dataset_path, model_name)
+    trainer = MLFlowTrainer(model_bucket_url, model_name, ludwig_config_file_name)
     trainer.train_model()
+
