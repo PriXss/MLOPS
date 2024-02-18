@@ -1,0 +1,9 @@
+dagster
+dagster-cloud
+boto3
+pandas
+matplotlib
+
+[dev]
+dagster-webserver
+pytest

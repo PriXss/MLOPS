@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+quickstart_etl/__init__.py
+quickstart_etl.egg-info/PKG-INFO
+quickstart_etl.egg-info/SOURCES.txt
+quickstart_etl.egg-info/dependency_links.txt
+quickstart_etl.egg-info/requires.txt
+quickstart_etl.egg-info/top_level.txt
+quickstart_etl/assets/__init__.py
+quickstart_etl/assets/hackernews.py

@@ -1,0 +1,46 @@
+On branch DagsterPipelineProdRun
+Your branch is up to date with 'origin/DagsterPipelineProdRun'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   ../.DS_Store
+	deleted:    ../monitoring/evidently.ipynb
+	deleted:    ../monitoring/file.html
+	deleted:    ../monitoring/tests.html
+	deleted:    .DS_Store
+	deleted:    Dockerfile
+	deleted:    dagster.yaml
+	deleted:    docker-compose.yml
+	deleted:    my_dagster_project.egg-info/PKG-INFO
+	deleted:    my_dagster_project.egg-info/SOURCES.txt
+	deleted:    my_dagster_project.egg-info/dependency_links.txt
+	deleted:    my_dagster_project.egg-info/requires.txt
+	deleted:    my_dagster_project.egg-info/top_level.txt
+	deleted:    my_dagster_project/__init__.py
+	deleted:    my_dagster_project/__pycache__/__init__.cpython-312.pyc
+	deleted:    my_dagster_project/__pycache__/assets.cpython-312.pyc
+	deleted:    my_dagster_project/assets.py
+	deleted:    my_dagster_project_tests/__init__.py
+	deleted:    my_dagster_project_tests/test_assets.py
+	modified:   pyproject.toml
+	modified:   setup.cfg
+	modified:   setup.py
+	deleted:    tmp_gmyyw21/.DS_Store
+	deleted:    tmp_gmyyw21/history/runs.db
+	deleted:    tmp_gmyyw21/history/runs/index.db
+	deleted:    tmp_gmyyw21/schedules/schedules.db
+	deleted:    workspace.yaml
+	deleted:    ../src/data_extraction.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	README.md
+	dagster_cloud.yaml
+	data/
+	quickstart_etl.egg-info/
+	quickstart_etl/
+	quickstart_etl_tests/
+	tmpnx10wz2d/
+
+no changes added to commit (use "git add" and/or "git commit -a")

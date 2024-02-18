@@ -1,0 +1,8 @@
+[32m2024-02-18 13:05:03 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 9944db38-8a81-4972-91bd-2cafd70d25d4 - 90990 - LOGS_CAPTURED - Started capturing logs in process (pid: 90990).
+[32m2024-02-18 13:05:03 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 9944db38-8a81-4972-91bd-2cafd70d25d4 - 90990 - versionStockData - STEP_START - Started execution of step "versionStockData".
+ERROR: unexpected error - s3 is supported, but requires 'dvc-s3' to be installed: No module named 'dvc_s3'
+
+Having any troubles? Hit us up at https://dvc.org/support, we are always happy to help!
+[32m2024-02-18 13:05:03 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 9944db38-8a81-4972-91bd-2cafd70d25d4 - 90990 - versionStockData - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-02-18 13:05:03 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 9944db38-8a81-4972-91bd-2cafd70d25d4 - 90990 - versionStockData - ASSET_MATERIALIZATION - Materialized value versionStockData.
+[32m2024-02-18 13:05:03 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 9944db38-8a81-4972-91bd-2cafd70d25d4 - 90990 - versionStockData - STEP_SUCCESS - Finished execution of step "versionStockData" in 898ms.
