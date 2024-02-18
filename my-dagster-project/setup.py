@@ -10,6 +10,7 @@ setup(
         "pandas",
         "matplotlib",
         "dvc",
+        "dvc-s3",
     ],
     extras_require={"dev": ["dagster-webserver", "pytest"]},
 )

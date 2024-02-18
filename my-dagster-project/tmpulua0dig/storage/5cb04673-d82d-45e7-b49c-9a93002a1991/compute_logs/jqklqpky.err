@@ -1,0 +1,12 @@
+[32m2024-02-18 14:05:10 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94646 - LOGS_CAPTURED - Started capturing logs in process (pid: 94646).
+[32m2024-02-18 14:05:10 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94646 - requestToModel - STEP_START - Started execution of step "requestToModel".
+WARNING: Some of the cache files do not exist neither locally nor on remote. Missing cache files:
+md5: d67894d15fca8e8951705644f4ae8178
+ERROR: failed to pull data from the cloud - Checkout failed for following targets:
+../data/example.csv
+Is your cache up to date?
+<https://error.dvc.org/missing-files>
+[32m2024-02-18 14:05:10 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - requestToModel - Requesting to Model was succesful
+[32m2024-02-18 14:05:10 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94646 - requestToModel - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-02-18 14:05:11 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94646 - requestToModel - ASSET_MATERIALIZATION - Materialized value requestToModel.
+[32m2024-02-18 14:05:11 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94646 - requestToModel - STEP_SUCCESS - Finished execution of step "requestToModel" in 825ms.
