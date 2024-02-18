@@ -1,27 +1,23 @@
 {
     "input_features": [
         {
-            "name": "date",
+            "name": "Datum",
             "type": "date"
         },
         {
-            "name": "open",
+            "name": "Eroeffnung",
             "type": "numerical"
         },
         {
-            "name": "high",
+            "name": "Tageshoch",
             "type": "numerical"
         },
         {
-            "name": "low",
+            "name": "Tagestief",
             "type": "numerical"
         },
         {
-            "name": "close",
-            "type": "numerical"
-        },
-        {
-            "name": "volume",
+            "name": "Umsatz",
             "type": "numerical"
         },
         {
@@ -35,7 +31,7 @@
     ],
     "output_features": [
         {
-            "name": "Prediction",
+            "name": "Schluss",
             "type": "numerical"
         }
     ],
