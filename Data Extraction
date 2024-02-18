@@ -43,7 +43,19 @@ df = pd.DataFrame(data)
 df_sorted = df.sort_values(by='date', ascending=True)
 
 # Spalte mit dem Symbol hinzufügen, Anmerkunge: Spalte Symbol zeigt Kürzel der Aktie, evtl. nicht nötig für Output
-df['Symbol'] = symbol
+df['Symbol'] = symbol #falls gewünscht, kann die Spalte Symbol hinzugefügt werden
+
+#Index-Spalte für Datum in eine normale Spalte umwandeln, um den Qualitätscheck zu erleichtern
+df.reset_index(inplace=True)
+df.rename(columns={'index': 'date'}, inplace=True)
+
+# Überprüfe, ob die Daten fehlende Werte enthalten
+if df.isnull().values.any():
+    print("Warnung: Die Daten enthalten fehlende Werte. Überprüfen Sie die Datenqualität.")
+
+# Zum Beispiel: Überprüfe, ob die Datumsangaben im richtigen Format vorliegen
+if not df['date'].apply(lambda x: isinstance(x, pd.Timestamp)).all():
+    print("Warnung: Das Datum ist nicht im erwarteten Format.")
 
 
 print(data)
@@ -91,4 +103,6 @@ except NoCredentialsError:
     print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
 except Exception as e:
     print(f'Ein Fehler ist aufgetreten: {str(e)}')
+
+
 
