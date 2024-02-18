@@ -1,5 +1,6 @@
 #Importieren von Bibliotheken
 from alpha_vantage.timeseries import TimeSeries
+from alpha_vantage.techindicators import TechIndicators
 import pandas as pd
 import os
 
@@ -29,6 +30,8 @@ else:
 
 #TimeSeries definieren im Pandas Format
 ts =TimeSeries(key=api_key, output_format='pandas')
+ti = TechIndicators(key=api_key, output_format='pandas')
+
 
 #URL anwählen
 url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}'
@@ -36,29 +39,56 @@ url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={sym
 #Daten
 data, meta_data = ts.get_daily(symbol = symbol, outputsize='full')
 
+# Abrufen des RSI
+rsi_data, rsi_meta_data = ti.get_rsi(symbol=symbol, interval='daily', time_period=14, series_type='close')
+
+# Abrufen des EMA
+ema_data, ema_meta_data = ti.get_ema(symbol=symbol, interval='daily', time_period=10, series_type='close')
+
+# Sicherstellen, dass der Index bei den hinzugefügten Werten als Datum formatiert ist
+data.index = pd.to_datetime(data.index)
+rsi_data.index = pd.to_datetime(rsi_data.index)
+ema_data.index = pd.to_datetime(ema_data.index)
+
 #DataFrame
 df = pd.DataFrame(data)
 
-# Sortiere den DataFrame nach dem Index (Datum) in aufsteigender Reihenfolge
+# Sortieren des DataFrame nach dem Index (Datum) in aufsteigender Reihenfolge
 df_sorted = df.sort_values(by='date', ascending=True)
 
+# Zusammenführen der Daten bzw. Hinzuügen der RSI und EMA Daten
+merged_data = pd.merge(data, rsi_data, how='left', left_index=True, right_index=True)
+merged_data = pd.merge(merged_data, ema_data, how='left', left_index=True, right_index=True)
+
+# Index-Spalte für Datum in eine normale Spalte umwandeln
+merged_data.reset_index(inplace=True)
+merged_data.rename(columns={'index': 'date'}, inplace=True)
+
+# Sortieren des zusammengeführten DataFrame nach dem Datum in aufsteigender Reihenfolge
+merged_data_sorted = merged_data.sort_values(by='date', ascending=True)
+
 # Spalte mit dem Symbol hinzufügen, Anmerkunge: Spalte Symbol zeigt Kürzel der Aktie, evtl. nicht nötig für Output
-df['Symbol'] = symbol #falls gewünscht, kann die Spalte Symbol hinzugefügt werden
+merged_data['Symbol'] = symbol #falls gewünscht, kann die Spalte Symbol hinzugefügt werden
 
 #Index-Spalte für Datum in eine normale Spalte umwandeln, um den Qualitätscheck zu erleichtern
 df.reset_index(inplace=True)
 df.rename(columns={'index': 'date'}, inplace=True)
 
-# Überprüfe, ob die Daten fehlende Werte enthalten
+
+#Quality Checks
+# Überprüfen, ob die Daten fehlende Werte enthalten
 if df.isnull().values.any():
     print("Warnung: Die Daten enthalten fehlende Werte. Überprüfen Sie die Datenqualität.")
 
-# Zum Beispiel: Überprüfe, ob die Datumsangaben im richtigen Format vorliegen
+# Überprüfen, ob die Datumsangaben im richtigen Format vorliegen
 if not df['date'].apply(lambda x: isinstance(x, pd.Timestamp)).all():
     print("Warnung: Das Datum ist nicht im erwarteten Format.")
 
 
-print(data)
+print(data)       #Ausgabe der Standarddaten
+
+print(merged_data_sorted.head())     #Ausgabe der um RSI und EMA erweiterten Daten
+
 
 # Sortierten DataFrame als CSV exportieren
 csv_filename = f'data_{company_name}.csv'
@@ -80,8 +110,8 @@ if not os.path.exists(output_directory):
     os.makedirs(output_directory)
 csv_filepath = os.path.join(output_directory, csv_filename)
 
-df_sorted.to_csv(csv_filepath, index=True)
-
+# Speichern des zusammengeführten und sortierten DataFrames in einer CSV-Datei
+merged_data_sorted.to_csv(csv_filepath, index=False)
 
 # Minio S3-Konfiguration
 minio_access_key = 'test'
@@ -103,6 +133,7 @@ except NoCredentialsError:
     print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
 except Exception as e:
     print(f'Ein Fehler ist aufgetreten: {str(e)}')
+
 
 
 
