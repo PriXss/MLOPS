@@ -9,8 +9,7 @@ from datetime import datetime
 import yaml
 
 class MLFlowTrainer:
-    def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name= ""):
-        self.ludwig_config_bucket_url = "modelconfigs"
+    def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name=""):
         self.model_bucket_url = model_bucket_url
         self.model_name = model_name
         self.ludwig_config_file_name = ludwig_config_file_name
@@ -18,6 +17,7 @@ class MLFlowTrainer:
 
         # Setzen der Bucket-URLs
         self.data_bucket_url = "data"
+        self.model_configs_bucket_url = "modelconfigs"
         self.access_key_id = "test"
         self.secret_access_key = "testpassword"
         self.endpoint_url = "http://85.215.53.91:9000"
@@ -27,17 +27,34 @@ class MLFlowTrainer:
         os.environ["AWS_SECRET_ACCESS_KEY"] = self.secret_access_key
         os.environ["AWS_ENDPOINT_URL"] = self.endpoint_url
 
+    def get_data_name_from_bucket(self):
+        # Verbindung zum S3-Client herstellen
+        s3 = boto3.client('s3')
+
+        # Datei mit der Variable data_name aus dem Bucket modelconfigs herunterladen
+        obj = s3.get_object(Bucket=self.model_configs_bucket_url, Key="data_name.txt")
+        data_name = obj['Body'].read().decode('utf-8').strip()
+
+        return data_name
+
     def train_model(self):
+        # Extrahieren der Variable data_name aus der Textdatei im Bucket
+        data_name = self.get_data_name_from_bucket()
+
+        # Pfade anpassen
+        ludwig_config_file_name = "ludwig_MLCore.yaml"  # Name der Ludwig-Konfigurationsdatei
+        data_file = f"data_{data_name}.csv"
+
         # Laden der Daten aus dem Bucket
         s3 = boto3.client('s3')
-        obj = s3.get_object(Bucket=self.data_bucket_url, Key=self.data_file_name)
+        obj = s3.get_object(Bucket=self.data_bucket_url, Key=data_file)
         data = pd.read_csv(obj['Body'])
 
         # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
         temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
         try:
             # Ludwig-Konfigurationsdatei aus dem Bucket herunterladen und lokal speichern
-            s3.download_fileobj(Bucket=self.ludwig_config_bucket_url, Key=self.ludwig_config_file_name,
+            s3.download_fileobj(Bucket=self.model_configs_bucket_url, Key=self.ludwig_config_file_name,
                                 Fileobj=temp_ludwig_config_file)
 
             temp_ludwig_config_file.close()
@@ -50,7 +67,7 @@ class MLFlowTrainer:
             model.train(dataset=data, split=[0.8, 0.1, 0.1], skip_save_processed_input=True)
 
             # Modell speichern und hochladen
-            self.save_model_to_s3(model, model_name)
+            self.save_model_to_s3(model, model_name, data_name)
         finally:
             os.unlink(temp_ludwig_config_file.name)
 
@@ -63,7 +80,7 @@ class MLFlowTrainer:
                 model_name = yaml_content['model']['type']
             return model_name
 
-    def save_model_to_s3(self, model, model_name):
+    def save_model_to_s3(self, model, model_name, data_name):
         s3 = boto3.client('s3')
 
         # Temporäre Verzeichnisse erstellen
@@ -80,8 +97,8 @@ class MLFlowTrainer:
 
             # Verzeichnisse in Zip-Dateien komprimieren
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            model_zip_file_name = f"trained_model_{model_name}_{timestamp}.zip"
-            api_zip_file_name = f"api_experiment_run_{model_name}_{timestamp}.zip"
+            model_zip_file_name = f"trained_model_{data_name}_{model_name}_{timestamp}.zip"
+            api_zip_file_name = f"api_experiment_run_{data_name}_{model_name}_{timestamp}.zip"
 
             model_zip_file_path = os.path.join(temp_dir_model, model_zip_file_name)
             api_zip_file_path = os.path.join(temp_dir_api, api_zip_file_name)
@@ -103,12 +120,8 @@ class MLFlowTrainer:
 
 
 if __name__ == "__main__":
-    # Pfade anpassen
-    ludwig_config_file_name = "ludwig_MLCore.yaml"  # Name der Ludwig-Konfigurationsdatei
-    model_bucket_url = "models"
-    data_file = "data.csv"
-
     # Instanz der Klasse erstellen und das Modell trainieren
-    trainer = MLFlowTrainer(model_bucket_url, ludwig_config_file_name=ludwig_config_file_name,
-                            data_file_name=data_file)
+    model_bucket_url = "models"
+    ludwig_config_file_name = "ludwig_MLCore.yaml"  # Name der Ludwig-Konfigurationsdatei
+    trainer = MLFlowTrainer(model_bucket_url, ludwig_config_file_name=ludwig_config_file_name)
     trainer.train_model()
