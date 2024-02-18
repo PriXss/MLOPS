@@ -1,33 +1,41 @@
 {
     "input_features": [
         {
-            "name": "Datum",
+            "name": "date",
             "type": "date"
         },
         {
-            "name": "Eroeffnung",
+            "name": "open",
             "type": "numerical"
         },
         {
-            "name": "Tageshoch",
+            "name": "high",
             "type": "numerical"
         },
         {
-            "name": "Tagestief",
+            "name": "low",
             "type": "numerical"
         },
         {
-            "name": "Umsatz",
+            "name": "close",
             "type": "numerical"
         },
         {
-            "name": "Umsatz in Stueck",
+            "name": "volume",
+            "type": "numerical"
+        },
+        {
+            "name": "RSI",
+            "type": "numerical"
+        },
+        {
+            "name": "EMA",
             "type": "numerical"
         }
     ],
     "output_features": [
         {
-            "name": "Schluss",
+            "name": "Prediction",
             "type": "numerical"
         }
     ],
