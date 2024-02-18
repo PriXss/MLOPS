@@ -99,6 +99,8 @@ class MLFlowTrainer:
             if api_experiment_run_dst:
                 s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
 
+        shutil.rmtree(os.path.join(os.getcwd(), '../src/results'))
+
 
 if __name__ == "__main__":
     # Pfade anpassen
