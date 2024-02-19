@@ -4,7 +4,6 @@ from dagster import (
     define_asset_job,
     load_assets_from_package_module,
 )
-
 from . import assets
 
 daily_refresh_schedule = ScheduleDefinition(

@@ -1,0 +1,14 @@
+[32m2024-02-18 17:05:59 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - c935af38-f79d-4a6c-8470-9f70cbaf7e8b - 2280 - LOGS_CAPTURED - Started capturing logs in process (pid: 2280).
+[32m2024-02-18 17:05:59 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - c935af38-f79d-4a6c-8470-9f70cbaf7e8b - 2280 - requestToModel - STEP_START - Started execution of step "requestToModel".
+[32m2024-02-18 17:05:59 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - c935af38-f79d-4a6c-8470-9f70cbaf7e8b - requestToModel - Data Extraction complete
+[32m2024-02-18 17:05:59 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - c935af38-f79d-4a6c-8470-9f70cbaf7e8b - requestToModel -       Datum  Eroeffnung  Schluss  ...  Tagestief   Umsatz  Umsatz in Stueck
+0  23-12-12      11.015   10.615  ...     10.510   484681             45199
+1  23-12-11      11.260   11.085  ...     10.750  1354560            124164
+2  23-12-08      11.330   11.280  ...     11.000  1423146            125719
+3  23-12-07      11.810   11.615  ...     11.520   366824             31625
+4  23-12-06      11.635   11.880  ...     11.535   396316             33446
+
+[5 rows x 7 columns]
+[32m2024-02-18 17:05:59 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - c935af38-f79d-4a6c-8470-9f70cbaf7e8b - 2280 - requestToModel - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-02-18 17:05:59 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - c935af38-f79d-4a6c-8470-9f70cbaf7e8b - 2280 - requestToModel - ASSET_MATERIALIZATION - Materialized value requestToModel.
+[32m2024-02-18 17:05:59 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - c935af38-f79d-4a6c-8470-9f70cbaf7e8b - 2280 - requestToModel - STEP_SUCCESS - Finished execution of step "requestToModel" in 173ms.
