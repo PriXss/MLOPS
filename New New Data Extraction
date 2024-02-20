@@ -80,12 +80,9 @@ for symbol in symbols:
     # Sortieren des zusammengeführten DataFrame nach dem Datum in aufsteigender Reihenfolge
     merged_data_sorted = merged_data.sort_values(by='Datum', ascending=True)
 
-    # Spalte mit dem Symbol hinzufügen, Anmerkung: Spalte Symbol zeigt Kürzel der Aktie, evtl. nicht nötig für Output
-    merged_data['Symbol'] = symbol #falls gewünscht, kann die Spalte Symbol hinzugefügt werden
-
     # Quality Checks vor dem Sortieren und Speichern
     # Überprüfen, ob die Datumsangaben im richtigen Format vorliegen
-    if not pd.to_datetime(merged_data['Datum'], errors='coerce').notnull().all():
+    if not pd.to_datetime(merged_data_sorted['Datum'], errors='coerce').notnull().all():
         print(f"Warnung: Einige Datumsangaben für {symbol} sind nicht im erwarteten Format.")
     # Quality Check für fehlende Werte
     # Extrahieren des neuesten Datums
@@ -120,6 +117,7 @@ for symbol in symbols:
             print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
         except Exception as e:
             print(f'Ein Fehler ist aufgetreten: {str(e)}')
+
 
 
 
