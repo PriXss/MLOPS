@@ -1,0 +1,5 @@
+outs:
+- md5: 07917639ccd03b40c52a536879041947
+  size: 43
+  hash: md5
+  path: prediction.json
