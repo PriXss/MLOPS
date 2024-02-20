@@ -85,7 +85,7 @@ for symbol in symbols:
 
     # Quality Checks vor dem Sortieren und Speichern
     # Überprüfen, ob die Datumsangaben im richtigen Format vorliegen
-    if not pd.to_datetime(merged_data['date'], errors='coerce').notnull().all():
+    if not pd.to_datetime(merged_data['Datum'], errors='coerce').notnull().all():
         print(f"Warnung: Einige Datumsangaben für {symbol} sind nicht im erwarteten Format.")
     # Quality Check für fehlende Werte
     # Extrahieren des neuesten Datums
@@ -114,13 +114,15 @@ for symbol in symbols:
 
     if not upload_abgelehnt:
     # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
-    try:
-        s3.upload_file(csv_filepath, minio_bucket, minio_object_name)
-        print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
-    except FileNotFoundError:
-        print(f'Die Datei {csv_filepath} wurde nicht gefunden.')
-    except NoCredentialsError:
-        print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
-    except Exception as e:
-        print(f'Ein Fehler ist aufgetreten: {str(e)}')
+        try:
+            s3.upload_file(csv_filepath, minio_bucket, minio_object_name)
+            print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
+        except FileNotFoundError:
+            print(f'Die Datei {csv_filepath} wurde nicht gefunden.')
+        except NoCredentialsError:
+            print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
+        except Exception as e:
+            print(f'Ein Fehler ist aufgetreten: {str(e)}')
+
+
 
