@@ -109,9 +109,6 @@ for symbol in symbols:
     csv_filepath = os.path.join(output_directory, csv_filename)
     merged_data_sorted.to_csv(csv_filepath, index=False)
 
-    # Speichern des zusammengeführten und sortierten DataFrames in einer CSV-Datei
-    merged_data_sorted.to_csv(csv_filepath, index=False)
-
     if not upload_abgelehnt:
     # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
         try:
