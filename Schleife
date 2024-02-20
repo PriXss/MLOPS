@@ -1,0 +1,87 @@
+from alpha_vantage.timeseries import TimeSeries
+from alpha_vantage.techindicators import TechIndicators
+import pandas as pd
+import os
+import boto3
+from botocore.exceptions import NoCredentialsError
+
+# Definieren von API Key
+api_key = 'CEKRMJCF4Q07KVAC'
+
+# Liste von Symbolen
+symbols = ['AAPL', 'IBM', 'TSLA', 'NKE', 'AMZN', 'MSFT', 'GOOGL']
+
+# Minio S3-Konfiguration
+minio_access_key = 'test'
+minio_secret_key = 'testpassword'
+minio_endpoint = 'http://85.215.53.91:9000'
+minio_bucket = 'data'
+
+# S3-Verbindung herstellen
+s3 = boto3.client('s3', aws_access_key_id=minio_access_key, aws_secret_access_key=minio_secret_key, endpoint_url=minio_endpoint)
+
+# Speicherung der CSV Datei
+output_directory = 'output'
+if not os.path.exists(output_directory):
+    os.makedirs(output_directory)
+
+# Definieren der Alpha Vantage Objekte im Pandas Format
+ts = TimeSeries(key=api_key, output_format='pandas')
+ti = TechIndicators(key=api_key, output_format='pandas')
+
+for symbol in symbols:
+    # Verknüpfung von Symbolen und Firmennamen
+    company_names = {
+        'AAPL': 'Apple', 'IBM': 'IBM', 'TSLA': 'Tesla', 'NKE': 'Nike',
+        'AMZN': 'Amazon', 'MSFT': 'Microsoft', 'GOOGL': 'Google'
+    }
+    company_name = company_names.get(symbol, 'Company')
+    csv_filename = f'data_{company_name}.csv'
+    csv_filepath = os.path.join(output_directory, csv_filename)
+    minio_object_name = csv_filename
+
+    # Daten abrufen, einschließlich RSI und EMA
+    data, _ = ts.get_daily(symbol=symbol, outputsize='full')
+    rsi_data, _ = ti.get_rsi(symbol=symbol, interval='daily', time_period=14, series_type='close')
+    ema_data, _ = ti.get_ema(symbol=symbol, interval='daily', time_period=10, series_type='close')
+
+    # Zusammenführen der Daten
+    merged_data = pd.merge(data, rsi_data, how='left', left_index=True, right_index=True)
+    merged_data = pd.merge(merged_data, ema_data, how='left', left_index=True, right_index=True)
+
+    # Füllen eventueller Lücken mit Nullen
+    merged_data.fillna(0, inplace=True)
+    merged_data.reset_index(inplace=True)
+    merged_data.rename(columns={'index': 'date'}, inplace=True)
+
+    # Umbenennen der Spalten in deutsche Bezeichnungen
+    merged_data.rename(columns={
+        'date': 'Datum', '1. open': 'Eroeffnung', '4. close': 'Schluss',
+        '2. high': 'Tageshoch', '3. low': 'Tagestief', '5. volume': 'Umsatz',
+    }, inplace=True)
+
+    # Spalte mit dem Symbol hinzufügen
+    merged_data['Symbol'] = symbol
+
+    # Quality Checks
+    if merged_data.isnull().values.any():
+        print(f"Warnung: Die Daten für {symbol} enthalten fehlende Werte.")
+    if not pd.to_datetime(merged_data['Datum'], errors='coerce').notnull().all():
+        print(f"Warnung: Einige Datumsangaben für {symbol} sind nicht im erwarteten Format.")
+
+    # Sortieren des DataFrames nach dem Datum
+    merged_data_sorted = merged_data.sort_values(by='Datum', ascending=True)
+
+    # Exportieren der sortierten Daten in eine CSV-Datei
+    merged_data_sorted.to_csv(csv_filepath, index=False)
+
+    # CSV-Datei auf Minio S3 hochladen
+    try:
+        s3.upload_file(csv_filepath, minio_bucket, minio_object_name)
+        print(f'Datei {csv_filename} wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
+    except FileNotFoundError:
+        print(f'Die Datei {csv_filepath} wurde nicht gefunden.')
+    except NoCredentialsError:
+        print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
+    except Exception as e:
+        print(f'Ein Fehler ist aufgetreten: {e}')
