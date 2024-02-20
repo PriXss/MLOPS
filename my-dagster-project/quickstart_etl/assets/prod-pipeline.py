@@ -321,8 +321,8 @@ def requestToModel(context) -> None:
     session = requests.Session()
     response= session.post('http://85.215.53.91:8001/predict',headers=headers,data=payload)
     context.log.info(f"Response: {response.json()}")
-    os.makedirs("predictionFromModel", exist_ok=True)
-    with open('predictionFromModel/prediction.json', 'w') as f:
+    os.makedirs("predictions", exist_ok=True)
+    with open('predictions/prediction.json', 'w') as f:
         json.dump(response.json(), f)
     
     session = boto3.session.Session()
@@ -334,16 +334,16 @@ def requestToModel(context) -> None:
     )
     bucket = "predictions"
     file_name = "prediction.json"
-    s3_client.upload_file('predictionFromModel/prediction.json', bucket, file_name)
+    s3_client.upload_file('predictions/prediction.json', bucket, file_name)
     context.log.info(f"Upload to S3 succesful")
 
     
     
 @asset(deps=[requestToModel], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
 def versionPrediction(context) -> None:
-    subprocess.run(["dvc", "add", "predictionFromModel/prediction.json"])
-    subprocess.run(["git", "add", "predictionFromModel/prediction.json.dvc"])
-    subprocess.run(["git", "add", "predictionFromModel/.gitignore"])
+    subprocess.run(["dvc", "add", "predictions/prediction.json"])
+    subprocess.run(["git", "add", "predictions/prediction.json.dvc"])
+    subprocess.run(["git", "add", "predictions/.gitignore"])
     subprocess.run(["git", "commit", "-m", "Add new Predicition from Prod Run"])
     subprocess.run(["dvc", "push"])
     context.log.info('Prediction successfully versioned')

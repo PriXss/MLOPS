@@ -1,0 +1,18 @@
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Running stamp_revision  -> 46b412388816
+
+To track the changes with git, run:
+
+	git add predictions/.gitignore predictions/prediction.json.dvc
+
+To enable auto staging, run:
+
+	dvc config core.autostage true
+[DagsterPipelineProdRun 229c6f1] Add new Predicition from Prod Run
+ 2 files changed, 6 insertions(+)
+ create mode 100644 my-dagster-project/predictions/.gitignore
+ create mode 100644 my-dagster-project/predictions/prediction.json.dvc
+Everything is up to date.

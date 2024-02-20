@@ -1,0 +1,8 @@
+[32m2024-02-20 14:46:54 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5c480f63-9342-443b-91df-7f58f2e85400 - 22222 - LOGS_CAPTURED - Started capturing logs in process (pid: 22222).
+[32m2024-02-20 14:46:54 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5c480f63-9342-443b-91df-7f58f2e85400 - 22222 - versionStockData - STEP_START - Started execution of step "versionStockData".
+WARNING: Some of the cache files do not exist neither locally nor on remote. Missing cache files:
+md5: d67894d15fca8e8951705644f4ae8178
+[32m2024-02-20 14:46:55 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 5c480f63-9342-443b-91df-7f58f2e85400 - versionStockData - Data successfully versioned
+[32m2024-02-20 14:46:55 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5c480f63-9342-443b-91df-7f58f2e85400 - 22222 - versionStockData - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-02-20 14:46:55 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5c480f63-9342-443b-91df-7f58f2e85400 - 22222 - versionStockData - ASSET_MATERIALIZATION - Materialized value versionStockData.
+[32m2024-02-20 14:46:55 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5c480f63-9342-443b-91df-7f58f2e85400 - 22222 - versionStockData - STEP_SUCCESS - Finished execution of step "versionStockData" in 1.38s.

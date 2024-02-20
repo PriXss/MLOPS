@@ -1,0 +1,10 @@
+[32m2024-02-20 14:37:07 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - e707a606-dda0-42cf-bb97-ce4aaf844bc4 - 19494 - LOGS_CAPTURED - Started capturing logs in process (pid: 19494).
+[32m2024-02-20 14:37:07 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - e707a606-dda0-42cf-bb97-ce4aaf844bc4 - 19494 - versionStockData - STEP_START - Started execution of step "versionStockData".
+ERROR: output 'data/stocks.csv' does not exist: [Errno 2] No such file or directory: '/Users/marcelthomas/Development/MLOPS/my-dagster-project/data/stocks.csv'
+WARNING: Some of the cache files do not exist neither locally nor on remote. Missing cache files:
+md5: 1cb7e994fe057a91013e146a4f353f51
+md5: d67894d15fca8e8951705644f4ae8178
+[32m2024-02-20 14:37:08 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - e707a606-dda0-42cf-bb97-ce4aaf844bc4 - versionStockData - Data successfully versioned
+[32m2024-02-20 14:37:08 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - e707a606-dda0-42cf-bb97-ce4aaf844bc4 - 19494 - versionStockData - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-02-20 14:37:08 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - e707a606-dda0-42cf-bb97-ce4aaf844bc4 - 19494 - versionStockData - ASSET_MATERIALIZATION - Materialized value versionStockData.
+[32m2024-02-20 14:37:08 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - e707a606-dda0-42cf-bb97-ce4aaf844bc4 - 19494 - versionStockData - STEP_SUCCESS - Finished execution of step "versionStockData" in 1.24s.

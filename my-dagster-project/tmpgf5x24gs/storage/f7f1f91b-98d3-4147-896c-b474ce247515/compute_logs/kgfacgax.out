@@ -1,0 +1,42 @@
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Running stamp_revision  -> 46b412388816
+On branch DagsterPipelineProdRun
+Your branch is up to date with 'origin/DagsterPipelineProdRun'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   ../.dvc/config
+	deleted:    predictionFromModel/prediction.json
+	modified:   quickstart_etl/assets/__pycache__/prod-pipeline.cpython-311.pyc
+	modified:   quickstart_etl/assets/prod-pipeline.py
+	modified:   tmpgf5x24gs/history/runs.db
+	modified:   tmpgf5x24gs/history/runs/index.db
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	predictions/
+	tmpgf5x24gs/history/runs/0221338a-9726-4564-afc2-2a906b59fa54.db
+	tmpgf5x24gs/history/runs/2683da6e-b6a2-4bb4-833a-5d6faf9c253a.db
+	tmpgf5x24gs/history/runs/31c54f3a-28fe-4512-8cc2-6d6db2cbf0bb.db
+	tmpgf5x24gs/history/runs/3b38b299-049d-4c8b-86d9-491465208a65.db
+	tmpgf5x24gs/history/runs/577499b6-cee4-43b8-bd48-a510617ed10a.db
+	tmpgf5x24gs/history/runs/8b50dadb-ad54-42a3-a778-d886b8cd05fb.db
+	tmpgf5x24gs/history/runs/a5529b1d-570b-440d-88e7-db8242c38127.db
+	tmpgf5x24gs/history/runs/e707a606-dda0-42cf-bb97-ce4aaf844bc4.db
+	tmpgf5x24gs/history/runs/f7f1f91b-98d3-4147-896c-b474ce247515.db
+	tmpgf5x24gs/storage/0221338a-9726-4564-afc2-2a906b59fa54/
+	tmpgf5x24gs/storage/2683da6e-b6a2-4bb4-833a-5d6faf9c253a/
+	tmpgf5x24gs/storage/31c54f3a-28fe-4512-8cc2-6d6db2cbf0bb/
+	tmpgf5x24gs/storage/3b38b299-049d-4c8b-86d9-491465208a65/
+	tmpgf5x24gs/storage/577499b6-cee4-43b8-bd48-a510617ed10a/
+	tmpgf5x24gs/storage/8b50dadb-ad54-42a3-a778-d886b8cd05fb/
+	tmpgf5x24gs/storage/a5529b1d-570b-440d-88e7-db8242c38127/
+	tmpgf5x24gs/storage/e707a606-dda0-42cf-bb97-ce4aaf844bc4/
+	tmpgf5x24gs/storage/f7f1f91b-98d3-4147-896c-b474ce247515/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+Everything is up to date.
