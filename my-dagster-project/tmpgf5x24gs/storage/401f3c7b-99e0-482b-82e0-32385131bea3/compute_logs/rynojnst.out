@@ -1,0 +1,34 @@
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Running stamp_revision  -> 46b412388816
+
+To track the changes with git, run:
+
+	git add predictions/prediction.json.dvc
+
+To enable auto staging, run:
+
+	dvc config core.autostage true
+On branch DagsterPipelineProdRun
+Your branch is up to date with 'origin/DagsterPipelineProdRun'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   tmpgf5x24gs/history/runs.db
+	modified:   tmpgf5x24gs/history/runs/index.db
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	Dockerfile
+	dagster.yaml
+	docker-compose.yml
+	results/
+	tmpgf5x24gs/history/runs/401f3c7b-99e0-482b-82e0-32385131bea3.db
+	tmpgf5x24gs/storage/401f3c7b-99e0-482b-82e0-32385131bea3/
+	workspace.yaml
+
+no changes added to commit (use "git add" and/or "git commit -a")
+Everything is up to date.

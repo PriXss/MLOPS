@@ -1,0 +1,18 @@
+services:
+  dagster-dagit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+
+  dagster-daemon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "dagster-daemon run"
+    environment:
+      - PGPASS=${PGPASS}
+      - PGUID=${PGUID}
+
+
