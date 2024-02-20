@@ -7,6 +7,8 @@ import tempfile
 import zipfile
 from datetime import datetime
 import yaml
+import mlflow
+
 
 class MLFlowTrainer:
     def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name=""):
@@ -42,7 +44,6 @@ class MLFlowTrainer:
         data_name = self.get_data_name_from_bucket()
 
         # Pfade anpassen
-        ludwig_config_file_name = "ludwig_MLCore.yaml"  # Name der Ludwig-Konfigurationsdatei
         data_file = f"data_{data_name}.csv"
 
         # Laden der Daten aus dem Bucket
@@ -50,26 +51,54 @@ class MLFlowTrainer:
         obj = s3.get_object(Bucket=self.data_bucket_url, Key=data_file)
         data = pd.read_csv(obj['Body'])
 
-        # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
-        temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
+        # Starten des MLflow-Laufs
+        mlflow.start_run()
+
         try:
-            # Ludwig-Konfigurationsdatei aus dem Bucket herunterladen und lokal speichern
-            s3.download_fileobj(Bucket=self.model_configs_bucket_url, Key=self.ludwig_config_file_name,
-                                Fileobj=temp_ludwig_config_file)
+            # Loggen der Parameter
+            mlflow.log_param("data_name", data_name)
+            mlflow.log_param("ludwig_config_file_name", self.ludwig_config_file_name)
+            mlflow.log_param("data_file_name", data_file)
 
-            temp_ludwig_config_file.close()
+            # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
+            temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
+            try:
+                # Ludwig-Konfigurationsdatei aus dem Bucket herunterladen und lokal speichern
+                s3.download_fileobj(Bucket=self.model_configs_bucket_url, Key=self.ludwig_config_file_name,
+                                    Fileobj=temp_ludwig_config_file)
 
-            # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
-            model_name = self.extract_model_name(temp_ludwig_config_file.name)
+                temp_ludwig_config_file.close()
 
-            # Ludwig-Modell trainieren
-            model = LudwigModel(config=temp_ludwig_config_file.name)
-            model.train(dataset=data, split=[0.8, 0.1, 0.1], skip_save_processed_input=True)
+                # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
+                model_name = self.extract_model_name(temp_ludwig_config_file.name)
 
-            # Modell speichern und hochladen
-            self.save_model_to_s3(model, model_name, data_name)
+                # Ludwig-Modell trainieren
+                model = LudwigModel(config=temp_ludwig_config_file.name)
+                train_stats, _, _ = model.train(dataset=data, split=[0.8, 0.1, 0.1], skip_save_processed_input=True)
+
+                # Loggen der Metriken
+                for metric in train_stats.keys():
+                    if metric.startswith('train'):
+                        mlflow.log_metric(f"train_{metric}", getattr(train_stats, metric))
+                    elif metric.startswith('validation'):
+                        mlflow.log_metric(f"validation_{metric}", getattr(train_stats, metric))
+                    elif metric.startswith('test'):
+                        mlflow.log_metric(f"test_{metric}", getattr(train_stats, metric))
+
+                # Speichern von Artefakten
+                with tempfile.TemporaryDirectory() as temp_dir_model:
+                    # Modell speichern
+                    model_path = os.path.join(temp_dir_model, model_name)
+                    model.save(model_path)
+                    mlflow.log_artifact(model_path, artifact_path=model_name)
+
+            finally:
+                os.unlink(temp_ludwig_config_file.name)
+                self.save_model_to_s3(model, model_name, data_name)
+
         finally:
-            os.unlink(temp_ludwig_config_file.name)
+            # MLflow-Lauf beenden
+            mlflow.end_run()
 
     # Name des Models aus ludwig-config auslesen (abhängig vom dort definierten model-type)
     def extract_model_name(self, yaml_file_path):
