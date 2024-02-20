@@ -347,7 +347,6 @@ def versionPrediction(context) -> None:
     subprocess.run(["git", "commit", "-m", "Add new Predicition from Prod Run"])
     subprocess.run(["dvc", "push"])
     context.log.info('Prediction successfully versioned')
-    
 
 
 @asset(deps=[requestToModel], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
@@ -355,6 +354,6 @@ def versioningModel(context) -> None:
     context.log.info('I can identify which model is served atm and have a reference to it accordingly')
 
 
-@asset(deps=[versioningModel, versionPrediction, versionStockData], group_name="Monitoring", compute_kind="Reporting")
+@asset(deps=[versioningModel, versionPrediction, versionStockData], group_name="MonitoringPhase", compute_kind="Reporting")
 def monitoringAndReporting(context) -> None:
     context.log.info('Monitoring part')
