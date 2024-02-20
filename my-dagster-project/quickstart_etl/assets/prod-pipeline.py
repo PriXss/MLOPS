@@ -13,6 +13,7 @@ from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
 from botocore.exceptions import NoCredentialsError
 import requests
+import json
 
 
 class MLFlowTrainer:
@@ -114,7 +115,7 @@ def trainLudwigModelRegression(context) -> None:
       # Pfade anpassen
     ludwig_config_file_name = "ludwig_MLCore.yaml"  # Name der Ludwig-Konfigurationsdatei
     model_bucket_url = "models"
-    data_file = "data.csv"
+    data_file = "data_Apple.csv"
 
     # Instanz der Klasse erstellen und das Modell trainieren
     trainer = MLFlowTrainer(model_bucket_url, ludwig_config_file_name=ludwig_config_file_name,
@@ -308,30 +309,44 @@ def requestToModel(context) -> None:
     initial_df.to_csv('prepareModelRequest/stocks.csv', index=False)  
     
     
-    
-    
-    r = requests.post('https://reqbin.com/echo/post/json', json={
-        "Umsatz in Stueck": "20",
-        "Datum": "18.02.2024",
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    payload = {"Umsatz in Stueck": "20",
         "Tageshoch": "158.60",
-        "Tagestief": "148.90",
+        "Datum": "18.02.2024",
         "Eroeffnung": "152.35",
-        "Umsatz":"6.25"
-    })
-    print(f"Status Code: {r.status_code}, Response: {r.json()}")
+        "Umsatz":"6.25",
+        "Tagestief": "148.90",
+        }
+
+    session = requests.Session()
+    response= session.post('http://85.215.53.91:8001/predict',headers=headers,data=payload)
+    context.log.info(f"Response: {response.json()}")
+    os.makedirs("predictionFromModel", exist_ok=True)
+    with open('predictionFromModel/prediction.json', 'w') as f:
+        json.dump(response.json(), f)
+    
+    session = boto3.session.Session()
+    s3_client = session.client(
+        service_name='s3',
+        aws_access_key_id='test',
+        aws_secret_access_key='testpassword',
+        endpoint_url='http://85.215.53.91:9000',
+    )
+    bucket = "predictions"
+    file_name = "prediction.json"
+    s3_client.upload_file('predictionFromModel/prediction.json', bucket, file_name)
+    context.log.info(f"Upload to S3 succesful")
+
     
     
-
-
-
-
-
-
-
 @asset(deps=[requestToModel], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
 def versionPrediction(context) -> None:
-    #check the output sorce s3 or git, grab the data and version it to the input data
-    context.log.info('Prediction could be versioned accordingly')
+    subprocess.run(["dvc", "add", "predictionFromModel/prediction.json"])
+    subprocess.run(["git", "add", "predictionFromModel/prediction.json.dvc"])
+    subprocess.run(["git", "add", "predictionFromModel/.gitignore"])
+    subprocess.run(["git", "commit", "-m", "Add new Predicition from Prod Run"])
+    subprocess.run(["dvc", "push"])
+    context.log.info('Prediction successfully versioned')
     
 
 

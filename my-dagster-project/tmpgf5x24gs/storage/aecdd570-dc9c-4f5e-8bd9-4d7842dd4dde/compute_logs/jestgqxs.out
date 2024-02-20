@@ -1,0 +1,6 @@
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Running stamp_revision  -> 46b412388816
+Status Code: 400, Response: {'error': "Data received does not contain all input features. Missing features: {'Umsatz in Stueck', 'Tageshoch', 'Datum', 'Eroeffnung', 'Umsatz', 'Tagestief'}."}
