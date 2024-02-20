@@ -1,0 +1,126 @@
+#Importieren von Bibliotheken
+from alpha_vantage.timeseries import TimeSeries
+from alpha_vantage.techindicators import TechIndicators
+import pandas as pd
+import os
+import boto3
+from botocore.exceptions import NoCredentialsError
+
+#Definieren von API Key und Symbol
+api_key = 'CEKRMJCF4Q07KVAC'
+
+# Liste von Symbolen
+symbols = ['AAPL', 'IBM', 'TSLA', 'NKE', 'AMZN', 'MSFT', 'GOOGL']
+
+# Minio S3-Konfiguration
+minio_access_key = 'test'
+minio_secret_key = 'testpassword'
+minio_endpoint = 'http://85.215.53.91:9000'
+minio_bucket = 'data'          # S3 Bucket
+
+# S3-Verbindung herstellen
+s3 = boto3.client('s3', aws_access_key_id=minio_access_key, aws_secret_access_key=minio_secret_key, endpoint_url=minio_endpoint)
+
+# Speicherung der CSV Datei
+output_directory = 'output'  # Der lokale Ordner 'output', der zum Speichern der CSV-Datei verwendet wird
+if not os.path.exists(output_directory):
+    os.makedirs(output_directory)
+
+#Definieren der Alpha Vantage Objekte im Pandas Format
+ts =TimeSeries(key=api_key, output_format='pandas')
+ti = TechIndicators(key=api_key, output_format='pandas')
+
+for symbol in symbols:
+    # Verknüpfung von Symbolen und Firmennamen
+    company_names = {
+        'AAPL': 'Apple', 'IBM': 'IBM', 'TSLA': 'Tesla', 'NKE': 'Nike',
+        'AMZN': 'Amazon', 'MSFT': 'Microsoft', 'GOOGL': 'Google'
+    }
+    company_name = company_names.get(symbol, 'Company')
+    csv_filename = f'data_{company_name}.csv'
+    minio_object_name = csv_filename
+    csv_filepath = os.path.join(output_directory, csv_filename)
+    minio_object_name = csv_filename
+
+   # Daten abrufen
+    data, _ = ts.get_daily(symbol=symbol, outputsize='full')
+    rsi_data, _ = ti.get_rsi(symbol=symbol, interval='daily', time_period=14, series_type='close')
+    ema_data, _ = ti.get_ema(symbol=symbol, interval='daily', time_period=10, series_type='close')
+    sma_data, _ = ti.get_sma(symbol=symbol, interval='daily', time_period=10, series_type='close')
+    dema_data, _ = ti.get_dema(symbol=symbol, interval='daily', time_period=10, series_type='close')
+
+    # Sicherstellen, dass der Index bei den hinzugefügten Werten als Datum formatiert ist
+    data.index = pd.to_datetime(data.index)
+    rsi_data.index = pd.to_datetime(rsi_data.index)
+    ema_data.index = pd.to_datetime(ema_data.index)
+    sma_data.index = pd.to_datetime(sma_data.index)
+    dema_data.index = pd.to_datetime(dema_data.index)
+
+    # Zusammenführen der Daten
+    merged_data = pd.merge(data, rsi_data, how='left', left_index=True, right_index=True)
+    merged_data = pd.merge(merged_data, ema_data, how='left', left_index=True, right_index=True)
+    merged_data = pd.merge(merged_data, sma_data, how='left', left_index=True, right_index=True)
+    merged_data = pd.merge(merged_data, dema_data, how='left', left_index=True, right_index=True)
+
+    # Füllen eventueller Lücken mit Nullen
+    merged_data.fillna(0, inplace=True)
+    merged_data.reset_index(inplace=True)
+
+    # Umbenennen der Spalten in deutsche Bezeichnungen
+    merged_data.rename(columns={
+        'date': 'Datum',
+        'open': 'Eroeffnung',
+        'close': 'Schluss',
+        'high': 'Tageshoch',
+        'low': 'Tagestief',
+        'volume': 'Umsatz',
+        # Evtl. RSI und EMA, aber wohl nicht nötig
+    }, inplace=True)
+
+    # Sortieren des zusammengeführten DataFrame nach dem Datum in aufsteigender Reihenfolge
+    merged_data_sorted = merged_data.sort_values(by='Datum', ascending=True)
+
+    # Spalte mit dem Symbol hinzufügen, Anmerkung: Spalte Symbol zeigt Kürzel der Aktie, evtl. nicht nötig für Output
+    merged_data['Symbol'] = symbol #falls gewünscht, kann die Spalte Symbol hinzugefügt werden
+
+    # Quality Checks vor dem Sortieren und Speichern
+    # Überprüfen, ob die Datumsangaben im richtigen Format vorliegen
+    if not pd.to_datetime(merged_data['date'], errors='coerce').notnull().all():
+        print(f"Warnung: Einige Datumsangaben für {symbol} sind nicht im erwarteten Format.")
+    # Quality Check für fehlende Werte
+    # Extrahieren des neuesten Datums
+    neuestes_datum = merged_data_sorted['Datum'].max()
+
+    # Überprüfen der Werte für 'Eroeffnung', 'Tageshoch', 'Tagestief' und 'Schluss' am neuesten Datum
+    neueste_zeile = merged_data_sorted[merged_data_sorted['Datum'] == neuestes_datum]
+
+    # Überprüfen, ob einer der Werte 0 ist
+    werte_zu_pruefen = ['Eroeffnung', 'Tageshoch', 'Tagestief', 'Schluss']
+    # Eröffnunfs-, Tageshoch-, Tagestief- und Schlusswerte dürfen nicht 0 sein
+    upload_abgelehnt = False
+
+    for spalte in werte_zu_pruefen:
+        if neueste_zeile[spalte].iloc[0] == 0:
+            print(f"Der neueste Wert für '{spalte}' ist 0. Upload der Datei wird abgelehnt.")
+            upload_abgelehnt = True
+            break  # Beendet die Schleife, da mindestens ein Wert 0 ist
+
+    # Sortierten DataFrame als CSV exportieren
+    csv_filepath = os.path.join(output_directory, csv_filename)
+    merged_data_sorted.to_csv(csv_filepath, index=False)
+
+    # Speichern des zusammengeführten und sortierten DataFrames in einer CSV-Datei
+    merged_data_sorted.to_csv(csv_filepath, index=False)
+
+    if not upload_abgelehnt:
+    # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
+    try:
+        s3.upload_file(csv_filepath, minio_bucket, minio_object_name)
+        print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
+    except FileNotFoundError:
+        print(f'Die Datei {csv_filepath} wurde nicht gefunden.')
+    except NoCredentialsError:
+        print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
+    except Exception as e:
+        print(f'Ein Fehler ist aufgetreten: {str(e)}')
+
