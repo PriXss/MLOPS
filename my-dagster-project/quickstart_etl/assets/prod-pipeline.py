@@ -310,20 +310,27 @@ def requestToModel(context) -> None:
     
     
     headers = {'User-Agent': 'Mozilla/5.0'}
-    payload = {"Umsatz in Stueck": "20",
-        "Tageshoch": "158.60",
+    payload = {
+        "Datum": "2024-02-16",
+        "Tageshoch": "143.19",
         "Datum": "18.02.2024",
-        "Eroeffnung": "152.35",
-        "Umsatz":"6.25",
-        "Tagestief": "148.90",
+        "Eroeffnung": "142.99",
+        "RSI": "42.6",
+        "EMA": "144.5158",
+        "Umsatz":"31468926.0",
+        "Tagestief": "140.14",
         }
 
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    file_name = f"{timestamp}_Results_Google_finalModel.json"
     session = requests.Session()
-    response= session.post('http://85.215.53.91:8001/predict',headers=headers,data=payload)
+    response= session.post('http://85.215.53.91:8002/predict',headers=headers,data=payload)
     context.log.info(f"Response: {response.json()}")
     os.makedirs("predictions", exist_ok=True)
-    with open('predictions/prediction.json', 'w') as f:
-        json.dump(response.json(), f)
+    resultPayload = (payload, response.json())
+    with open(f'predictions/{file_name}', 'w') as f:
+        json.dump(resultPayload, f)
+        
     
     session = boto3.session.Session()
     s3_client = session.client(
@@ -332,18 +339,21 @@ def requestToModel(context) -> None:
         aws_secret_access_key='testpassword',
         endpoint_url='http://85.215.53.91:9000',
     )
+    
+    path = f"predictions/{file_name}"
+    
     bucket = "predictions"
-    file_name = "prediction.json"
-    s3_client.upload_file('predictions/prediction.json', bucket, file_name)
-    context.log.info(f"Upload to S3 succesful")
+    s3_client.upload_file(f'predictions/{file_name}', bucket, file_name)
+    context.log.info("Upload to S3 succesful")
+    subprocess.run(["dvc", "add", path])
+    subprocess.run(["git", "add", path])
+    subprocess.run(["git", "add", "predictions/.gitignore"])
 
     
     
 @asset(deps=[requestToModel], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
 def versionPrediction(context) -> None:
-    subprocess.run(["dvc", "add", "predictions/prediction.json"])
-    subprocess.run(["git", "add", "predictions/prediction.json.dvc"])
-    subprocess.run(["git", "add", "predictions/.gitignore"])
+  
     subprocess.run(["git", "commit", "-m", "Add new Predicition from Prod Run"])
     subprocess.run(["dvc", "push"])
     context.log.info('Prediction successfully versioned')
