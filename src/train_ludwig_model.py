@@ -9,7 +9,6 @@ from datetime import datetime
 import yaml
 import mlflow
 
-
 class MLFlowTrainer:
     def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name=""):
         self.model_bucket_url = model_bucket_url
@@ -31,7 +30,7 @@ class MLFlowTrainer:
         os.environ["AWS_ENDPOINT_URL"] = self.endpoint_url
 
         # Setzen des Speicherorts für MLflow-Tracking-Daten
-        #os.environ["MLFLOW_TRACKING_URI"] = f"s3://{self.mlflow_bucket_url}"
+        mlflow.set_tracking_uri(uri="http://127.0.0.1:8080/")
 
     def get_data_name_from_bucket(self):
         # Verbindung zum S3-Client herstellen
@@ -56,8 +55,7 @@ class MLFlowTrainer:
         data = pd.read_csv(obj['Body'])
 
         # Starten des MLflow-Laufs
-        with mlflow.start_run():
-
+        with mlflow.start_run() as run:
             try:
                 # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
                 temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
