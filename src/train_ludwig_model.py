@@ -18,6 +18,7 @@ class MLFlowTrainer:
         self.data_file_name = data_file_name
 
         # Setzen der Bucket-URLs
+        self.mlflow_bucket_url = "mlflowtracking"
         self.data_bucket_url = "data"
         self.model_configs_bucket_url = "modelconfigs"
         self.access_key_id = "test"
@@ -28,6 +29,9 @@ class MLFlowTrainer:
         os.environ["AWS_ACCESS_KEY_ID"] = self.access_key_id
         os.environ["AWS_SECRET_ACCESS_KEY"] = self.secret_access_key
         os.environ["AWS_ENDPOINT_URL"] = self.endpoint_url
+
+        # Setzen des Speicherorts für MLflow-Tracking-Daten
+        #os.environ["MLFLOW_TRACKING_URI"] = f"s3://{self.mlflow_bucket_url}"
 
     def get_data_name_from_bucket(self):
         # Verbindung zum S3-Client herstellen
@@ -52,53 +56,50 @@ class MLFlowTrainer:
         data = pd.read_csv(obj['Body'])
 
         # Starten des MLflow-Laufs
-        mlflow.start_run()
+        with mlflow.start_run():
 
-        try:
-            # Loggen der Parameter
-            mlflow.log_param("data_name", data_name)
-            mlflow.log_param("ludwig_config_file_name", self.ludwig_config_file_name)
-            mlflow.log_param("data_file_name", data_file)
-
-            # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
-            temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
             try:
-                # Ludwig-Konfigurationsdatei aus dem Bucket herunterladen und lokal speichern
-                s3.download_fileobj(Bucket=self.model_configs_bucket_url, Key=self.ludwig_config_file_name,
-                                    Fileobj=temp_ludwig_config_file)
+                # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
+                temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
+                try:
+                    # Ludwig-Konfigurationsdatei aus dem Bucket herunterladen und lokal speichern
+                    s3.download_fileobj(Bucket=self.model_configs_bucket_url, Key=self.ludwig_config_file_name,
+                                        Fileobj=temp_ludwig_config_file)
 
-                temp_ludwig_config_file.close()
+                    temp_ludwig_config_file.close()
 
-                # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
-                model_name = self.extract_model_name(temp_ludwig_config_file.name)
+                    # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
+                    model_name = self.extract_model_name(temp_ludwig_config_file.name)
 
-                # Ludwig-Modell trainieren
-                model = LudwigModel(config=temp_ludwig_config_file.name)
-                train_stats, _, _ = model.train(dataset=data, split=[0.8, 0.1, 0.1], skip_save_processed_input=True)
+                    # Ludwig-Modell trainieren
+                    ludwig_model = LudwigModel(config=temp_ludwig_config_file.name)
+                    train_stats, _, _ = ludwig_model.train(dataset=data, split=[0.8, 0.1, 0.1],
+                                                           skip_save_processed_input=True)
+                    print("Type of train_stats:", type(train_stats))
+                    print("Content of train_stats:", train_stats)
 
-                # Loggen der Metriken
-                for metric in train_stats.keys():
-                    if metric.startswith('train'):
-                        mlflow.log_metric(f"train_{metric}", getattr(train_stats, metric))
-                    elif metric.startswith('validation'):
-                        mlflow.log_metric(f"validation_{metric}", getattr(train_stats, metric))
-                    elif metric.startswith('test'):
-                        mlflow.log_metric(f"test_{metric}", getattr(train_stats, metric))
+                    # Loggen der Parameter
+                    self.log_params(data_name, data_file)
 
-                # Speichern von Artefakten
-                with tempfile.TemporaryDirectory() as temp_dir_model:
-                    # Modell speichern
-                    model_path = os.path.join(temp_dir_model, model_name)
-                    model.save(model_path)
-                    mlflow.log_artifact(model_path, artifact_path=model_name)
+                    # Loggen der Metriken
+                    self.log_metrics(train_stats)
+
+                    # Speichern von Artefakten
+                    with tempfile.TemporaryDirectory() as temp_dir_model:
+                        # Modell speichern
+                        model_path = os.path.join(temp_dir_model, model_name)
+                        ludwig_model.save(model_path)
+                        mlflow.log_artifact(model_path, artifact_path=model_name)
+
+                    # Speichern von Artefakten
+                    self.save_model_to_s3(ludwig_model, model_name, data_name)
+
+                finally:
+                    os.unlink(temp_ludwig_config_file.name)
 
             finally:
-                os.unlink(temp_ludwig_config_file.name)
-                self.save_model_to_s3(model, model_name, data_name)
-
-        finally:
-            # MLflow-Lauf beenden
-            mlflow.end_run()
+                # MLflow-Lauf beenden
+                mlflow.end_run()
 
     # Name des Models aus ludwig-config auslesen (abhängig vom dort definierten model-type)
     def extract_model_name(self, yaml_file_path):
@@ -147,10 +148,26 @@ class MLFlowTrainer:
 
         shutil.rmtree(os.path.join(os.getcwd(), '../src/results'))
 
+    def log_params(self, data_name, data_file):
+        mlflow.log_param("data_name", data_name)
+        mlflow.log_param("ludwig_config_file_name", self.ludwig_config_file_name)
+        mlflow.log_param("data_file_name", data_file)
+
+    def log_metrics(self, train_stats):
+        phases = ['test', 'training', 'validation']
+        for phase in phases:
+            section = train_stats[phase]["Schluss"]
+            for metric_name, values in section.items():
+                # `values` enthält eine Liste von Werten für jede Metrik
+                for idx, value in enumerate(values):
+                    # Jeden Wert für jede Metrik loggen
+                    mlflow.log_metric(f"{phase}_{metric_name}_{idx}", value)
+
 
 if __name__ == "__main__":
     # Instanz der Klasse erstellen und das Modell trainieren
     model_bucket_url = "models"
     ludwig_config_file_name = "ludwig_MLCore.yaml"  # Name der Ludwig-Konfigurationsdatei
+
     trainer = MLFlowTrainer(model_bucket_url, ludwig_config_file_name=ludwig_config_file_name)
     trainer.train_model()
