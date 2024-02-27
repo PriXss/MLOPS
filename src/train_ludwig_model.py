@@ -29,9 +29,6 @@ class MLFlowTrainer:
         os.environ["AWS_SECRET_ACCESS_KEY"] = self.secret_access_key
         os.environ["AWS_ENDPOINT_URL"] = self.endpoint_url
 
-        # Setzen des Speicherorts für MLflow-Tracking-Daten
-        mlflow.set_tracking_uri(uri="http://127.0.0.1:8080/")
-
     def get_data_name_from_bucket(self):
         # Verbindung zum S3-Client herstellen
         s3 = boto3.client('s3')
@@ -41,6 +38,15 @@ class MLFlowTrainer:
         data_name = obj['Body'].read().decode('utf-8').strip()
 
         return data_name
+
+    def upload_directory_to_s3(self, local_path, bucket, s3_path):
+        s3_client = boto3.client('s3')
+        for root, dirs, files in os.walk(local_path):
+            for file in files:
+                local_file = os.path.join(root, file)
+                relative_path = os.path.relpath(local_file, local_path)
+                s3_file = os.path.join(s3_path, relative_path)
+                s3_client.upload_file(local_file, bucket, s3_file)
 
     def train_model(self):
         # Extrahieren der Variable data_name aus der Textdatei im Bucket
@@ -56,6 +62,8 @@ class MLFlowTrainer:
 
         # Starten des MLflow-Laufs
         with mlflow.start_run() as run:
+            self.run_id = run.info.run_id  # Run-ID speichern
+
             try:
                 # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
                 temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
@@ -73,8 +81,6 @@ class MLFlowTrainer:
                     ludwig_model = LudwigModel(config=temp_ludwig_config_file.name)
                     train_stats, _, _ = ludwig_model.train(dataset=data, split=[0.8, 0.1, 0.1],
                                                            skip_save_processed_input=True)
-                    print("Type of train_stats:", type(train_stats))
-                    print("Content of train_stats:", train_stats)
 
                     # Loggen der Parameter
                     self.log_params(data_name, data_file)
@@ -92,6 +98,13 @@ class MLFlowTrainer:
                     # Speichern von Artefakten
                     self.save_model_to_s3(ludwig_model, model_name, data_name)
 
+                    # Den Ordner des aktuellen MLflow-Laufs komprimieren und als Zip-Datei hochladen
+                    local_path = os.path.join(os.getcwd(), 'mlruns', '0', self.run_id)
+                    zip_file_name = f"{self.run_id}.zip"
+                    zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
+                    shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
+                    s3.upload_file(zip_file_path, "mlflowtracking", zip_file_name)
+
                 finally:
                     os.unlink(temp_ludwig_config_file.name)
 
@@ -99,7 +112,9 @@ class MLFlowTrainer:
                 # MLflow-Lauf beenden
                 mlflow.end_run()
 
-    # Name des Models aus ludwig-config auslesen (abhängig vom dort definierten model-type)
+                # Lokale Runs nach dem Upload löschen
+                shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+
     def extract_model_name(self, yaml_file_path):
         with open(yaml_file_path, 'r') as file:
             yaml_content = yaml.safe_load(file)
@@ -146,6 +161,7 @@ class MLFlowTrainer:
 
         shutil.rmtree(os.path.join(os.getcwd(), '../src/results'))
 
+
     def log_params(self, data_name, data_file):
         mlflow.log_param("data_name", data_name)
         mlflow.log_param("ludwig_config_file_name", self.ludwig_config_file_name)
@@ -156,16 +172,12 @@ class MLFlowTrainer:
         for phase in phases:
             section = train_stats[phase]["Schluss"]
             for metric_name, values in section.items():
-                # `values` enthält eine Liste von Werten für jede Metrik
                 for idx, value in enumerate(values):
-                    # Jeden Wert für jede Metrik loggen
-                    mlflow.log_metric(f"{phase}_{metric_name}_{idx}", value)
-
+                    mlflow.log_metric(f"{phase}_{metric_name}", value)
 
 if __name__ == "__main__":
-    # Instanz der Klasse erstellen und das Modell trainieren
     model_bucket_url = "models"
-    ludwig_config_file_name = "ludwig_MLCore.yaml"  # Name der Ludwig-Konfigurationsdatei
+    ludwig_config_file_name = "ludwig_MLCore.yaml"
 
     trainer = MLFlowTrainer(model_bucket_url, ludwig_config_file_name=ludwig_config_file_name)
     trainer.train_model()
