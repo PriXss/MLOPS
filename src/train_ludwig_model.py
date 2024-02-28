@@ -64,6 +64,7 @@ class MLFlowTrainer:
         with mlflow.start_run() as run:
             self.run_id = run.info.run_id  # Run-ID speichern
 
+
             try:
                 # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
                 temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
@@ -76,6 +77,10 @@ class MLFlowTrainer:
 
                     # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
                     model_name = self.extract_model_name(temp_ludwig_config_file.name)
+
+                    # Namensgebung ML Run
+                    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                    mlflow.set_tag('mlflow.runName', f'{data_name}_{model_name}_{timestamp}')
 
                     # Ludwig-Modell trainieren
                     ludwig_model = LudwigModel(config=temp_ludwig_config_file.name)
@@ -113,7 +118,8 @@ class MLFlowTrainer:
                 mlflow.end_run()
 
                 # Lokale Runs nach dem Upload löschen
-                shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+                # shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+
 
     def extract_model_name(self, yaml_file_path):
         with open(yaml_file_path, 'r') as file:

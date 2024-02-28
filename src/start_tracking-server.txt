@@ -1,1 +1,1 @@
-mlflow ui --port 8080 --backend-store-uri file:///C:/Users/Alexa/PycharmProjects/MLOPS/mlruns
+mlflow server --port 8080 --backend-store-uri file:///C:/Users/Alexa/PycharmProjects/MLOPS/mlruns
