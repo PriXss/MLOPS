@@ -14,7 +14,7 @@ def download_mlflow_runs(bucket_name, local_directory, access_key_id, secret_acc
     objects = s3.list_objects_v2(Bucket=bucket_name)['Contents']
 
     # Lokales Verzeichnis für mlruns erstellen, falls es nicht existiert
-    mlruns_dir = os.path.join(local_directory, 'mlruns')
+    mlruns_dir = os.path.join(local_directory, 'mlruns', '0')
     os.makedirs(mlruns_dir, exist_ok=True)
 
     # Durch jedes Objekt im Bucket iterieren
@@ -43,7 +43,7 @@ def download_mlflow_runs(bucket_name, local_directory, access_key_id, secret_acc
             # Den artifact_uri in der meta.yaml-Datei aktualisieren
             with open(meta_yaml_path, 'r') as meta_file:
                 meta_data = yaml.safe_load(meta_file)
-            meta_data['artifact_uri'] = os.path.join(local_directory, 'mlruns', meta_data['run_id'], 'artifacts')
+            meta_data['artifact_uri'] = os.path.join(local_directory, 'mlruns', '0', meta_data['run_id'], 'artifacts')
             with open(meta_yaml_path, 'w') as meta_file:
                 yaml.safe_dump(meta_data, meta_file)
 

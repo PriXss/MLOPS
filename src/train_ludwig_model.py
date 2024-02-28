@@ -93,7 +93,7 @@ class MLFlowTrainer:
                         # Modell speichern
                         model_path = os.path.join(temp_dir_model, model_name)
                         ludwig_model.save(model_path)
-                        mlflow.log_artifact(model_path, artifact_path=model_name)
+                        mlflow.log_artifact(model_path, artifact_path='')
 
                     # Speichern von Artefakten
                     self.save_model_to_s3(ludwig_model, model_name, data_name)
