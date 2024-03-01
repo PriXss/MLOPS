@@ -103,12 +103,9 @@ class MLFlowTrainer:
                     # Speichern von Artefakten
                     self.save_model_to_s3(ludwig_model, model_name, data_name)
 
-                    # Den Ordner des aktuellen MLflow-Laufs komprimieren und als Zip-Datei hochladen
+                    # Hochladen der meta.yaml-Datei in den S3-Bucket modelconfigs
                     local_path = os.path.join(os.getcwd(), 'mlruns', '0', self.run_id)
-                    zip_file_name = f"{self.run_id}.zip"
-                    zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
-                    shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
-                    s3.upload_file(zip_file_path, "mlflowtracking", zip_file_name)
+                    self.upload_meta_yaml_to_s3(local_path)
 
                 finally:
                     os.unlink(temp_ludwig_config_file.name)
@@ -117,9 +114,32 @@ class MLFlowTrainer:
                 # MLflow-Lauf beenden
                 mlflow.end_run()
 
-                # Lokale Runs nach dem Upload löschen
-                # shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+                # Den Ordner des aktuellen MLflow-Laufs komprimieren und als Zip-Datei hochladen
+                zip_file_name = f"{self.run_id}.zip"
+                zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
+                shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
+                s3.upload_file(zip_file_path, "mlflowtracking", zip_file_name)
 
+                # Lokale Runs nach dem Upload löschen
+                shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+
+    def upload_meta_yaml_to_s3(self, local_path):
+        meta_yaml_path = os.path.join(local_path, "..", "meta.yaml")
+        if os.path.exists(meta_yaml_path):
+            # Lese den Inhalt der meta.yaml-Datei
+            with open(meta_yaml_path, 'r') as file:
+                meta_yaml_content = yaml.safe_load(file)
+
+            # Passe den artifact_location-Pfad relativ zum aktuellen Verzeichnis an
+            meta_yaml_content['artifact_location'] = './mlruns/0'
+
+            # Speichere den angepassten Inhalt zurück in die meta.yaml-Datei
+            with open(meta_yaml_path, 'w') as file:
+                yaml.dump(meta_yaml_content, file)
+
+            # Lade die angepasste meta.yaml-Datei in den S3-Bucket hoch
+            s3_client = boto3.client('s3')
+            s3_client.upload_file(meta_yaml_path, self.model_configs_bucket_url, "meta.yaml")
 
     def extract_model_name(self, yaml_file_path):
         with open(yaml_file_path, 'r') as file:
