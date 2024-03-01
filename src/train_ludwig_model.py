@@ -9,6 +9,7 @@ from datetime import datetime
 import yaml
 import mlflow
 
+
 class MLFlowTrainer:
     def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name=""):
         self.model_bucket_url = model_bucket_url
@@ -29,24 +30,8 @@ class MLFlowTrainer:
         os.environ["AWS_SECRET_ACCESS_KEY"] = self.secret_access_key
         os.environ["AWS_ENDPOINT_URL"] = self.endpoint_url
 
-    def get_data_name_from_bucket(self):
-        # Verbindung zum S3-Client herstellen
-        s3 = boto3.client('s3')
-
-        # Datei mit der Variable data_name aus dem Bucket modelconfigs herunterladen
-        obj = s3.get_object(Bucket=self.model_configs_bucket_url, Key="data_name.txt")
-        data_name = obj['Body'].read().decode('utf-8').strip()
-
-        return data_name
-
-    def upload_directory_to_s3(self, local_path, bucket, s3_path):
-        s3_client = boto3.client('s3')
-        for root, dirs, files in os.walk(local_path):
-            for file in files:
-                local_file = os.path.join(root, file)
-                relative_path = os.path.relpath(local_file, local_path)
-                s3_file = os.path.join(s3_path, relative_path)
-                s3_client.upload_file(local_file, bucket, s3_file)
+        # Initialisierung des globalen Timestamps
+        self.global_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
     def train_model(self):
         # Extrahieren der Variable data_name aus der Textdatei im Bucket
@@ -64,7 +49,6 @@ class MLFlowTrainer:
         with mlflow.start_run() as run:
             self.run_id = run.info.run_id  # Run-ID speichern
 
-
             try:
                 # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
                 temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
@@ -79,8 +63,7 @@ class MLFlowTrainer:
                     model_name = self.extract_model_name(temp_ludwig_config_file.name)
 
                     # Namensgebung ML Run
-                    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    mlflow.set_tag('mlflow.runName', f'{data_name}_{model_name}_{timestamp}')
+                    mlflow.set_tag('mlflow.runName', f'{data_name}_{model_name}_{self.global_timestamp}')
 
                     # Ludwig-Modell trainieren
                     ludwig_model = LudwigModel(config=temp_ludwig_config_file.name)
@@ -88,7 +71,7 @@ class MLFlowTrainer:
                                                            skip_save_processed_input=True)
 
                     # Loggen der Parameter
-                    self.log_params(data_name, data_file)
+                    self.log_params(data_name, data_file, model_name)
 
                     # Loggen der Metriken
                     self.log_metrics(train_stats)
@@ -122,6 +105,25 @@ class MLFlowTrainer:
 
                 # Lokale Runs nach dem Upload löschen
                 shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+
+    def get_data_name_from_bucket(self):
+        # Verbindung zum S3-Client herstellen
+        s3 = boto3.client('s3')
+
+        # Datei mit der Variable data_name aus dem Bucket modelconfigs herunterladen
+        obj = s3.get_object(Bucket=self.model_configs_bucket_url, Key="data_name.txt")
+        data_name = obj['Body'].read().decode('utf-8').strip()
+
+        return data_name
+
+    def upload_directory_to_s3(self, local_path, bucket, s3_path):
+        s3_client = boto3.client('s3')
+        for root, dirs, files in os.walk(local_path):
+            for file in files:
+                local_file = os.path.join(root, file)
+                relative_path = os.path.relpath(local_file, local_path)
+                s3_file = os.path.join(s3_path, relative_path)
+                s3_client.upload_file(local_file, bucket, s3_file)
 
     def upload_meta_yaml_to_s3(self, local_path):
         meta_yaml_path = os.path.join(local_path, "..", "meta.yaml")
@@ -165,9 +167,8 @@ class MLFlowTrainer:
                 shutil.copytree(api_experiment_run_src, api_experiment_run_dst)
 
             # Verzeichnisse in Zip-Dateien komprimieren
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            model_zip_file_name = f"trained_model_{data_name}_{model_name}_{timestamp}.zip"
-            api_zip_file_name = f"api_experiment_run_{data_name}_{model_name}_{timestamp}.zip"
+            model_zip_file_name = f"trained_model_{data_name}_{model_name}_{self.global_timestamp}.zip"
+            api_zip_file_name = f"api_experiment_run_{data_name}_{model_name}_{self.global_timestamp}.zip"
 
             model_zip_file_path = os.path.join(temp_dir_model, model_zip_file_name)
             api_zip_file_path = os.path.join(temp_dir_api, api_zip_file_name)
@@ -187,11 +188,11 @@ class MLFlowTrainer:
 
         shutil.rmtree(os.path.join(os.getcwd(), '../src/results'))
 
-
-    def log_params(self, data_name, data_file):
-        mlflow.log_param("data_name", data_name)
+    def log_params(self, data_name, data_file, model_name):
+        mlflow.log_param("Stock", data_name)
         mlflow.log_param("ludwig_config_file_name", self.ludwig_config_file_name)
         mlflow.log_param("data_file_name", data_file)
+        mlflow.log_param("Model", model_name)
 
     def log_metrics(self, train_stats):
         phases = ['test', 'training', 'validation']
@@ -200,6 +201,7 @@ class MLFlowTrainer:
             for metric_name, values in section.items():
                 for idx, value in enumerate(values):
                     mlflow.log_metric(f"{phase}_{metric_name}", value)
+
 
 if __name__ == "__main__":
     model_bucket_url = "models"

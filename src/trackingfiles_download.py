@@ -4,21 +4,13 @@ import zipfile
 import yaml
 
 
-def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, access_key_id,
-                         secret_access_key, endpoint_url):
-    # Verbindung zum S3-Client herstellen
-    s3 = boto3.client('s3',
-                      aws_access_key_id=access_key_id,
-                      aws_secret_access_key=secret_access_key,
-                      endpoint_url=endpoint_url)
-
+def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, s3_client):
     # Liste aller Objekte im MLflow-Bucket abrufen
-    mlflow_objects = s3.list_objects_v2(Bucket=mlflow_bucket_name)['Contents']
+    mlflow_objects = s3_client.list_objects_v2(Bucket=mlflow_bucket_name)['Contents']
 
     # Ludwig-Konfigurationsdatei und Modellname extrahieren
     ludwig_config_file_name = "ludwig_MLCore.yaml"
-    model_name = extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, access_key_id,
-                                            secret_access_key, endpoint_url)
+    model_name = extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, s3_client)
 
     # Lokales Verzeichnis für mlruns erstellen, falls es nicht existiert
     mlruns_dir = os.path.join(local_directory, 'mlruns', '0')
@@ -31,8 +23,7 @@ def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_dir
 
         # Datei herunterladen
         local_file_path = os.path.join(mlruns_dir, obj_key)
-        s3.download_file(mlflow_bucket_name, obj_key, local_file_path)
-        print(f"Downloaded {obj_key} to {local_file_path}")
+        s3_client.download_file(mlflow_bucket_name, obj_key, local_file_path)
 
         # Überprüfen, ob die heruntergeladene Datei eine Zip-Datei ist
         if obj_key.endswith('.zip'):
@@ -41,7 +32,6 @@ def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_dir
                 zip_ref.extractall(os.path.join(mlruns_dir, os.path.splitext(obj_key)[0]))
             # Heruntergeladene Zip-Datei löschen, nachdem sie entpackt wurde
             os.remove(local_file_path)
-            print(f"Extracted and removed {obj_key}")
 
             # Pfade für den entpackten Run und die meta.yaml-Datei erstellen
             run_dir = os.path.join(mlruns_dir, os.path.splitext(obj_key)[0])
@@ -64,24 +54,14 @@ def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_dir
             with open(meta_yaml_path, 'w') as meta_file:
                 yaml.safe_dump(meta_data, meta_file)
 
-            print(f"Updated artifact_uri in {meta_yaml_path}")
-
     # Herunterladen der meta.yaml-Datei aus dem "modelconfigs"-Bucket
     modelconfigs_meta_yaml_path = os.path.join(mlruns_dir, 'meta.yaml')
-    s3.download_file(modelconfigs_bucket_name, 'meta.yaml', modelconfigs_meta_yaml_path)
-    print(f"Downloaded meta.yaml from modelconfigs bucket to {modelconfigs_meta_yaml_path}")
+    s3_client.download_file(modelconfigs_bucket_name, 'meta.yaml', modelconfigs_meta_yaml_path)
 
 
-def extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, access_key_id, secret_access_key,
-                               endpoint_url):
-    # Verbindung zum S3-Client herstellen
-    s3 = boto3.client('s3',
-                      aws_access_key_id=access_key_id,
-                      aws_secret_access_key=secret_access_key,
-                      endpoint_url=endpoint_url)
-
+def extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, s3_client):
     # Ludwig-Konfigurationsdatei aus dem S3-Bucket herunterladen
-    obj = s3.get_object(Bucket=modelconfigs_bucket_name, Key=ludwig_config_file_name)
+    obj = s3_client.get_object(Bucket=modelconfigs_bucket_name, Key=ludwig_config_file_name)
     ludwig_config_content = obj['Body'].read().decode('utf-8')
 
     # Modellnamen aus der Ludwig-Konfigurationsdatei extrahieren
@@ -104,6 +84,11 @@ if __name__ == "__main__":
     secret_access_key = "testpassword"
     endpoint_url = "http://85.215.53.91:9000"
 
+    # Verbindung zum S3-Client herstellen
+    s3_client = boto3.client('s3',
+                             aws_access_key_id=access_key_id,
+                             aws_secret_access_key=secret_access_key,
+                             endpoint_url=endpoint_url)
+
     # MLflow-Runs herunterladen und Zip-Dateien entpacken
-    download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, access_key_id,
-                         secret_access_key, endpoint_url)
+    download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, s3_client)
