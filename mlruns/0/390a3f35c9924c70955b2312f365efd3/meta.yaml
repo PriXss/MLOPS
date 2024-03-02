@@ -1,0 +1,15 @@
+artifact_uri: file://C:\Users\simon\PycharmProjects\MLOPS\mlruns\0\390a3f35c9924c70955b2312f365efd3\artifacts
+end_time: 1709331767542
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 390a3f35c9924c70955b2312f365efd3
+run_name: Tesla_deep_lstm_2024-03-01_23-22-42
+run_uuid: 390a3f35c9924c70955b2312f365efd3
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1709331762965
+status: 3
+tags: []
+user_id: Alexa

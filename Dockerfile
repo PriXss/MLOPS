@@ -1,22 +1,20 @@
-# Basisimage
-FROM python:3.8
+# Verwende ein Basisimage, das die erforderlichen Tools enthält (z. B. Python)
+FROM python:3.9-slim
 
-# Arbeitsverzeichnis im Container
+# Setze das Arbeitsverzeichnis im Container
 WORKDIR /app
 
-# Kopiere Python-Skript, Cron-Skript und Requirements in den Container
-COPY src/requirements.txt .
-COPY src/trackingfiles_download.py .
-COPY cron_script.sh .
+# Kopiere die Dateien in das Arbeitsverzeichnis im Container
+COPY src/trackingfiles_download.py /app/trackingfiles_download.py
+COPY requirements.txt /app/requirements.txt
+COPY cron.sh /app/cron.sh
 
-# Installiere Python-Abhängigkeiten
-RUN pip install -r requirements.txt
+# Installiere die Python-Abhängigkeiten
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Kopiere Cron-Job in das Verzeichnis der Cron-Jobs
-COPY cron_script.sh /etc/cron.d/cron_script
+# Setze Berechtigungen für das Cron-Script und führe es aus
+RUN chmod +x /app/cron.sh
+RUN crontab /app/cron.sh
 
-# Berechtigungen für den Cron-Job setzen
-RUN chmod 0644 /etc/cron.d/cron_script
-
-# Starte den Cron-Dienst
-CMD ["cron", "-f"]
+# Starte den Cron-Service und den MLflow-Server
+CMD ["cron", "&&", "mlflow", "server", "--port", "8080", "--backend-store-uri", "./mlruns"]
