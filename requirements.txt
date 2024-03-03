@@ -1,6 +1,3 @@
 mlflow
-minio
 boto3
-zipfile
-yaml
-os
+crontab
