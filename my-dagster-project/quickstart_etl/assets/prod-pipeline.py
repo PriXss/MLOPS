@@ -20,6 +20,15 @@ from evidently.metrics import *
 from evidently.tests import *
 import warnings
 
+session = boto3.session.Session()
+s3_client = session.client(
+    service_name= os.getenv("SERVICE_NAME"),
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    endpoint_url=os.getenv("ENDPOINT_URL"),
+    )
+
+
 class MLFlowTrainer:
     def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name= ""):
         self.ludwig_config_bucket_url = "modelconfigs"
@@ -115,11 +124,11 @@ class MLFlowTrainer:
 
 @asset(deps=[], group_name="TrainingPhase", compute_kind="LudwigModel")
 def trainLudwigModelRegression(context) -> None:
-    context.log.info('Could Retrieve the Data from the API and store it in S3 accordingly')
+    context.log.info('Trainin Running')
       # Pfade anpassen
-    ludwig_config_file_name = "ludwig_MLCore.yaml"  # Name der Ludwig-Konfigurationsdatei
-    model_bucket_url = "models"
-    data_file = "data_Apple.csv"
+    ludwig_config_file_name = os.getenv("TRAINING_CONFIG")  # Name der Ludwig-Konfigurationsdatei
+    model_bucket_url = os.getenv("MODEL_BUCKET") 
+    data_file = f"data_{os.getenv("TRAINING_STOCK_NAME")}.csv"
 
     # Instanz der Klasse erstellen und das Modell trainieren
     trainer = MLFlowTrainer(model_bucket_url, ludwig_config_file_name=ludwig_config_file_name,
@@ -131,10 +140,9 @@ def trainLudwigModelRegression(context) -> None:
 def fetchStockDataFromSource(context) -> None:
     context.log.info('Could Retrieve the Data from the API and store it in S3 accordingly')
    
-
     #Definieren von API Key und Symbol
     api_key = 'CEKRMJCF4Q07KVAC'
-    symbol = 'GOOGL'
+    symbol = os.getenv("STOCK_INPUT")
     
 
     # Verknüpfung von Symbolen und Firmennamen
@@ -239,18 +247,12 @@ def fetchStockDataFromSource(context) -> None:
     merged_data_sorted.to_csv(csv_filepath, index=False)
 
     # Minio S3-Konfiguration
-    minio_access_key = 'test'
-    minio_secret_key = 'testpassword'
-    minio_endpoint = 'http://85.215.53.91:9000'
-    minio_bucket = 'data'          # S3 Bucket
+    minio_bucket = os.getenv("STOCK_INPUT_BUCKET")          # S3 Bucket
     minio_object_name = csv_filename  # Name, den die Datei im Bucket haben soll
-
-    # S3-Verbindung herstellen
-    s3 = boto3.client('s3', aws_access_key_id=minio_access_key, aws_secret_access_key=minio_secret_key, endpoint_url=minio_endpoint)
 
     # CSV-Datei auf Minio S3 hochladen
     try:
-        s3.upload_file(csv_filepath, minio_bucket, minio_object_name)
+        s3_client.upload_file(csv_filepath, minio_bucket, minio_object_name)
         print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
     except FileNotFoundError:
         print(f'Die Datei {csv_filepath} wurde nicht gefunden.')
@@ -264,28 +266,22 @@ def fetchStockDataFromSource(context) -> None:
 @asset(deps=[fetchStockDataFromSource] ,group_name="DataCollectionPhase", compute_kind="S3DataCollection")
 def getStockData(context) -> None:
     
-    session = boto3.session.Session()
-    s3_client = session.client(
-        service_name='s3',
-        aws_access_key_id='test',
-        aws_secret_access_key='testpassword',
-        endpoint_url='http://85.215.53.91:9000',
-    )
-    bucket = "data"
-    file_name = "data.csv"
+    bucket = os.getenv("STOCK_INPUT_BUCKET")
+    file_name = f"data_{os.getenv("STOCK_NAME")}.csv"
     obj = s3_client.get_object(Bucket= bucket, Key= file_name) 
     initial_df = pd.read_csv(obj['Body'])
     context.log.info('Data Extraction complete')
     context.log.info(initial_df.head())
     os.makedirs("data", exist_ok=True)
-    initial_df.to_csv('data/stocks.csv', index=False)        
+    initial_df.to_csv(f'data/{file_name}', index=False)        
 
 
 
 @asset(deps=[getStockData], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
 def versionStockData(context) -> None:
-    subprocess.run(["dvc", "add", "data/stocks.csv"])
-    subprocess.run(["git", "add", "data/stocks.csv.dvc"])
+    file_name = f"data_{os.getenv("STOCK_NAME")}.csv"
+    subprocess.run(["dvc", "add", f"data/{file_name}"])
+    subprocess.run(["git", "add", f"data/{file_name}.dvc"])
     subprocess.run(["git", "add", "data/.gitignore"])
     subprocess.run(["git", "commit", "-m", "Add new Data for Prod Runs"])
     subprocess.run(["dvc", "push"])
@@ -296,21 +292,15 @@ def versionStockData(context) -> None:
 @asset(deps=[getStockData], group_name="ModelPhase", compute_kind="ModelAPI")
 def requestToModel(context) -> None:
     
-    session = boto3.session.Session()
-    s3_client = session.client(
-        service_name='s3',
-        aws_access_key_id='test',
-        aws_secret_access_key='testpassword',
-        endpoint_url='http://85.215.53.91:9000',
-    )
-    bucket = "data"
-    file_name = "data_Amazon.csv"
+    
+    bucket = os.getenv("STOCK_INPUT_BUCKET")
+    file_name = f"data_{os.getenv("STOCK_NAME")}.csv"
     obj = s3_client.get_object(Bucket= bucket, Key= file_name) 
     initial_df = pd.read_csv(obj['Body'])
     context.log.info('Data Extraction complete')
     context.log.info(initial_df.head())
     os.makedirs("prepareModelRequest", exist_ok=True)
-    initial_df.to_csv('prepareModelRequest/stocks.csv', index=False)  
+    initial_df.to_csv(f'prepareModelRequest/{file_name}', index=False)  
     
     
     headers = {'User-Agent': 'Mozilla/5.0'}
@@ -326,28 +316,20 @@ def requestToModel(context) -> None:
         }
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    file_name = f"{timestamp}_Results_Google_finalModel.json"
-    session = requests.Session()
-    response= session.post('http://85.215.53.91:8002/predict',headers=headers,data=payload)
+    result_file_name = f"{timestamp}_Results_{os.getenv("STOCK_NAME")}_{os.getenv("MODEL_NAME")}.json"
+    sessionRequest = requests.Session()
+    requestUrl= os.getenv("MODEL_REQUEST_URL")
+    response= sessionRequest.post(requestUrl,headers=headers,data=payload)
     context.log.info(f"Response: {response.json()}")
     os.makedirs("predictions", exist_ok=True)
     resultPayload = (payload, response.json())
-    with open(f'predictions/{file_name}', 'w') as f:
+    with open(f'predictions/{result_file_name}', 'w') as f:
         json.dump(resultPayload, f)
-        
     
-    session = boto3.session.Session()
-    s3_client = session.client(
-        service_name='s3',
-        aws_access_key_id='test',
-        aws_secret_access_key='testpassword',
-        endpoint_url='http://85.215.53.91:9000',
-    )
+    path = f"predictions/{result_file_name}"
+    bucket = os.getenv("PREDICTIONS_BUCKET")
     
-    path = f"predictions/{file_name}"
-    
-    bucket = "predictions"
-    s3_client.upload_file(f'predictions/{file_name}', bucket, file_name)
+    s3_client.upload_file(path, bucket, result_file_name)
     context.log.info("Upload to S3 succesful")
     subprocess.run(["dvc", "add", path])
     subprocess.run(["git", "add", path])
@@ -371,19 +353,14 @@ def monitoringAndReporting(context) -> None:
     warnings.simplefilter('ignore')
 
     ##### Set file/bucket vars #####
-    data_bucket_url = "logs"
-    data_stock = "IBM"
-    data_model_version = "model2"
-    data_date = "20022024"
+    data_bucket_url = os.getenv("LOGS_BUCKET")
+    data_stock = os.getenv("MONITORING_STOCK")
+    data_model_version = os.getenv("MODEL_NAME")
+    data_date = "20022024" #warsch automatisiert abgefragt werden?
 
-    ##### Set access vars #####
-    os.environ["AWS_ACCESS_KEY_ID"] = "test"
-    os.environ["AWS_SECRET_ACCESS_KEY"] = "testpassword"
-    os.environ["AWS_ENDPOINT_URL"] = "http://85.215.53.91:9000"
 
     ##### Load data from the bucket #####
-    s3 = boto3.client('s3')
-    obj = s3.get_object(Bucket=data_bucket_url, Key= data_date+"_"+data_stock+"_"+data_model_version+".csv" )
+    obj= s3_client.get_object(Bucket=data_bucket_url, Key= data_date+"_"+data_stock+"_"+data_model_version+".csv" )
     df = pd.read_csv(obj['Body'])
 
     ##### Create report #####
@@ -397,10 +374,12 @@ def monitoringAndReporting(context) -> None:
     ])
 
     report.run(reference_data=reference, current_data=current)
-    report.save_html("report.html")
+    
+    reportName=os.getenv("REPORT_NAME")
+    report.save_html(reportName)
 
-    ##### Upload report to bucket #####
-    s3 = boto3.resource('s3')
-    obj = s3.Object("reports", "/"+data_stock+"/"+data_model_version+"/report.html")
-    obj.put(Body=open('report.html', 'rb'))
+    reportsBucket= os.getenv("REPORT_BUCKET")
+   
+    obj=s3_client.Object(reportsBucket, "/"+data_stock+"/"+data_model_version+reportName)
+    obj.put(Body=open(reportName, 'rb'))
     context.log.info('Monitoring part running')
