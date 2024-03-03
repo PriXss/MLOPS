@@ -1,0 +1,26 @@
+[32m2024-03-03 19:43:07 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27526 - LOGS_CAPTURED - Started capturing logs in process (pid: 27526).
+[32m2024-03-03 19:43:07 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27526 - monitoringAndReporting - STEP_START - Started execution of step "monitoringAndReporting".
+[32m2024-03-03 19:43:09 +0100[0m - dagster - [34mERROR[0m - [31m__ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27526 - monitoringAndReporting - STEP_FAILURE - Execution of step "monitoringAndReporting" failed.
+
+dagster._core.errors.DagsterExecutionStepExecutionError: Error occurred while executing op "monitoringAndReporting"::
+
+AttributeError: 'S3' object has no attribute 'Object'
+
+Stack Trace:
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/utils.py", line 54, in op_execution_error_boundary
+    yield
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_utils/__init__.py", line 467, in iterate_with_context
+    next_output = next(iterator)
+                  ^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute_generator.py", line 131, in _coerce_op_compute_fn_to_iterator
+    result = invoke_compute_fn(
+             ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute_generator.py", line 125, in invoke_compute_fn
+    return fn(context, **args_to_pass) if context_arg_provided else fn(**args_to_pass)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 390, in monitoringAndReporting
+    obj=s3_client.Object(reportsBucket, "/"+data_stock+"/"+data_model_version+reportName)
+        ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/botocore/client.py", line 906, in __getattr__
+    raise AttributeError(
+[0m

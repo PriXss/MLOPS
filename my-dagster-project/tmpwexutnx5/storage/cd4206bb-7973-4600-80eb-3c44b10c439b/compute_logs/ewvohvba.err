@@ -1,0 +1,19 @@
+[32m2024-03-03 19:42:50 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27464 - LOGS_CAPTURED - Started capturing logs in process (pid: 27464).
+[32m2024-03-03 19:42:50 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27464 - requestToModel - STEP_START - Started execution of step "requestToModel".
+[32m2024-03-03 19:42:51 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - requestToModel - Data Extraction complete
+[32m2024-03-03 19:42:51 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - requestToModel -          date  1. open  2. high  3. low  4. close   5. volume  RSI  EMA
+0  2004-08-19   100.01   104.06   95.96   100.335  44659000.0  NaN  NaN
+1  2004-08-20   101.01   109.08  100.50   108.310  22834300.0  NaN  NaN
+2  2004-08-23   110.76   113.48  109.05   109.400  18256100.0  NaN  NaN
+3  2004-08-24   111.24   111.60  103.57   104.870  15247300.0  NaN  NaN
+4  2004-08-25   104.76   108.00  103.88   106.000   9188600.0  NaN  NaN
+[32m2024-03-03 19:42:51 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - requestToModel - Response: {'Schluss_predictions': 180.6761932373047}
+[32m2024-03-03 19:42:51 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - requestToModel - Upload to S3 succesful
+The following paths are ignored by one of your .gitignore files:
+my-dagster-project/predictions/2024-03-03_19-42_Results_Google_model2.json
+hint: Use -f if you really want to add them.
+hint: Turn this message off by running
+hint: "git config advice.addIgnoredFile false"
+[32m2024-03-03 19:42:52 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27464 - requestToModel - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-03-03 19:42:52 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27464 - requestToModel - ASSET_MATERIALIZATION - Materialized value requestToModel.
+[32m2024-03-03 19:42:52 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27464 - requestToModel - STEP_SUCCESS - Finished execution of step "requestToModel" in 1.8s.

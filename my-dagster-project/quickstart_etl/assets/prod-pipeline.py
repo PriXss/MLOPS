@@ -128,7 +128,8 @@ def trainLudwigModelRegression(context) -> None:
       # Pfade anpassen
     ludwig_config_file_name = os.getenv("TRAINING_CONFIG")  # Name der Ludwig-Konfigurationsdatei
     model_bucket_url = os.getenv("MODEL_BUCKET") 
-    data_file = f"data_{os.getenv("TRAINING_STOCK_NAME")}.csv"
+    stock_name= os.getenv("TRAINING_STOCK_NAME")
+    data_file = "data_"+stock_name+".csv"
 
     # Instanz der Klasse erstellen und das Modell trainieren
     trainer = MLFlowTrainer(model_bucket_url, ludwig_config_file_name=ludwig_config_file_name,
@@ -267,7 +268,8 @@ def fetchStockDataFromSource(context) -> None:
 def getStockData(context) -> None:
     
     bucket = os.getenv("STOCK_INPUT_BUCKET")
-    file_name = f"data_{os.getenv("STOCK_NAME")}.csv"
+    stock_name= os.getenv("STOCK_NAME")
+    file_name = "data_"+stock_name+".csv"
     obj = s3_client.get_object(Bucket= bucket, Key= file_name) 
     initial_df = pd.read_csv(obj['Body'])
     context.log.info('Data Extraction complete')
@@ -279,7 +281,10 @@ def getStockData(context) -> None:
 
 @asset(deps=[getStockData], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
 def versionStockData(context) -> None:
-    file_name = f"data_{os.getenv("STOCK_NAME")}.csv"
+    
+    stock_name= os.getenv("STOCK_NAME")
+    file_name = "data_"+stock_name+".csv"
+    
     subprocess.run(["dvc", "add", f"data/{file_name}"])
     subprocess.run(["git", "add", f"data/{file_name}.dvc"])
     subprocess.run(["git", "add", "data/.gitignore"])
@@ -294,7 +299,8 @@ def requestToModel(context) -> None:
     
     
     bucket = os.getenv("STOCK_INPUT_BUCKET")
-    file_name = f"data_{os.getenv("STOCK_NAME")}.csv"
+    stock_name = os.getenv("STOCK_NAME")
+    file_name = "data_"+stock_name+".csv"
     obj = s3_client.get_object(Bucket= bucket, Key= file_name) 
     initial_df = pd.read_csv(obj['Body'])
     context.log.info('Data Extraction complete')
@@ -316,7 +322,8 @@ def requestToModel(context) -> None:
         }
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    result_file_name = f"{timestamp}_Results_{os.getenv("STOCK_NAME")}_{os.getenv("MODEL_NAME")}.json"
+    model_name= os.getenv("MODEL_NAME")
+    result_file_name = timestamp+"_Results_"+stock_name+"_"+model_name+".json"
     sessionRequest = requests.Session()
     requestUrl= os.getenv("MODEL_REQUEST_URL")
     response= sessionRequest.post(requestUrl,headers=headers,data=payload)
@@ -379,7 +386,8 @@ def monitoringAndReporting(context) -> None:
     report.save_html(reportName)
 
     reportsBucket= os.getenv("REPORT_BUCKET")
-   
-    obj=s3_client.Object(reportsBucket, "/"+data_stock+"/"+data_model_version+reportName)
-    obj.put(Body=open(reportName, 'rb'))
+
+#Das scheint noch nicht zu funktionieren?
+#    result_obj=s3_client.Object(reportsBucket, "/"+data_stock+"/"+data_model_version+"/"+reportName)
+#    result_obj.put(Body=open(reportName, 'rb'))
     context.log.info('Monitoring part running')
