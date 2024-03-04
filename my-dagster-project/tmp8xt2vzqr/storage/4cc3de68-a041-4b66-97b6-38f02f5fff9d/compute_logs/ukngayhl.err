@@ -1,0 +1,6 @@
+[32m2024-03-04 18:41:58 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 4cc3de68-a041-4b66-97b6-38f02f5fff9d - 50982 - LOGS_CAPTURED - Started capturing logs in process (pid: 50982).
+[32m2024-03-04 18:41:58 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 4cc3de68-a041-4b66-97b6-38f02f5fff9d - 50982 - trainLudwigModelRegression - STEP_START - Started execution of step "trainLudwigModelRegression".
+[32m2024-03-04 18:41:58 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 4cc3de68-a041-4b66-97b6-38f02f5fff9d - trainLudwigModelRegression - Trainin Running
+[32m2024-03-04 18:42:03 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 4cc3de68-a041-4b66-97b6-38f02f5fff9d - 50982 - trainLudwigModelRegression - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-03-04 18:42:03 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 4cc3de68-a041-4b66-97b6-38f02f5fff9d - 50982 - trainLudwigModelRegression - ASSET_MATERIALIZATION - Materialized value trainLudwigModelRegression.
+[32m2024-03-04 18:42:03 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 4cc3de68-a041-4b66-97b6-38f02f5fff9d - 50982 - trainLudwigModelRegression - STEP_SUCCESS - Finished execution of step "trainLudwigModelRegression" in 5.54s.
