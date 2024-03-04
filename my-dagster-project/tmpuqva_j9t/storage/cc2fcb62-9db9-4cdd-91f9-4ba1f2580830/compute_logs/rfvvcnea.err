@@ -1,0 +1,43 @@
+[32m2024-03-04 18:25:38 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cc2fcb62-9db9-4cdd-91f9-4ba1f2580830 - 49845 - LOGS_CAPTURED - Started capturing logs in process (pid: 49845).
+[32m2024-03-04 18:25:38 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cc2fcb62-9db9-4cdd-91f9-4ba1f2580830 - 49845 - monitoringAndReporting - STEP_START - Started execution of step "monitoringAndReporting".
+[32m2024-03-04 18:25:38 +0100[0m - dagster - [34mERROR[0m - [31m__ASSET_JOB - cc2fcb62-9db9-4cdd-91f9-4ba1f2580830 - 49845 - monitoringAndReporting - STEP_FAILURE - Execution of step "monitoringAndReporting" failed.
+
+dagster._core.errors.DagsterExecutionStepExecutionError: Error occurred while executing op "monitoringAndReporting"::
+
+FileNotFoundError: [Errno 2] No such file or directory: 'Google/finalModel/report.html'
+
+Stack Trace:
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/utils.py", line 54, in op_execution_error_boundary
+    yield
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_utils/__init__.py", line 467, in iterate_with_context
+    next_output = next(iterator)
+                  ^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute_generator.py", line 131, in _coerce_op_compute_fn_to_iterator
+    result = invoke_compute_fn(
+             ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute_generator.py", line 125, in invoke_compute_fn
+    return fn(context, **args_to_pass) if context_arg_provided else fn(**args_to_pass)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 412, in monitoringAndReporting
+    s3_client.upload_file(path, reportsBucket, reportName)
+  File "/opt/homebrew/lib/python3.11/site-packages/boto3/s3/inject.py", line 145, in upload_file
+    return transfer.upload_file(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/boto3/s3/transfer.py", line 371, in upload_file
+    future.result()
+  File "/opt/homebrew/lib/python3.11/site-packages/s3transfer/futures.py", line 103, in result
+    return self._coordinator.result()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/s3transfer/futures.py", line 266, in result
+    raise self._exception
+  File "/opt/homebrew/lib/python3.11/site-packages/s3transfer/tasks.py", line 269, in _main
+    self._submit(transfer_future=transfer_future, **kwargs)
+  File "/opt/homebrew/lib/python3.11/site-packages/s3transfer/upload.py", line 591, in _submit
+    upload_input_manager.provide_transfer_size(transfer_future)
+  File "/opt/homebrew/lib/python3.11/site-packages/s3transfer/upload.py", line 244, in provide_transfer_size
+    self._osutil.get_file_size(transfer_future.meta.call_args.fileobj)
+  File "/opt/homebrew/lib/python3.11/site-packages/s3transfer/utils.py", line 251, in get_file_size
+    return os.path.getsize(filename)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen genericpath>", line 50, in getsize
+[0m

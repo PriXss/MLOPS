@@ -2,6 +2,7 @@ import os
 import subprocess
 import pandas as pd
 import boto3
+import botocore
 from dagster import asset
 from ludwig.api import LudwigModel
 import shutil
@@ -13,7 +14,6 @@ from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
 from botocore.exceptions import NoCredentialsError
 import requests
-import json
 from evidently.report import Report
 from evidently.metric_preset import DataDriftPreset, TargetDriftPreset, DataQualityPreset, RegressionPreset
 from evidently.metrics import *
@@ -32,15 +32,14 @@ s3_client = session.client(
 
 class MLFlowTrainer:
     def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name= ""):
+        self.ludwig_config_bucket_url = "modelconfigs"
         self.model_bucket_url = model_bucket_url
         self.model_name = model_name
         self.ludwig_config_file_name = ludwig_config_file_name
         self.data_file_name = data_file_name
 
         # Setzen der Bucket-URLs
-        self.mlflow_bucket_url = "mlflowtracking"
         self.data_bucket_url = "data"
-        self.model_configs_bucket_url = "modelconfigs"
         self.access_key_id = "test"
         self.secret_access_key = "testpassword"
         self.endpoint_url = "http://85.215.53.91:9000"
@@ -50,118 +49,32 @@ class MLFlowTrainer:
         os.environ["AWS_SECRET_ACCESS_KEY"] = self.secret_access_key
         os.environ["AWS_ENDPOINT_URL"] = self.endpoint_url
 
-        # Initialisierung des globalen Timestamps
-        self.global_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
     def train_model(self):
-        # Extrahieren der Variable data_name aus der Textdatei im Bucket
-        data_name = self.get_data_name_from_bucket()
-
-        # Pfade anpassen
-        data_file = f"data_{data_name}.csv"
-
         # Laden der Daten aus dem Bucket
         s3 = boto3.client('s3')
-        obj = s3.get_object(Bucket=self.data_bucket_url, Key=data_file)
+        obj = s3.get_object(Bucket=self.data_bucket_url, Key=self.data_file_name)
         data = pd.read_csv(obj['Body'])
 
-        # Starten des MLflow-Laufs
-        with mlflow.start_run() as run:
-            self.run_id = run.info.run_id  # Run-ID speichern
+        # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
+        temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
+        try:
+            # Ludwig-Konfigurationsdatei aus dem Bucket herunterladen und lokal speichern
+            s3.download_fileobj(Bucket=self.ludwig_config_bucket_url, Key=self.ludwig_config_file_name,
+                                Fileobj=temp_ludwig_config_file)
 
-            try:
-                # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
-                temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
-                try:
-                    # Ludwig-Konfigurationsdatei aus dem Bucket herunterladen und lokal speichern
-                    s3.download_fileobj(Bucket=self.model_configs_bucket_url, Key=self.ludwig_config_file_name,
-                                        Fileobj=temp_ludwig_config_file)
+            temp_ludwig_config_file.close()
 
-                    temp_ludwig_config_file.close()
+            # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
+            model_name = self.extract_model_name(temp_ludwig_config_file.name)
 
-                    # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
-                    model_name = self.extract_model_name(temp_ludwig_config_file.name)
+            # Ludwig-Modell trainieren
+            model = LudwigModel(config=temp_ludwig_config_file.name)
+            model.train(dataset=data, split=[0.8, 0.1, 0.1], skip_save_processed_input=True)
 
-                    # Namensgebung ML Run
-                    mlflow.set_tag('mlflow.runName', f'{data_name}_{model_name}_{self.global_timestamp}')
-
-                    # Ludwig-Modell trainieren
-                    ludwig_model = LudwigModel(config=temp_ludwig_config_file.name)
-                    train_stats, _, _ = ludwig_model.train(dataset=data, split=[0.8, 0.1, 0.1],
-                                                           skip_save_processed_input=True)
-
-                    # Loggen der Parameter
-                    self.log_params(data_name, data_file, model_name)
-
-                    # Loggen der Metriken
-                    self.log_metrics(train_stats)
-
-                    # Speichern von Artefakten
-                    with tempfile.TemporaryDirectory() as temp_dir_model:
-                        # Modell speichern
-                        model_path = os.path.join(temp_dir_model, model_name)
-                        ludwig_model.save(model_path)
-                        mlflow.log_artifact(model_path, artifact_path='')
-
-                    # Speichern von Artefakten
-                    self.save_model_to_s3(ludwig_model, model_name, data_name)
-
-                    # Hochladen der meta.yaml-Datei in den S3-Bucket modelconfigs
-                    local_path = os.path.join(os.getcwd(), 'mlruns', '0', self.run_id)
-                    self.upload_meta_yaml_to_s3(local_path)
-
-                finally:
-                    os.unlink(temp_ludwig_config_file.name)
-
-            finally:
-                # MLflow-Lauf beenden
-                mlflow.end_run()
-
-                # Den Ordner des aktuellen MLflow-Laufs komprimieren und als Zip-Datei hochladen
-                zip_file_name = f"{self.run_id}.zip"
-                zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
-                shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
-                s3.upload_file(zip_file_path, "mlflowtracking", zip_file_name)
-
-                # Lokale Runs nach dem Upload löschen
-                shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
-
-    def get_data_name_from_bucket(self):
-        # Verbindung zum S3-Client herstellen
-        s3 = boto3.client('s3')
-
-        # Datei mit der Variable data_name aus dem Bucket modelconfigs herunterladen
-        obj = s3.get_object(Bucket=self.model_configs_bucket_url, Key="data_name.txt")
-        data_name = obj['Body'].read().decode('utf-8').strip()
-
-        return data_name
-
-    def upload_directory_to_s3(self, local_path, bucket, s3_path):
-        s3_client = boto3.client('s3')
-        for root, dirs, files in os.walk(local_path):
-            for file in files:
-                local_file = os.path.join(root, file)
-                relative_path = os.path.relpath(local_file, local_path)
-                s3_file = os.path.join(s3_path, relative_path)
-                s3_client.upload_file(local_file, bucket, s3_file)
-
-    def upload_meta_yaml_to_s3(self, local_path):
-        meta_yaml_path = os.path.join(local_path, "..", "meta.yaml")
-        if os.path.exists(meta_yaml_path):
-            # Lese den Inhalt der meta.yaml-Datei
-            with open(meta_yaml_path, 'r') as file:
-                meta_yaml_content = yaml.safe_load(file)
-
-            # Passe den artifact_location-Pfad relativ zum aktuellen Verzeichnis an
-            meta_yaml_content['artifact_location'] = './mlruns/0'
-
-            # Speichere den angepassten Inhalt zurück in die meta.yaml-Datei
-            with open(meta_yaml_path, 'w') as file:
-                yaml.dump(meta_yaml_content, file)
-
-            # Lade die angepasste meta.yaml-Datei in den S3-Bucket hoch
-            s3_client = boto3.client('s3')
-            s3_client.upload_file(meta_yaml_path, self.model_configs_bucket_url, "meta.yaml")
+            # Modell speichern und hochladen
+            self.save_model_to_s3(model, model_name)
+        finally:
+            os.unlink(temp_ludwig_config_file.name)
 
     # Name des Models aus ludwig-config auslesen (abhängig vom dort definierten model-type)
     def extract_model_name(self, yaml_file_path):
@@ -172,7 +85,7 @@ class MLFlowTrainer:
                 model_name = yaml_content['model']['type']
             return model_name
 
-    def save_model_to_s3(self, model, model_name, data_name):
+    def save_model_to_s3(self, model, model_name):
         s3 = boto3.client('s3')
 
         # Temporäre Verzeichnisse erstellen
@@ -188,8 +101,9 @@ class MLFlowTrainer:
                 shutil.copytree(api_experiment_run_src, api_experiment_run_dst)
 
             # Verzeichnisse in Zip-Dateien komprimieren
-            model_zip_file_name = f"trained_model_{data_name}_{model_name}_{self.global_timestamp}.zip"
-            api_zip_file_name = f"api_experiment_run_{data_name}_{model_name}_{self.global_timestamp}.zip"
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            model_zip_file_name = f"trained_model_{model_name}_{timestamp}.zip"
+            api_zip_file_name = f"api_experiment_run_{model_name}_{timestamp}.zip"
 
             model_zip_file_path = os.path.join(temp_dir_model, model_zip_file_name)
             api_zip_file_path = os.path.join(temp_dir_api, api_zip_file_name)
@@ -208,19 +122,6 @@ class MLFlowTrainer:
                 s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
             shutil.rmtree(os.path.join(os.getcwd(), '../my-dagster-project/results/api_experiment_run'))
 
-    def log_params(self, data_name, data_file, model_name):
-        mlflow.log_param("Stock", data_name)
-        mlflow.log_param("ludwig_config_file_name", self.ludwig_config_file_name)
-        mlflow.log_param("data_file_name", data_file)
-        mlflow.log_param("Model", model_name)
-
-    def log_metrics(self, train_stats):
-        phases = ['test', 'training', 'validation']
-        for phase in phases:
-            section = train_stats[phase]["Schluss"]
-            for metric_name, values in section.items():
-                for idx, value in enumerate(values):
-                    mlflow.log_metric(f"{phase}_{metric_name}", value)
 
 @asset(deps=[], group_name="TrainingPhase", compute_kind="LudwigModel")
 def trainLudwigModelRegression(context) -> None:
@@ -228,7 +129,7 @@ def trainLudwigModelRegression(context) -> None:
       # Pfade anpassen
     ludwig_config_file_name = os.getenv("TRAINING_CONFIG")  # Name der Ludwig-Konfigurationsdatei
     model_bucket_url = os.getenv("MODEL_BUCKET") 
-    stock_name= os.getenv("TRAINING_STOCK_NAME")
+    stock_name= os.getenv("STOCK_NAME")
     data_file = "data_"+stock_name+".csv"
 
     # Instanz der Klasse erstellen und das Modell trainieren
@@ -396,8 +297,7 @@ def versionStockData(context) -> None:
 
 @asset(deps=[getStockData], group_name="ModelPhase", compute_kind="ModelAPI")
 def requestToModel(context) -> None:
-    
-    
+     
     bucket = os.getenv("STOCK_INPUT_BUCKET")
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
@@ -411,38 +311,52 @@ def requestToModel(context) -> None:
     
     headers = {'User-Agent': 'Mozilla/5.0'}
     payload = {
-        "Datum": "2024-02-16",
-        "Tageshoch": "143.19",
-        "Datum": "18.02.2024",
-        "Eroeffnung": "142.99",
-        "RSI": "42.6",
-        "EMA": "144.5158",
-        "Umsatz":"31468926.0",
-        "Tagestief": "140.14",
+        "Datum": "21.02.2024",
+        "Tageshoch": "155.19",
+        "Eroeffnung": "150.11",
+        "RSI": "41.6",
+        "EMA": "145.5158",
+        "Schluss": "155.11",
+        "Umsatz":"43390126.0",
+        "Tagestief": "149.14",
         }
 
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
     model_name= os.getenv("MODEL_NAME")
-    result_file_name = timestamp+"_Results_"+stock_name+"_"+model_name+".json"
+    result_file_name = "Predictions_"+stock_name+"_"+model_name+".csv"
     sessionRequest = requests.Session()
     requestUrl= os.getenv("MODEL_REQUEST_URL")
     response= sessionRequest.post(requestUrl,headers=headers,data=payload)
     context.log.info(f"Response: {response.json()}")
     os.makedirs("predictions", exist_ok=True)
-    resultPayload = (payload, response.json())
-    with open(f'predictions/{result_file_name}', 'w') as f:
-        json.dump(resultPayload, f)
-    
+    resultJson = {**payload, **response.json()}
+    df_result = pd.DataFrame(resultJson, index=[0])
+
     path = f"predictions/{result_file_name}"
     bucket = os.getenv("PREDICTIONS_BUCKET")
     
+    try:
+        s3_client.head_object(Bucket=bucket, Key=result_file_name)
+    except botocore.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == "404":
+            # Prediction-file for stock/model combination doesn't yet exist in the s3 bucket
+            df_result.to_csv(path, mode='w', index=False, header=True) # Create prediction-file (incl. header)
+        else:
+            # Other error
+            context.log.info('Connection to S3-bucket failed!')
+    else:
+        # Prediction-file exists
+        s3_client.download_file(bucket, result_file_name, path) # Download prediction-file to disk
+        df_result.to_csv(path, mode='a', index=False, header=False) # Append prediction file (excl. header)
+        
+    
     s3_client.upload_file(path, bucket, result_file_name)
     context.log.info("Upload to S3 succesful")
+    
     subprocess.run(["dvc", "add", path])
     subprocess.run(["git", "add", path])
     subprocess.run(["git", "add", "predictions/.gitignore"])
 
-    
+
     
 @asset(deps=[requestToModel], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
 def versionPrediction(context) -> None:
@@ -460,34 +374,43 @@ def monitoringAndReporting(context) -> None:
     warnings.simplefilter('ignore')
 
     ##### Set file/bucket vars #####
-    data_bucket_url = os.getenv("LOGS_BUCKET")
-    data_stock = os.getenv("MONITORING_STOCK")
+    data_bucket_url = os.getenv("PREDICTIONS_BUCKET")
+    data_stock = os.getenv("STOCK_NAME")
     data_model_version = os.getenv("MODEL_NAME")
     data_date = "20022024" #warsch automatisiert abgefragt werden?
 
 
     ##### Load data from the bucket #####
-    obj= s3_client.get_object(Bucket=data_bucket_url, Key= data_date+"_"+data_stock+"_"+data_model_version+".csv" )
+    obj = s3_client.get_object(Bucket=data_bucket_url, Key= "Predictions_"+data_stock+"_"+data_model_version+".csv" )
     df = pd.read_csv(obj['Body'])
-
+    
+    ##### Data prep #####
+    df = df.rename(columns={'Schluss': 'target', 'Schluss_predictions': 'prediction'}) # Rename columns to fit evidently input
+    df['prediction'] = df['prediction'].shift(1) # Shift predictions to match them with the actual target (close price of the following day)
+    df = df.iloc[1:] # drop first row, as theres no matching prediction 
+    
     ##### Create report #####
-    reference = df.iloc[50:,:]
-    current = df.iloc[:50,:]
+    #Reference-Current split
+    #reference = df.iloc[int(len(df.index)/2):,:]
+    #current = df.iloc[:int(len(df.index)/2),:]
+
 
     report = Report(metrics=[
-        DataDriftPreset(), 
-        TargetDriftPreset(),
+        #DataDriftPreset(), 
+        #TargetDriftPreset(),
+        DataQualityPreset(),
         RegressionPreset()
     ])
 
-    report.run(reference_data=reference, current_data=current)
-    
     reportName=os.getenv("REPORT_NAME")
-    report.save_html(reportName)
+    report.run(reference_data=None, current_data=df)
+    report.save_html(reportName)    
 
     reportsBucket= os.getenv("REPORT_BUCKET")
+    path = data_stock+"/"+data_model_version+"/"+reportName
 
-#Das scheint noch nicht zu funktionieren?
-#    result_obj=s3_client.Object(reportsBucket, "/"+data_stock+"/"+data_model_version+"/"+reportName)
-#    result_obj.put(Body=open(reportName, 'rb'))
-    context.log.info('Monitoring part running')
+    s3_client.upload_file(reportName ,reportsBucket, path)      
+
+
+ 
+    
