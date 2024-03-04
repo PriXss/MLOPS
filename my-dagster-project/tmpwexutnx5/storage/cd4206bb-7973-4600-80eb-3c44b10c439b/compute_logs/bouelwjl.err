@@ -1,8 +1,0 @@
-[32m2024-03-03 19:42:59 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27504 - LOGS_CAPTURED - Started capturing logs in process (pid: 27504).
-[32m2024-03-03 19:42:59 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27504 - versionPrediction - STEP_START - Started execution of step "versionPrediction".
-WARNING: Some of the cache files do not exist neither locally nor on remote. Missing cache files:
-md5: d67894d15fca8e8951705644f4ae8178
-[32m2024-03-03 19:43:00 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - versionPrediction - Prediction successfully versioned
-[32m2024-03-03 19:43:00 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27504 - versionPrediction - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
-[32m2024-03-03 19:43:00 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27504 - versionPrediction - ASSET_MATERIALIZATION - Materialized value versionPrediction.
-[32m2024-03-03 19:43:00 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - cd4206bb-7973-4600-80eb-3c44b10c439b - 27504 - versionPrediction - STEP_SUCCESS - Finished execution of step "versionPrediction" in 840ms.

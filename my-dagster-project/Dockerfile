@@ -5,7 +5,8 @@ ENV DAGSTER_HOME=/usr/src/app
 
 RUN pip install dagster dagster-webserver dagit boto3 pandas pyarrow
 
-COPY dagster.yaml workspace.yaml .
+COPY dagster.yaml .
+COPY workspace.yaml .
 COPY quickstart_etl ./quickstart_etl
 COPY pyproject.toml .
 COPY setup.cfg .
