@@ -77,7 +77,8 @@ if __name__ == "__main__":
     # Bucket-Namen und lokales Verzeichnis festlegen
     mlflow_bucket_name = "mlflowtracking"
     modelconfigs_bucket_name = "modelconfigs"
-    local_directory = os.path.join(os.getcwd(), '..')  # Eine Ebene höher im Ordner MLOPS
+    local_directory = '/app'
+
 
     # Zugangsdaten
     access_key_id = "test"
@@ -92,3 +93,4 @@ if __name__ == "__main__":
 
     # MLflow-Runs herunterladen und Zip-Dateien entpacken
     download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, s3_client)
+    print(local_directory)
