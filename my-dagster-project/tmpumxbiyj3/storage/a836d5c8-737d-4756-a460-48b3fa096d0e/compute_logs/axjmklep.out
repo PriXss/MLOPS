@@ -1,0 +1,72 @@
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Running stamp_revision  -> 46b412388816
+On branch DagsterPipelineProdRun
+Your branch is up to date with 'origin/DagsterPipelineProdRun'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/artifacts/deep_lstm/model_hyperparameters.json
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/artifacts/deep_lstm/model_weights
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/artifacts/deep_lstm/training_set_metadata.json
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/meta.yaml
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/test_loss
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/test_mean_absolute_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/test_mean_absolute_percentage_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/test_mean_squared_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/test_r2
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/test_root_mean_squared_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/test_root_mean_squared_percentage_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/training_loss
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/training_mean_absolute_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/training_mean_absolute_percentage_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/training_mean_squared_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/training_r2
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/training_root_mean_squared_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/training_root_mean_squared_percentage_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/validation_loss
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/validation_mean_absolute_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/validation_mean_absolute_percentage_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/validation_mean_squared_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/validation_r2
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/validation_root_mean_squared_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/metrics/validation_root_mean_squared_percentage_error
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/params/Model
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/params/Stock
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/params/data_file_name
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/params/ludwig_config_file_name
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/tags/mlflow.runName
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/tags/mlflow.source.name
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/tags/mlflow.source.type
+	deleted:    mlruns/0/e0a50c1d43d14baa9b804206e838cfb5/tags/mlflow.user
+	deleted:    mlruns/0/meta.yaml
+	modified:   predictions/Predictions_Google_finalModel.csv.dvc
+	modified:   quickstart_etl/__pycache__/__init__.cpython-311.pyc
+	modified:   quickstart_etl/assets/__pycache__/__init__.cpython-311.pyc
+	modified:   quickstart_etl/assets/__pycache__/prod-pipeline.cpython-311.pyc
+	modified:   quickstart_etl/assets/prod-pipeline.py
+	deleted:    results/api_experiment_run/description.json
+	deleted:    results/api_experiment_run_0/description.json
+	deleted:    results/api_experiment_run_0/model/llm_eval_examples/0.csv
+	deleted:    results/api_experiment_run_0/model/llm_eval_examples/2.csv
+	deleted:    results/api_experiment_run_0/model/llm_eval_examples/4.csv
+	deleted:    results/api_experiment_run_0/model/logs/test/events.out.tfevents.1709574610.Marcels-MBP.local.51983.2
+	deleted:    results/api_experiment_run_0/model/logs/training/events.out.tfevents.1709574610.Marcels-MBP.local.51983.0
+	deleted:    results/api_experiment_run_0/model/logs/validation/events.out.tfevents.1709574610.Marcels-MBP.local.51983.1
+	deleted:    results/api_experiment_run_0/model/model_hyperparameters.json
+	deleted:    results/api_experiment_run_0/model/model_weights
+	deleted:    results/api_experiment_run_0/model/training_checkpoints/best.ckpt
+	deleted:    results/api_experiment_run_0/model/training_checkpoints/latest.ckpt
+	deleted:    results/api_experiment_run_0/model/training_progress.json
+	deleted:    results/api_experiment_run_0/model/training_set_metadata.json
+	deleted:    results/api_experiment_run_0/training_statistics.json
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	tmpumxbiyj3/
+
+no changes added to commit (use "git add" and/or "git commit -a")
+Everything is up to date.

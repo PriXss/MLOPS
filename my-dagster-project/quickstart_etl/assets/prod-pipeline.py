@@ -125,7 +125,7 @@ class MLFlowTrainer:
                 s3.upload_file(zip_file_path, "mlflowtracking", zip_file_name)
 
                 # Lokale Runs nach dem Upload löschen
-                shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+                shutil.rmtree(os.path.join(os.getcwd(),'mlruns'))
 
     def get_data_name_from_bucket(self):
         # Verbindung zum S3-Client herstellen
@@ -182,7 +182,7 @@ class MLFlowTrainer:
             model.save(model_path)
 
             # Kopiere den Inhalt von 'api_experiment_run' in das temporäre Verzeichnis
-            api_experiment_run_src = os.path.join(os.getcwd(), '../src/results', 'api_experiment_run')
+            api_experiment_run_src = os.path.join(os.getcwd(), 'results', 'api_experiment_run')
             if os.path.exists(api_experiment_run_src):
                 api_experiment_run_dst = os.path.join(temp_dir_api, 'api_experiment_run')
                 shutil.copytree(api_experiment_run_src, api_experiment_run_dst)
@@ -207,7 +207,7 @@ class MLFlowTrainer:
             if api_experiment_run_dst:
                 s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
 
-        shutil.rmtree(os.path.join(os.getcwd(), '../src/results'))
+        shutil.rmtree(os.path.join(os.getcwd(), 'results'))
 
     def log_params(self, data_name, data_file, model_name):
         mlflow.log_param("Stock", data_name)
@@ -393,6 +393,8 @@ def versionStockData(context) -> None:
     subprocess.run(["git", "commit", "-m", "Add new Data for Prod Runs"])
     subprocess.run(["dvc", "push"])
     context.log.info('Data successfully versioned')
+    
+    context.log.info(os.getcwd())
 
 
 

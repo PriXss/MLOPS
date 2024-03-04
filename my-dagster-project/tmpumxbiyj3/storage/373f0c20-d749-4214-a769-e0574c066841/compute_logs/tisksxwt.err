@@ -1,0 +1,73 @@
+[32m2024-03-04 19:02:01 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 373f0c20-d749-4214-a769-e0574c066841 - 52840 - LOGS_CAPTURED - Started capturing logs in process (pid: 52840).
+[32m2024-03-04 19:02:01 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 373f0c20-d749-4214-a769-e0574c066841 - 52840 - trainLudwigModelRegression - STEP_START - Started execution of step "trainLudwigModelRegression".
+[32m2024-03-04 19:02:01 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 373f0c20-d749-4214-a769-e0574c066841 - trainLudwigModelRegression - Trainin Running
+[32m2024-03-04 19:02:01 +0100[0m - dagster - [34mERROR[0m - [31m__ASSET_JOB - 373f0c20-d749-4214-a769-e0574c066841 - 52840 - trainLudwigModelRegression - STEP_FAILURE - Execution of step "trainLudwigModelRegression" failed.
+
+dagster._core.errors.DagsterExecutionStepExecutionError: Error occurred while executing op "trainLudwigModelRegression"::
+
+UnboundLocalError: cannot access local variable 'local_path' where it is not associated with a value
+
+Stack Trace:
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/utils.py", line 54, in op_execution_error_boundary
+    yield
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_utils/__init__.py", line 467, in iterate_with_context
+    next_output = next(iterator)
+                  ^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute_generator.py", line 131, in _coerce_op_compute_fn_to_iterator
+    result = invoke_compute_fn(
+             ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute_generator.py", line 125, in invoke_compute_fn
+    return fn(context, **args_to_pass) if context_arg_provided else fn(**args_to_pass)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 239, in trainLudwigModelRegression
+    trainer.train_model()
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 124, in train_model
+    shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
+                                                                                      ^^^^^^^^^^
+
+The above exception occurred during handling of the following exception:
+yaml.parser.ParserError: while parsing a flow sequence
+  in "/var/folders/qf/cjh8lyh14qxdf18s9dmkbmh00000gn/T/tmp9eam361h", line 2, column 23
+expected ',' or ']', but got '{'
+  in "/var/folders/qf/cjh8lyh14qxdf18s9dmkbmh00000gn/T/tmp9eam361h", line 31, column 9
+
+Stack Trace:
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 84, in train_model
+    model_name = self.extract_model_name(temp_ludwig_config_file.name)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 169, in extract_model_name
+    yaml_content = yaml.safe_load(file)
+                   ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/__init__.py", line 125, in safe_load
+    return load(stream, SafeLoader)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/__init__.py", line 81, in load
+    return loader.get_single_data()
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/constructor.py", line 49, in get_single_data
+    node = self.get_single_node()
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/composer.py", line 36, in get_single_node
+    document = self.compose_document()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/composer.py", line 55, in compose_document
+    node = self.compose_node(None, None)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/composer.py", line 84, in compose_node
+    node = self.compose_mapping_node(anchor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/composer.py", line 133, in compose_mapping_node
+    item_value = self.compose_node(node, item_key)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/composer.py", line 82, in compose_node
+    node = self.compose_sequence_node(anchor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/composer.py", line 110, in compose_sequence_node
+    while not self.check_event(SequenceEndEvent):
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/parser.py", line 98, in check_event
+    self.current_event = self.state()
+                         ^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/yaml/parser.py", line 483, in parse_flow_sequence_entry
+    raise ParserError("while parsing a flow sequence", self.marks[-1],
+[0m

@@ -1,0 +1,37 @@
+[32m2024-03-04 19:16:10 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 334d2820-addc-4668-aafa-d02feb3c3f68 - 53747 - LOGS_CAPTURED - Started capturing logs in process (pid: 53747).
+[32m2024-03-04 19:16:10 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 334d2820-addc-4668-aafa-d02feb3c3f68 - 53747 - trainLudwigModelRegression - STEP_START - Started execution of step "trainLudwigModelRegression".
+[32m2024-03-04 19:16:10 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 334d2820-addc-4668-aafa-d02feb3c3f68 - trainLudwigModelRegression - Trainin Running
+[32m2024-03-04 19:16:27 +0100[0m - dagster - [34mERROR[0m - [31m__ASSET_JOB - 334d2820-addc-4668-aafa-d02feb3c3f68 - 53747 - trainLudwigModelRegression - STEP_FAILURE - Execution of step "trainLudwigModelRegression" failed.
+
+dagster._core.errors.DagsterExecutionStepExecutionError: Error occurred while executing op "trainLudwigModelRegression"::
+
+UnboundLocalError: cannot access local variable 'local_path' where it is not associated with a value
+
+Stack Trace:
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/utils.py", line 54, in op_execution_error_boundary
+    yield
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_utils/__init__.py", line 467, in iterate_with_context
+    next_output = next(iterator)
+                  ^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute_generator.py", line 131, in _coerce_op_compute_fn_to_iterator
+    result = invoke_compute_fn(
+             ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute_generator.py", line 125, in invoke_compute_fn
+    return fn(context, **args_to_pass) if context_arg_provided else fn(**args_to_pass)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 239, in trainLudwigModelRegression
+    trainer.train_model()
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 124, in train_model
+    shutil.make_archive(os.path.join(os.getcwd(), 'my-dagster-project/mlruns', '0', self.run_id), 'zip', local_path)
+                                                                                                         ^^^^^^^^^^
+
+The above exception occurred during handling of the following exception:
+UnboundLocalError: cannot access local variable 'api_experiment_run_dst' where it is not associated with a value
+
+Stack Trace:
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 108, in train_model
+    self.save_model_to_s3(ludwig_model, model_name, data_name)
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 198, in save_model_to_s3
+    (api_experiment_run_dst, api_zip_file_path)]:
+     ^^^^^^^^^^^^^^^^^^^^^^
+[0m

@@ -1,0 +1,19 @@
+[32m2024-03-04 19:31:23 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - a836d5c8-737d-4756-a460-48b3fa096d0e - 54999 - LOGS_CAPTURED - Started capturing logs in process (pid: 54999).
+[32m2024-03-04 19:31:23 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - a836d5c8-737d-4756-a460-48b3fa096d0e - 54999 - requestToModel - STEP_START - Started execution of step "requestToModel".
+[32m2024-03-04 19:31:24 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - a836d5c8-737d-4756-a460-48b3fa096d0e - requestToModel - Data Extraction complete
+[32m2024-03-04 19:31:24 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - a836d5c8-737d-4756-a460-48b3fa096d0e - requestToModel -          date  1. open  2. high  3. low  4. close   5. volume  RSI  EMA
+0  2004-08-19   100.01   104.06   95.96   100.335  44659000.0  NaN  NaN
+1  2004-08-20   101.01   109.08  100.50   108.310  22834300.0  NaN  NaN
+2  2004-08-23   110.76   113.48  109.05   109.400  18256100.0  NaN  NaN
+3  2004-08-24   111.24   111.60  103.57   104.870  15247300.0  NaN  NaN
+4  2004-08-25   104.76   108.00  103.88   106.000   9188600.0  NaN  NaN
+[32m2024-03-04 19:31:24 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - a836d5c8-737d-4756-a460-48b3fa096d0e - requestToModel - Response: {'Schluss_predictions': 191.62576293945312}
+[32m2024-03-04 19:31:24 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - a836d5c8-737d-4756-a460-48b3fa096d0e - requestToModel - Upload to S3 succesful
+The following paths are ignored by one of your .gitignore files:
+my-dagster-project/predictions/Predictions_Google_finalModel.csv
+hint: Use -f if you really want to add them.
+hint: Turn this message off by running
+hint: "git config advice.addIgnoredFile false"
+[32m2024-03-04 19:31:24 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - a836d5c8-737d-4756-a460-48b3fa096d0e - 54999 - requestToModel - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-03-04 19:31:24 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - a836d5c8-737d-4756-a460-48b3fa096d0e - 54999 - requestToModel - ASSET_MATERIALIZATION - Materialized value requestToModel.
+[32m2024-03-04 19:31:24 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - a836d5c8-737d-4756-a460-48b3fa096d0e - 54999 - requestToModel - STEP_SUCCESS - Finished execution of step "requestToModel" in 838ms.
