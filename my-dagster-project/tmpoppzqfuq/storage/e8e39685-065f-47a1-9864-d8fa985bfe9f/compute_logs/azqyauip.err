@@ -1,0 +1,5 @@
+[32m2024-03-08 17:01:41 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - e8e39685-065f-47a1-9864-d8fa985bfe9f - 7976 - LOGS_CAPTURED - Started capturing logs in process (pid: 7976).
+[32m2024-03-08 17:01:41 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - e8e39685-065f-47a1-9864-d8fa985bfe9f - 7976 - fetchStockDataFromSource - STEP_START - Started execution of step "fetchStockDataFromSource".
+[32m2024-03-08 17:02:18 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - e8e39685-065f-47a1-9864-d8fa985bfe9f - 7976 - fetchStockDataFromSource - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-03-08 17:02:18 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - e8e39685-065f-47a1-9864-d8fa985bfe9f - 7976 - fetchStockDataFromSource - ASSET_MATERIALIZATION - Materialized value fetchStockDataFromSource.
+[32m2024-03-08 17:02:18 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - e8e39685-065f-47a1-9864-d8fa985bfe9f - 7976 - fetchStockDataFromSource - STEP_SUCCESS - Finished execution of step "fetchStockDataFromSource" in 36.56s.
