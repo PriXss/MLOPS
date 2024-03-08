@@ -1,0 +1,66 @@
+import unittest
+from unittest.mock import patch, MagicMock
+import pandas as pd
+import finalML
+
+from finalML import process_and_upload_symbol_data
+
+class TestProcessAndUploadSymbolData(unittest.TestCase):
+    def setUp(self):
+        self.date_range = pd.date_range(start="2022-01-01", periods=3)
+        # Assuming after merge, the column names are uniquely identified in finalML.py
+        self.mocked_data_after_merge = pd.DataFrame({
+            'Eroeffnung': [100, 101, 102],
+            'Schluss': [103, 104, 105],
+            'Tageshoch': [106, 107, 108],
+            'Tagestief': [99, 98, 97],
+            'Umsatz': [1000, 1100, 1200],
+            'RSI': [30, 40, 50],  # Example: Pre-merged unique column names
+            'EMA': [100.5, 101.5, 102.5],
+            'SMA': [100, 101, 102],
+            'DEMA': [100.75, 101.75, 102.75],
+            'Datum': self.date_range
+        })
+        # Ensure 'Datum' is set as the index if it represents the date index in your real data  
+        self.mocked_data_after_merge.set_index('Datum', inplace=True)
+
+    @patch('finalML.boto3.client')
+    @patch('alpha_vantage.techindicators.TechIndicators.get_dema', return_value=(MagicMock(), None))
+    @patch('alpha_vantage.techindicators.TechIndicators.get_sma', return_value=(MagicMock(), None))
+    @patch('alpha_vantage.techindicators.TechIndicators.get_ema', return_value=(MagicMock(), None))
+    @patch('alpha_vantage.techindicators.TechIndicators.get_rsi', return_value=(MagicMock(), None))
+    @patch('alpha_vantage.timeseries.TimeSeries.get_daily', return_value=(MagicMock(), None))
+
+    def test_process_and_upload_symbol_data(self, mock_get_daily, mock_get_rsi, mock_get_ema, mock_get_sma, mock_get_dema, mock_boto3_client):
+        # Set the return_value for each mock to your mocked_data_after_merge
+        mock_get_daily.return_value = (self.mocked_data_after_merge, None)
+        mock_get_rsi.return_value = (self.mocked_data_after_merge, None)
+        mock_get_ema.return_value = (self.mocked_data_after_merge, None)
+        mock_get_sma.return_value = (self.mocked_data_after_merge, None)
+        mock_get_dema.return_value = (self.mocked_data_after_merge, None)
+
+        symbols = ['AAPL', 'IBM', 'TSLA', 'NKE', 'AMZN', 'MSFT', 'GOOGL']
+        for symbol in symbols:
+            process_and_upload_symbol_data(
+                symbol=symbol,
+                api_key='69SMJJ4C2JIW86LI',
+                minio_access_key='test',
+                minio_secret_key='testpassword',
+                minio_endpoint='http://localhost:9000',
+                minio_bucket='data',
+                output_directory='output'
+            )
+
+        # Assertions to check the expected number of calls were made
+        self.assertEqual(mock_get_daily.call_count, len(symbols))
+        self.assertEqual(mock_get_rsi.call_count, len(symbols))
+        self.assertEqual(mock_get_ema.call_count, len(symbols))
+        self.assertEqual(mock_get_sma.call_count, len(symbols))
+        self.assertEqual(mock_get_dema.call_count, len(symbols))
+
+        # Check that the upload_file method was called the expected number of times
+        self.assertEqual(mock_boto3_client.return_value.upload_file.call_count, len(symbols))
+
+
+if __name__ == '__main__':
+    unittest.main(verbosity=2)
