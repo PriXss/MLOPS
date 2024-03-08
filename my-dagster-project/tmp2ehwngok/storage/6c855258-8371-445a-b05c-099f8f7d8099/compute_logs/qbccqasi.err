@@ -1,0 +1,45 @@
+[32m2024-03-08 17:16:30 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 6c855258-8371-445a-b05c-099f8f7d8099 - 9376 - LOGS_CAPTURED - Started capturing logs in process (pid: 9376).
+[32m2024-03-08 17:16:30 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 6c855258-8371-445a-b05c-099f8f7d8099 - 9376 - testDataCollextion - STEP_START - Started execution of step "testDataCollextion".
+usage: __main__.py [-h] [-v] [-q] [--locals] [-f] [-c] [-b]
+                   [-k TESTNAMEPATTERNS]
+                   [tests ...]
+__main__.py: error: unrecognized arguments: --lazy-load-user-code --socket /var/folders/qf/cjh8lyh14qxdf18s9dmkbmh00000gn/T/tmpf1ne4x9o --heartbeat --heartbeat-timeout 20 --fixed-server-id a10ce928-a43e-41a0-8423-85dc61df1fc8 --log-level warning --inject-env-vars-from-instance --instance-ref {"__class__": "InstanceRef", "compute_logs_data": {"__class__": "ConfigurableClassData", "class_name": "LocalComputeLogManager", "config_yaml": "base_dir: /Users/marcelthomas/Development/MLOPS/my-dagster-project/tmp2ehwngok/storage\n", "module_name": "dagster.core.storage.local_compute_log_manager"}, "custom_instance_class_data": null, "event_storage_data": {"__class__": "ConfigurableClassData", "class_name": "SqliteEventLogStorage", "config_yaml": "base_dir: /Users/marcelthomas/Development/MLOPS/my-dagster-project/tmp2ehwngok/history/runs/\n", "module_name": "dagster.core.storage.event_log"}, "local_artifact_storage_data": {"__class__": "ConfigurableClassData", "class_name": "LocalArtifactStorage", "config_yaml": "base_dir: /Users/marcelthomas/Development/MLOPS/my-dagster-project/tmp2ehwngok\n", "module_name": "dagster.core.storage.root"}, "run_coordinator_data": {"__class__": "ConfigurableClassData", "class_name": "QueuedRunCoordinator", "config_yaml": "max_concurrent_runs: 5\n", "module_name": "dagster.core.run_coordinator"}, "run_launcher_data": {"__class__": "ConfigurableClassData", "class_name": "DefaultRunLauncher", "config_yaml": "{}\n", "module_name": "dagster"}, "run_storage_data": {"__class__": "ConfigurableClassData", "class_name": "SqliteRunStorage", "config_yaml": "base_dir: /Users/marcelthomas/Development/MLOPS/my-dagster-project/tmp2ehwngok/history/\n", "module_name": "dagster.core.storage.runs"}, "schedule_storage_data": {"__class__": "ConfigurableClassData", "class_name": "SqliteScheduleStorage", "config_yaml": "base_dir: /Users/marcelthomas/Development/MLOPS/my-dagster-project/tmp2ehwngok/schedules\n", "module_name": "dagster.core.storage.schedules"}, "scheduler_data": {"__class__": "ConfigurableClassData", "class_name": "DagsterDaemonScheduler", "config_yaml": "{}\n", "module_name": "dagster.core.scheduler"}, "secrets_loader_data": null, "settings": {"nux": {"enabled": false}, "telemetry": {"enabled": false}}, "storage_data": {"__class__": "ConfigurableClassData", "class_name": "DagsterSqliteStorage", "config_yaml": "base_dir: /Users/marcelthomas/Development/MLOPS/my-dagster-project/tmp2ehwngok\n", "module_name": "dagster.core.storage.sqlite_storage"}} --location-name quickstart_etl -m quickstart_etl -d /Users/marcelthomas/Development/MLOPS/my-dagster-project
+[32m2024-03-08 17:16:30 +0100[0m - dagster - [34mERROR[0m - [31m__ASSET_JOB - 6c855258-8371-445a-b05c-099f8f7d8099 - 9376 - testDataCollextion - STEP_FAILURE - Execution of step "testDataCollextion" failed.
+
+SystemExit: 2
+
+Stack Trace:
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/execute_plan.py", line 286, in dagster_event_sequence_for_step
+    for step_event in check.generator(step_events):
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/execute_step.py", line 519, in core_dagster_event_sequence_for_step
+    for user_event in _step_output_error_checked_user_event_sequence(
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/execute_step.py", line 201, in _step_output_error_checked_user_event_sequence
+    for user_event in user_event_sequence:
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/execute_step.py", line 99, in _process_asset_results_to_events
+    for user_event in user_event_sequence:
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute.py", line 214, in execute_core_compute
+    for step_output in _yield_compute_results(step_context, inputs, compute_fn, compute_context):
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute.py", line 183, in _yield_compute_results
+    for event in iterate_with_context(
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_utils/__init__.py", line 467, in iterate_with_context
+    next_output = next(iterator)
+                  ^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute_generator.py", line 131, in _coerce_op_compute_fn_to_iterator
+    result = invoke_compute_fn(
+             ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.11/site-packages/dagster/_core/execution/plan/compute_generator.py", line 125, in invoke_compute_fn
+    return fn(context, **args_to_pass) if context_arg_provided else fn(**args_to_pass)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/marcelthomas/Development/MLOPS/my-dagster-project/quickstart_etl/assets/prod-pipeline.py", line 434, in testDataCollextion
+    unittest.main(verbosity=2)
+  File "/opt/homebrew/Cellar/python@3.11/3.11.7_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/main.py", line 101, in __init__
+    self.parseArgs(argv)
+  File "/opt/homebrew/Cellar/python@3.11/3.11.7_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/unittest/main.py", line 136, in parseArgs
+    self._main_parser.parse_args(argv[1:], self)
+  File "/opt/homebrew/Cellar/python@3.11/3.11.7_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/argparse.py", line 1872, in parse_args
+    self.error(msg % ' '.join(argv))
+  File "/opt/homebrew/Cellar/python@3.11/3.11.7_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/argparse.py", line 2630, in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+  File "/opt/homebrew/Cellar/python@3.11/3.11.7_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/argparse.py", line 2617, in exit
+    _sys.exit(status)
+[0m

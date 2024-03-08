@@ -1,0 +1,9 @@
+[32m2024-03-08 17:20:05 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9586 - LOGS_CAPTURED - Started capturing logs in process (pid: 9586).
+[32m2024-03-08 17:20:05 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9586 - versionStockData - STEP_START - Started execution of step "versionStockData".
+WARNING: Some of the cache files do not exist neither locally nor on remote. Missing cache files:
+md5: d67894d15fca8e8951705644f4ae8178
+[32m2024-03-08 17:20:07 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - versionStockData - Data successfully versioned
+[32m2024-03-08 17:20:07 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - versionStockData - /Users/marcelthomas/Development/MLOPS/my-dagster-project
+[32m2024-03-08 17:20:07 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9586 - versionStockData - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-03-08 17:20:07 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9586 - versionStockData - ASSET_MATERIALIZATION - Materialized value versionStockData.
+[32m2024-03-08 17:20:07 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9586 - versionStockData - STEP_SUCCESS - Finished execution of step "versionStockData" in 2.31s.

@@ -21,6 +21,8 @@ from evidently.tests import *
 import warnings
 import mlflow
 from botocore.exceptions import NoCredentialsError
+import unittest
+from unittest.mock import patch, MagicMock
 
 api_key = '69SMJJ4C2JIW86LI'
 
@@ -152,6 +154,7 @@ def process_and_upload_symbol_data(
                 print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
             except Exception as e:
                 print(f'Ein Fehler ist aufgetreten: {str(e)}')
+
 
 session = boto3.session.Session()
 s3_client = session.client(
@@ -369,13 +372,8 @@ def trainLudwigModelRegression(context) -> None:
                             data_file_name=data_file)
     trainer.train_model()
 
-@asset(group_name="DataCollectionPhase", compute_kind="DataCollectionTesting")
-def testDataCollextion(context) -> None:
-    print("")
-    
-    
-
-@asset(deps=[testDataCollextion],group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
+  
+@asset(group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
 def fetchStockDataFromSource(context) -> None:
     
 

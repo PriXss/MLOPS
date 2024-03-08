@@ -1,0 +1,21 @@
+Starte den Prozess...
+Verarbeite Symbol: AAPL
+Datei wurde auf Minio S3 in den Bucket data hochgeladen.
+Verarbeite Symbol: IBM
+Datei wurde auf Minio S3 in den Bucket data hochgeladen.
+Verarbeite Symbol: TSLA
+Datei wurde auf Minio S3 in den Bucket data hochgeladen.
+Verarbeite Symbol: NKE
+Datei wurde auf Minio S3 in den Bucket data hochgeladen.
+Verarbeite Symbol: AMZN
+Datei wurde auf Minio S3 in den Bucket data hochgeladen.
+Verarbeite Symbol: MSFT
+Datei wurde auf Minio S3 in den Bucket data hochgeladen.
+Verarbeite Symbol: GOOGL
+Datei wurde auf Minio S3 in den Bucket data hochgeladen.
+Prozess abgeschlossen.
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Context impl SQLiteImpl.
+Will assume non-transactional DDL.
+Running stamp_revision  -> 46b412388816

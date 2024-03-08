@@ -1,0 +1,14 @@
+[32m2024-03-08 17:19:57 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9573 - LOGS_CAPTURED - Started capturing logs in process (pid: 9573).
+[32m2024-03-08 17:19:57 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9573 - getStockData - STEP_START - Started execution of step "getStockData".
+[32m2024-03-08 17:19:57 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - getStockData - Data Extraction complete
+[32m2024-03-08 17:19:57 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - getStockData -         Datum  Eroeffnung  Tageshoch  Tagestief  ...  RSI  SMA  EMA  DEMA
+0  2004-08-19      100.01     104.06      95.96  ...  0.0  0.0  0.0   0.0
+1  2004-08-20      101.01     109.08     100.50  ...  0.0  0.0  0.0   0.0
+2  2004-08-23      110.76     113.48     109.05  ...  0.0  0.0  0.0   0.0
+3  2004-08-24      111.24     111.60     103.57  ...  0.0  0.0  0.0   0.0
+4  2004-08-25      104.76     108.00     103.88  ...  0.0  0.0  0.0   0.0
+
+[5 rows x 10 columns]
+[32m2024-03-08 17:19:57 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9573 - getStockData - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
+[32m2024-03-08 17:19:57 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9573 - getStockData - ASSET_MATERIALIZATION - Materialized value getStockData.
+[32m2024-03-08 17:19:57 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9573 - getStockData - STEP_SUCCESS - Finished execution of step "getStockData" in 191ms.
