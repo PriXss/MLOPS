@@ -46,7 +46,7 @@ def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_dir
             # Aktuellen Run-ID ermitteln
             run_id = os.path.basename(run_dir)
             # Pfad zur artefakt_uri erstellen
-            artifact_uri = os.path.abspath(os.path.join(script_path, '..', 'mlruns', '0', run_id, 'artifacts'))
+            artifact_uri = os.path.abspath(os.path.join(script_path, 'mlruns', '0', run_id, 'artifacts'))
 
             # Neuen absoluten Pfad zur artefakt_uri verwenden
             meta_data['artifact_uri'] = f'file://{artifact_uri}'
