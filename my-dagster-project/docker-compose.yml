@@ -1,4 +1,5 @@
 services:
+
   dagster-dagit:
     build:
       context: .
@@ -15,4 +16,14 @@ services:
       - PGPASS=${PGPASS}
       - PGUID=${PGUID}
 
-
+  dagster-postgres:
+    image: postgres:13.3
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=${PGPASS}
+    volumes:
+      - dagster-postgres:/var/lib/postgresql/data
+volumes:
+  dagster-postgres:
+    driver: local

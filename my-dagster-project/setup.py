@@ -8,7 +8,6 @@ setup(
         "dagster-cloud",
         "boto3",
         "pandas",
-        "matplotlib",
         "dvc",
         "dvc-s3",
     ],
