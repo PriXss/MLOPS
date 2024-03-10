@@ -21,8 +21,6 @@ from evidently.tests import *
 import warnings
 import mlflow
 from botocore.exceptions import NoCredentialsError
-import unittest
-from unittest.mock import patch, MagicMock
 
 api_key = '69SMJJ4C2JIW86LI'
 
