@@ -1,15 +1,15 @@
 # Verwende ein Basisimage, das die erforderlichen Tools enthält (z. B. Python)
-FROM python:3.11
+FROM python:3.11.7
 
 # Setze das Arbeitsverzeichnis im Container
 WORKDIR /app
 
-COPY requirements.txt /app/requirements.txt
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Kopiere die Dateien in das Arbeitsverzeichnis im Container
-COPY src/trackingfiles_download.py /app/trackingfiles_download.py
-COPY cron.sh /app/cron.sh
+COPY src/trackingfiles_download.py .
+COPY cron.sh .
 
 # Installiere die Python-Abhängigkeiten
 RUN apt-get update && apt-get install -y cron
