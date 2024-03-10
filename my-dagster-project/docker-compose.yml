@@ -13,15 +13,15 @@ services:
       dockerfile: Dockerfile
     command: "dagster-daemon run"
     environment:
-      - PGPASS=${PGPASS}
-      - PGUID=${PGUID}
+      - PGPASS=demopass
+      - PGUID=postgres
 
   dagster-postgres:
     image: postgres:13.3
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_PASSWORD=${PGPASS}
+      - POSTGRES_PASSWORD=demopass
     volumes:
       - dagster-postgres:/var/lib/postgresql/data
 volumes:

@@ -14,6 +14,7 @@ COPY pyproject.toml .
 COPY setup.cfg .
 COPY setup.py .
 COPY .env .
+COPY .dvc .
 
 EXPOSE 3000
 
