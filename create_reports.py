@@ -30,13 +30,13 @@ initial_df.to_csv('prepareModelRequest/stocks.csv', index=False)
 headers = {'User-Agent': 'Mozilla/5.0'}
 payload = {
     "Datum": "21.02.2024",
-    "Tageshoch": "155.19",
     "Eroeffnung": "150.11",
-    "RSI": "41.6",
-    "EMA": "145.5158",
+    "Tageshoch": "155.19",
+    "Tagestief": "149.14",
     "Schluss": "155.11",
     "Umsatz":"43390126.0",
-    "Tagestief": "149.14",
+    "RSI": "41.6",
+    "EMA": "145.5158"
     }
 
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
@@ -96,17 +96,17 @@ df = df.iloc[1:] # drop first row, as theres no matching prediction
 
 ##### Create report #####
 #Reference-Current split
-#reference = df.iloc[int(len(df.index)/2):,:]
-#current = df.iloc[:int(len(df.index)/2),:]
+reference = df.iloc[int(len(df.index)/2):,:]
+current = df.iloc[:int(len(df.index)/2),:]
 
 report = Report(metrics=[
-    #DataDriftPreset(), 
-    #TargetDriftPreset(),
+    DataDriftPreset(), 
+    TargetDriftPreset(),
     DataQualityPreset(),
     RegressionPreset()
 ])
 
-report.run(reference_data=None, current_data=df)
+report.run(reference_data=reference, current_data=current)
 report.save_html("report.html")
 
 ##### Upload report to bucket #####
