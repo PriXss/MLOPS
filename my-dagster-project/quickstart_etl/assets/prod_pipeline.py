@@ -439,14 +439,17 @@ def requestToModel(context) -> None:
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
     obj = s3_client.get_object(Bucket= bucket, Key= file_name) 
-    initial_df = pd.read_csv(obj['Body'])
-    context.log.info('Data Extraction complete')
-    context.log.info(initial_df.head())
-    os.makedirs("prepareModelRequest", exist_ok=True)
-    initial_df.to_csv(f'prepareModelRequest/{file_name}', index=False)  
+    df = pd.read_csv(obj['Body'])
     
+    context.log.info('Data Extraction complete')
+    context.log.info(df.head())
+    
+    df = df.iloc[0]
+     
+    payload = df.to_json(orient='records', lines=True)
     
     headers = {'User-Agent': 'Mozilla/5.0'}
+    '''
     payload = {
         "Datum": "21.02.2024",
         "Tageshoch": "155.19",
@@ -455,9 +458,9 @@ def requestToModel(context) -> None:
         "EMA": "145.5158",
         "Schluss": "155.11",
         "Umsatz":"43390126.0",
-        "Tagestief": "149.14",
-        }
-
+        "Tagestief": "149.14"
+        }"
+    '''
     model_name= os.getenv("MODEL_NAME")
     result_file_name = "Predictions_"+stock_name+"_"+model_name+".csv"
     sessionRequest = requests.Session()
