@@ -414,7 +414,6 @@ def getStockData(context) -> None:
     initial_df.to_csv(f'data/{file_name}', index=False)        
 
 
-
 @asset(deps=[getStockData], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
 def versionStockData(context) -> None:
     
@@ -431,7 +430,6 @@ def versionStockData(context) -> None:
     context.log.info(os.getcwd())
 
 
-
 @asset(deps=[getStockData], group_name="ModelPhase", compute_kind="ModelAPI")
 def requestToModel(context) -> None:
      
@@ -444,7 +442,7 @@ def requestToModel(context) -> None:
     context.log.info('Data Extraction complete')
     context.log.info(df.head())
     
-    df = df.iloc[0]
+    df = df.iloc[-1]
      
     payload = df.to_json(orient='records', lines=True)
     
@@ -496,7 +494,6 @@ def requestToModel(context) -> None:
     subprocess.run(["git", "add", path])
     subprocess.run(["git", "add", "predictions/.gitignore"])
 
-
     
 @asset(deps=[requestToModel], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
 def versionPrediction(context) -> None:
@@ -517,8 +514,6 @@ def monitoringAndReporting(context) -> None:
     data_bucket_url = os.getenv("PREDICTIONS_BUCKET")
     data_stock = os.getenv("STOCK_NAME")
     data_model_version = os.getenv("MODEL_NAME")
-    data_date = "20022024" #warsch automatisiert abgefragt werden?
-
 
     ##### Load data from the bucket #####
     obj = s3_client.get_object(Bucket=data_bucket_url, Key= "Predictions_"+data_stock+"_"+data_model_version+".csv" )
@@ -531,13 +526,12 @@ def monitoringAndReporting(context) -> None:
     
     ##### Create report #####
     #Reference-Current split
-    #reference = df.iloc[int(len(df.index)/2):,:]
-    #current = df.iloc[:int(len(df.index)/2),:]
-
+    reference = df.iloc[int(len(df.index)/2):,:]
+    current = df.iloc[:int(len(df.index)/2),:]
 
     report = Report(metrics=[
-        #DataDriftPreset(), 
-        #TargetDriftPreset(),
+        DataDriftPreset(), 
+        TargetDriftPreset(),
         DataQualityPreset(),
         RegressionPreset()
     ])
