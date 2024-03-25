@@ -433,32 +433,21 @@ def versionStockData(context) -> None:
 @asset(deps=[getStockData], group_name="ModelPhase", compute_kind="ModelAPI")
 def requestToModel(context) -> None:
      
+    ##### Get Input Data from csv file in S3 bucket ##### 
     bucket = os.getenv("STOCK_INPUT_BUCKET")
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
     obj = s3_client.get_object(Bucket= bucket, Key= file_name) 
     df = pd.read_csv(obj['Body'])
-    
     context.log.info('Data Extraction complete')
     context.log.info(df.head())
     
-    df = df.iloc[-1]
-     
-    payload = df.to_json(orient='records', lines=True)
-    
+    ##### Prepare the payload and headers #####  
+    df = df.tail(1) # using only the last (most recent) row of Input data
+    payload = df.to_dict() # The API currently only accepts Dictinoary (String) Parameters
     headers = {'User-Agent': 'Mozilla/5.0'}
-    '''
-    payload = {
-        "Datum": "21.02.2024",
-        "Tageshoch": "155.19",
-        "Eroeffnung": "150.11",
-        "RSI": "41.6",
-        "EMA": "145.5158",
-        "Schluss": "155.11",
-        "Umsatz":"43390126.0",
-        "Tagestief": "149.14"
-        }"
-    '''
+    
+    ##### API call #####
     model_name= os.getenv("MODEL_NAME")
     result_file_name = "Predictions_"+stock_name+"_"+model_name+".csv"
     sessionRequest = requests.Session()
@@ -469,9 +458,9 @@ def requestToModel(context) -> None:
     resultJson = {**payload, **response.json()}
     df_result = pd.DataFrame(resultJson, index=[0])
 
+    ##### Upload prediction to S3 bucket #####
     path = f"predictions/{result_file_name}"
     bucket = os.getenv("PREDICTIONS_BUCKET")
-    
     try:
         s3_client.head_object(Bucket=bucket, Key=result_file_name)
     except botocore.exceptions.ClientError as e:
@@ -486,7 +475,6 @@ def requestToModel(context) -> None:
         s3_client.download_file(bucket, result_file_name, path) # Download prediction-file to disk
         df_result.to_csv(path, mode='a', index=False, header=False) # Append prediction file (excl. header)
         
-    
     s3_client.upload_file(path, bucket, result_file_name)
     context.log.info("Upload to S3 succesful")
     
