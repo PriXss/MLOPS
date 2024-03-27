@@ -444,7 +444,7 @@ def requestToModel(context) -> None:
     
     ##### Prepare the payload and headers #####  
     df = df.tail(1) # using only the last (most recent) row of Input data
-    payload = df.to_dict() # The API currently only accepts Dictinoary (String) Parameters
+    payload = df.to_dict('list') # The API currently only accepts Dictinoary (String) Parameters
     headers = {'User-Agent': 'Mozilla/5.0'}
     
     ##### API call #####
@@ -514,12 +514,12 @@ def monitoringAndReporting(context) -> None:
     
     ##### Create report #####
     #Reference-Current split
-    reference = df.iloc[int(len(df.index)/2):,:]
-    current = df.iloc[:int(len(df.index)/2),:]
+    #reference = df.iloc[int(len(df.index)/2):,:]
+    #current = df.iloc[:int(len(df.index)/2),:]
 
     report = Report(metrics=[
-        DataDriftPreset(), 
-        TargetDriftPreset(),
+        #DataDriftPreset(), 
+        #TargetDriftPreset(),
         DataQualityPreset(),
         RegressionPreset()
     ])
@@ -532,7 +532,4 @@ def monitoringAndReporting(context) -> None:
     path = data_stock+"/"+data_model_version+"/"+reportName
 
     s3_client.upload_file(reportName ,reportsBucket, path)      
-
-
- 
     
