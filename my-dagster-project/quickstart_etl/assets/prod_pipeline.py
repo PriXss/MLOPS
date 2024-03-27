@@ -419,7 +419,7 @@ def versionStockData(context) -> None:
     
     stock_name= os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
-    
+    subprocess.run(["dvc", "init", "--no-scm"])
     subprocess.run(["dvc", "add", f"data/{file_name}"])
     subprocess.run(["git", "add", f"data/{file_name}.dvc"])
     subprocess.run(["git", "add", "data/.gitignore"])
