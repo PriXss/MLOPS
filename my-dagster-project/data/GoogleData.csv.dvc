@@ -1,0 +1,5 @@
+outs:
+- md5: 0b15e665e885ab563a7b0ce13bd6fea2
+  size: 14
+  hash: md5
+  path: GoogleData.csv

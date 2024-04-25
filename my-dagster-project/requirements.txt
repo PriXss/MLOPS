@@ -3,6 +3,7 @@ alpha_vantage
 mlflow
 requests
 dvc
+boto3
 
 
 
