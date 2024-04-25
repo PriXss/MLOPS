@@ -3,8 +3,7 @@ FROM python:3.11.7
 WORKDIR /usr/src/app
 ENV DAGSTER_HOME=/usr/src/app
 RUN apt install -y git
-RUN pip install boto3
-RUN pip install hdf5
+RUN apt install python3-boto3
 RUN pip install dagster dagster-webserver dagit boto3 pandas pyarrow botocore dagster-postgres SQLAlchemy
 COPY requirements.txt .
 RUN pip install -r requirements.txt
