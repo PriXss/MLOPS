@@ -22,7 +22,18 @@ import warnings
 import mlflow
 from botocore.exceptions import NoCredentialsError
 
-api_key = '69SMJJ4C2JIW86LI'
+'''
+# setup default remote
+subprocess.run(["dvc", "remote", "add", "-d", "minio", "s3://"+ os.getenv("PREDICTIONS_BUCKET"), "-f"])
+
+# add information about storage url (where "https://minio.mysite.com" is your MinIO url)
+subprocess.run(["dvc", "remote", "modify", "minio", "endpointurl", os.getenv("ENDPOINT_URL")])
+
+#  add MinIO credentials (e.g. from env. variables)
+subprocess.run(["dvc", "remote", "modify", "minio", "access_key_id", os.getenv("AWS_ACCESS_KEY_ID")])
+subprocess.run(["dvc", "remote", "modify", "minio", "secret_access_key", os.getenv("AWS_SECRET_ACCESS_KEY")])
+'''
+
 
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
@@ -32,12 +43,12 @@ def pruefe_extreme_werte(reihe, grenzwerte):
 
 def process_and_upload_symbol_data(
         symbol,
-        api_key='69SMJJ4C2JIW86LI',
-        minio_access_key='test',
-        minio_secret_key='testpassword',
-        minio_endpoint='http://85.215.53.91:9000',
-        minio_bucket='data',
-        output_directory='output'
+        api_key=os.getenv("API_KEY"),
+        minio_access_key=os.getenv("AWS_ACCESS_KEY_ID"),
+        minio_secret_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        minio_endpoint=os.getenv("ENDPOINT_URL"),
+        minio_bucket=os.getenv("STOCK_INPUT_BUCKET"),
+        output_directory=os.getenv("OUTPUT_DIRECTORY")
         ):
 
         # S3-Verbindung herstellen
@@ -424,6 +435,7 @@ def versionStockData(context) -> None:
     subprocess.run(["git", "add", f"data/{file_name}.dvc"])
     subprocess.run(["git", "add", "data/.gitignore"])
     subprocess.run(["git", "commit", "-m", "Add new Data for Prod Runs"])
+    subprocess.run(["git", "push"])
     subprocess.run(["dvc", "push"])
     context.log.info('Data successfully versioned')
     

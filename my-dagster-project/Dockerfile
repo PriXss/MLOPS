@@ -1,10 +1,10 @@
-FROM python:3.11.7
+FROM python:3.11-slim-bookworm
 
 WORKDIR /usr/src/app
 ENV DAGSTER_HOME=/usr/src/app
-RUN apt install -y git
-RUN apt install python3-boto3
-RUN pip install dagster dagster-webserver dagit boto3 pandas pyarrow botocore dagster-postgres SQLAlchemy
+RUN apt-get update && apt-get install -y git
+RUN apt install -y python3-boto3
+RUN pip install dagster dagster-webserver dagit boto3 pandas pyarrow botocore dagster-postgres SQLAlchemy psycopg2-binary
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 RUN pip install ludwig
