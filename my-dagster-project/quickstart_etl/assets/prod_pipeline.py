@@ -389,7 +389,6 @@ def setupDVCandVersioningBucket(context) -> None:
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
 
-   
     subprocess.run(["dvc", "remote", "add", "-d", "versioning", "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp])
     subprocess.run(["dvc", "remote", "modify", "versioning", "endpointurl", os.getenv("ENDPOINT_URL")])
     subprocess.run(["dvc", "remote", "modify", "versioning", "access_key_id", os.getenv("AWS_ACCESS_KEY_ID")])
@@ -428,9 +427,9 @@ def fetchStockDataFromSource(context) -> None:
     
     dvc_data_file_name = "data_"+os.getenv("STOCK_NAME")+".csv"
     git_data_file_name = "data_"+os.getenv("STOCK_NAME")+".csv.dvc"
-    subprocess.run(["dvc", "add", "my-dagster-project/output/", f"{dvc_data_file_name}"])
+    subprocess.run(["dvc", "add", "output/", f"{dvc_data_file_name}"])
     subprocess.run(["dvc", "push"])
-    subprocess.run(["git", "add", f"my-dagster-project/output/{git_data_file_name}"])
+    subprocess.run(["git", "add", f"output/{git_data_file_name}"])
     subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
     subprocess.run(["git", "push"])
 
