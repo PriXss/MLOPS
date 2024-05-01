@@ -15,6 +15,9 @@ COPY pyproject.toml .
 COPY setup.cfg .
 COPY setup.py .
 COPY .env .
+RUN pip install dvc
+ADD .dvc .
+RUN git config --global user.email "bajonettgaming@gmail.com" && git config --global user.name "PriXss"
 
 EXPOSE 3000
 
