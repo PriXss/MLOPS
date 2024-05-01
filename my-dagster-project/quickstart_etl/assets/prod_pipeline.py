@@ -383,7 +383,7 @@ def setupDVCandVersioningBucket(context) -> None:
     context.log.info('Settings for DVC and S3')
     
 
-    '''
+    
     # setup default remote
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
@@ -395,7 +395,7 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
     subprocess.run(["git", "push"])
-    '''
+    
 
   
 @asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
@@ -445,22 +445,8 @@ def getStockData(context) -> None:
     subprocess.run(["git", "add", f"data/{file_name}.dvc"])
     subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
     subprocess.run(["git", "push"])
-
-
-@asset(deps=[getStockData], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
-def versionStockData(context) -> None:
-    
-    stock_name= os.getenv("STOCK_NAME")
-    file_name = "data_"+stock_name+".csv"
-    subprocess.run(["dvc", "add", f"data/{file_name}"])
-    subprocess.run(["git", "add", f"data/{file_name}.dvc"])
-    subprocess.run(["git", "add", "data/.gitignore"])
-    subprocess.run(["git", "commit", "-m", "Add new Data for Prod Runs"])
-    subprocess.run(["git", "push"])
-    subprocess.run(["dvc", "push"])
     context.log.info('Data successfully versioned')
-    
-    context.log.info(os.getcwd())
+
 
 
 @asset(deps=[getStockData], group_name="ModelPhase", compute_kind="ModelAPI")
