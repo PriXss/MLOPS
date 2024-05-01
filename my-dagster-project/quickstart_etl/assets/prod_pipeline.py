@@ -510,7 +510,7 @@ def versionPrediction(context) -> None:
     context.log.info('Prediction successfully versioned')
 
 
-@asset(deps=[versionPrediction, versionStockData], group_name="MonitoringPhase", compute_kind="Reporting")
+@asset(deps=[versionPrediction], group_name="MonitoringPhase", compute_kind="Reporting")
 def monitoringAndReporting(context) -> None:
     
     ##### Ignore warnings #####
