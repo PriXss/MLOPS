@@ -22,6 +22,8 @@ import warnings
 import mlflow
 from botocore.exceptions import NoCredentialsError
 
+timestamp=""
+
 
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
@@ -139,6 +141,10 @@ def process_and_upload_symbol_data(
         # Sortierten DataFrame als CSV exportieren
         csv_filepath = os.path.join(output_directory, csv_filename)
         merged_data_sorted.to_csv(csv_filepath, index=False)
+        
+        #DVC Versionierung hinzufügen
+        subprocess.run(["dvc", "add", f"output_directory/{csv_filename}"])
+
 
         if not upload_abgelehnt:
         # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
@@ -380,13 +386,12 @@ def setupDVCandVersioningBucket(context) -> None:
     context.log.info('Settings for DVC and S3')
 
     #creating the corresponding s3 directory
-    
-
-
+    s3_client.create_bucket(Bucket= os.getenv("VERSIONING_BUCKET"))
     
     # setup default remote
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    subprocess.run(["dvc", "remote", "add", "-d", "minio", "s3://"+ os.getenv("VERSIONING_BUCKET")+timestamp, "-f"])
+    timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    timestamp=timestampTemp
+    subprocess.run(["dvc", "remote", "add", "-d", "minio", "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp, "-f"])
 
     # add information about storage url (where "https://minio.mysite.com" is your MinIO url)
     subprocess.run(["dvc", "remote", "modify", "minio", "endpointurl", os.getenv("ENDPOINT_URL")])
@@ -394,7 +399,6 @@ def setupDVCandVersioningBucket(context) -> None:
     #  add MinIO credentials (e.g. from env. variables)
     subprocess.run(["dvc", "remote", "modify", "minio", "access_key_id", os.getenv("AWS_ACCESS_KEY_ID")])
     subprocess.run(["dvc", "remote", "modify", "minio", "secret_access_key", os.getenv("AWS_SECRET_ACCESS_KEY")])
-
 
 
 
@@ -447,7 +451,6 @@ def versionStockData(context) -> None:
     
     stock_name= os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
-    subprocess.run(["dvc", "init", "--no-scm"])
     subprocess.run(["dvc", "add", f"data/{file_name}"])
     subprocess.run(["git", "add", f"data/{file_name}.dvc"])
     subprocess.run(["git", "add", "data/.gitignore"])
