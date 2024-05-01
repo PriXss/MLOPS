@@ -143,7 +143,7 @@ def process_and_upload_symbol_data(
         merged_data_sorted.to_csv(csv_filepath, index=False)
         
         #DVC Versionierung hinzufügen
-        subprocess.run(["dvc", "add", f"output_directory/{csv_filename}"])
+        subprocess.run(["dvc", "add", f"output/{csv_filename}"])
 
 
         if not upload_abgelehnt:
