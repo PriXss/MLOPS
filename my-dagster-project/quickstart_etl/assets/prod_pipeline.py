@@ -22,18 +22,6 @@ import warnings
 import mlflow
 from botocore.exceptions import NoCredentialsError
 
-'''
-# setup default remote
-subprocess.run(["dvc", "remote", "add", "-d", "minio", "s3://"+ os.getenv("PREDICTIONS_BUCKET"), "-f"])
-
-# add information about storage url (where "https://minio.mysite.com" is your MinIO url)
-subprocess.run(["dvc", "remote", "modify", "minio", "endpointurl", os.getenv("ENDPOINT_URL")])
-
-#  add MinIO credentials (e.g. from env. variables)
-subprocess.run(["dvc", "remote", "modify", "minio", "access_key_id", os.getenv("AWS_ACCESS_KEY_ID")])
-subprocess.run(["dvc", "remote", "modify", "minio", "secret_access_key", os.getenv("AWS_SECRET_ACCESS_KEY")])
-'''
-
 
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
@@ -173,7 +161,7 @@ s3_client = session.client(
     endpoint_url=os.getenv("ENDPOINT_URL"),
     )
 
-
+##---------------------training area----------------------------------------------
 class MLFlowTrainer:
     def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name=""):
         self.model_bucket_url = model_bucket_url
@@ -381,8 +369,37 @@ def trainLudwigModelRegression(context) -> None:
                             data_file_name=data_file)
     trainer.train_model()
 
+
+##-----------------training area ----------------------------------------------------
+
+
+
+
+@asset(deps=[], group_name="DVC Versioning", compute_kind="DVC")
+def setupDVCandVersioningBucket(context) -> None:
+    context.log.info('Settings for DVC and S3')
+
+    #creating the corresponding s3 directory
+    
+
+
+    
+    # setup default remote
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    subprocess.run(["dvc", "remote", "add", "-d", "minio", "s3://"+ os.getenv("VERSIONING_BUCKET")+timestamp, "-f"])
+
+    # add information about storage url (where "https://minio.mysite.com" is your MinIO url)
+    subprocess.run(["dvc", "remote", "modify", "minio", "endpointurl", os.getenv("ENDPOINT_URL")])
+
+    #  add MinIO credentials (e.g. from env. variables)
+    subprocess.run(["dvc", "remote", "modify", "minio", "access_key_id", os.getenv("AWS_ACCESS_KEY_ID")])
+    subprocess.run(["dvc", "remote", "modify", "minio", "secret_access_key", os.getenv("AWS_SECRET_ACCESS_KEY")])
+
+
+
+
   
-@asset(group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
+@asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
 def fetchStockDataFromSource(context) -> None:
     
 
