@@ -381,12 +381,9 @@ def trainLudwigModelRegression(context) -> None:
 
 
 
-@asset(deps=[], group_name="DVC Versioning", compute_kind="DVC")
+@asset(deps=[], group_name="DVCVersioning", compute_kind="DVC")
 def setupDVCandVersioningBucket(context) -> None:
     context.log.info('Settings for DVC and S3')
-
-    #creating the corresponding s3 directory
-    s3_client.create_bucket(Bucket= os.getenv("VERSIONING_BUCKET"))
     
     # setup default remote
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
