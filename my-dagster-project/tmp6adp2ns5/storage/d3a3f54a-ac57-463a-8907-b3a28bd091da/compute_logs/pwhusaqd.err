@@ -1,6 +1,0 @@
-[32m2024-02-18 15:09:54 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - d3a3f54a-ac57-463a-8907-b3a28bd091da - 97764 - LOGS_CAPTURED - Started capturing logs in process (pid: 97764).
-[32m2024-02-18 15:09:54 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - d3a3f54a-ac57-463a-8907-b3a28bd091da - 97764 - trainLudwigModelRegression - STEP_START - Started execution of step "trainLudwigModelRegression".
-[32m2024-02-18 15:09:54 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - d3a3f54a-ac57-463a-8907-b3a28bd091da - trainLudwigModelRegression - Could Retrieve the Data from the API and store it in S3 accordingly
-[32m2024-02-18 15:10:00 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - d3a3f54a-ac57-463a-8907-b3a28bd091da - 97764 - trainLudwigModelRegression - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
-[32m2024-02-18 15:10:00 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - d3a3f54a-ac57-463a-8907-b3a28bd091da - 97764 - trainLudwigModelRegression - ASSET_MATERIALIZATION - Materialized value trainLudwigModelRegression.
-[32m2024-02-18 15:10:00 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - d3a3f54a-ac57-463a-8907-b3a28bd091da - 97764 - trainLudwigModelRegression - STEP_SUCCESS - Finished execution of step "trainLudwigModelRegression" in 6.12s.

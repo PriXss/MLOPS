@@ -1,5 +1,0 @@
-[32m2024-03-08 17:20:22 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9641 - LOGS_CAPTURED - Started capturing logs in process (pid: 9641).
-[32m2024-03-08 17:20:22 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9641 - monitoringAndReporting - STEP_START - Started execution of step "monitoringAndReporting".
-[32m2024-03-08 17:20:25 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9641 - monitoringAndReporting - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
-[32m2024-03-08 17:20:25 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9641 - monitoringAndReporting - ASSET_MATERIALIZATION - Materialized value monitoringAndReporting.
-[32m2024-03-08 17:20:25 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 1160e5f7-b5ea-40db-ba97-b8a80ba57264 - 9641 - monitoringAndReporting - STEP_SUCCESS - Finished execution of step "monitoringAndReporting" in 3.23s.

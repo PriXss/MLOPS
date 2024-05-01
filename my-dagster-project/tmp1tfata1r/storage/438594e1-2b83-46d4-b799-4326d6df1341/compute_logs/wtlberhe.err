@@ -1,6 +1,0 @@
-[32m2024-02-19 18:08:28 +0100[0m - dagster - [34mDEBUG[0m - all_assets_job - 438594e1-2b83-46d4-b799-4326d6df1341 - 10292 - LOGS_CAPTURED - Started capturing logs in process (pid: 10292).
-[32m2024-02-19 18:08:28 +0100[0m - dagster - [34mDEBUG[0m - all_assets_job - 438594e1-2b83-46d4-b799-4326d6df1341 - 10292 - fetchStockDataFromSource - STEP_START - Started execution of step "fetchStockDataFromSource".
-[32m2024-02-19 18:08:28 +0100[0m - dagster - [34mINFO[0m - all_assets_job - 438594e1-2b83-46d4-b799-4326d6df1341 - fetchStockDataFromSource - Could Retrieve the Data from the API and store it in S3 accordingly
-[32m2024-02-19 18:08:31 +0100[0m - dagster - [34mDEBUG[0m - all_assets_job - 438594e1-2b83-46d4-b799-4326d6df1341 - 10292 - fetchStockDataFromSource - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
-[32m2024-02-19 18:08:31 +0100[0m - dagster - [34mDEBUG[0m - all_assets_job - 438594e1-2b83-46d4-b799-4326d6df1341 - 10292 - fetchStockDataFromSource - ASSET_MATERIALIZATION - Materialized value fetchStockDataFromSource.
-[32m2024-02-19 18:08:31 +0100[0m - dagster - [34mDEBUG[0m - all_assets_job - 438594e1-2b83-46d4-b799-4326d6df1341 - 10292 - fetchStockDataFromSource - STEP_SUCCESS - Finished execution of step "fetchStockDataFromSource" in 2.63s.

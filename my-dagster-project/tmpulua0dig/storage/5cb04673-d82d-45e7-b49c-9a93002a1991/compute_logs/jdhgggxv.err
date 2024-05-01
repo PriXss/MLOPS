@@ -1,6 +1,0 @@
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94687 - LOGS_CAPTURED - Started capturing logs in process (pid: 94687).
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94687 - versioningModel - STEP_START - Started execution of step "versioningModel".
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - versioningModel - I can identify which model is served atm and have a reference to it accordingly
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94687 - versioningModel - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94687 - versioningModel - ASSET_MATERIALIZATION - Materialized value versioningModel.
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94687 - versioningModel - STEP_SUCCESS - Finished execution of step "versioningModel" in 19ms.

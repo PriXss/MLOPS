@@ -1,6 +1,0 @@
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94686 - LOGS_CAPTURED - Started capturing logs in process (pid: 94686).
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94686 - versionPrediction - STEP_START - Started execution of step "versionPrediction".
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mINFO[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - versionPrediction - Prediction could be versioned accordingly
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94686 - versionPrediction - STEP_OUTPUT - Yielded output "result" of type "Nothing". (Type check passed).
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94686 - versionPrediction - ASSET_MATERIALIZATION - Materialized value versionPrediction.
-[32m2024-02-18 14:05:13 +0100[0m - dagster - [34mDEBUG[0m - __ASSET_JOB - 5cb04673-d82d-45e7-b49c-9a93002a1991 - 94686 - versionPrediction - STEP_SUCCESS - Finished execution of step "versionPrediction" in 17ms.
