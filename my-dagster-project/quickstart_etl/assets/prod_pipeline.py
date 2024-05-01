@@ -391,15 +391,15 @@ def setupDVCandVersioningBucket(context) -> None:
     # setup default remote
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
-    subprocess.run(["dvc", "remote", "add", "-d", "minio", "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp, "-f"])
 
-    # add information about storage url (where "https://minio.mysite.com" is your MinIO url)
-    subprocess.run(["dvc", "remote", "modify", "minio", "endpointurl", os.getenv("ENDPOINT_URL")])
-
-    #  add MinIO credentials (e.g. from env. variables)
-    subprocess.run(["dvc", "remote", "modify", "minio", "access_key_id", os.getenv("AWS_ACCESS_KEY_ID")])
-    subprocess.run(["dvc", "remote", "modify", "minio", "secret_access_key", os.getenv("AWS_SECRET_ACCESS_KEY")])
-
+   
+    subprocess.run(["dvc", "remote", "add", "-d", "versioning", "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp])
+    subprocess.run(["dvc", "remote", "modify", "versioning", "endpointurl", os.getenv("ENDPOINT_URL")])
+    subprocess.run(["dvc", "remote", "modify", "versioning", "access_key_id", os.getenv("AWS_ACCESS_KEY_ID")])
+    subprocess.run(["dvc", "remote", "modify", "versioning", "secret_access_key", os.getenv("AWS_SECRET_ACCESS_KEY")])
+    subprocess.run(["git", "add", "."])
+    subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
+    subprocess.run(["git", "push"])
 
 
   
@@ -428,6 +428,14 @@ def fetchStockDataFromSource(context) -> None:
             processed_symbols.append(symbol)  # Füge das Symbol zur Liste der verarbeiteten Symbole hinzu
         else:
             print(f"Das Symbol {symbol} wurde bereits verarbeitet, überspringe...")
+    
+    dvc_data_file_name = "data_"+os.getenv("STOCK_NAME")+".csv"
+    git_data_file_name = "data_"+os.getenv("STOCK_NAME")+".csv.dvc"
+    subprocess.run(["dvc", "add", "my-dagster-project/output/", f"{dvc_data_file_name}"])
+    subprocess.run(["dvc", "push"])
+    subprocess.run(["git", "add", f"my-dagster-project/output/{git_data_file_name}"])
+    subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
+    subprocess.run(["git", "push"])
 
     print("Prozess abgeschlossen.")
 
