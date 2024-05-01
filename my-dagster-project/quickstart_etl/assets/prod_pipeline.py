@@ -141,9 +141,6 @@ def process_and_upload_symbol_data(
         # Sortierten DataFrame als CSV exportieren
         csv_filepath = os.path.join(output_directory, csv_filename)
         merged_data_sorted.to_csv(csv_filepath, index=False)
-        
-        #DVC Versionierung hinzufügen
-        subprocess.run(["dvc", "add", f"output/{csv_filename}"])
 
 
         if not upload_abgelehnt:
@@ -385,6 +382,8 @@ def trainLudwigModelRegression(context) -> None:
 def setupDVCandVersioningBucket(context) -> None:
     context.log.info('Settings for DVC and S3')
     
+
+    '''
     # setup default remote
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
@@ -396,7 +395,7 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
     subprocess.run(["git", "push"])
-
+    '''
 
   
 @asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
@@ -424,14 +423,6 @@ def fetchStockDataFromSource(context) -> None:
             processed_symbols.append(symbol)  # Füge das Symbol zur Liste der verarbeiteten Symbole hinzu
         else:
             print(f"Das Symbol {symbol} wurde bereits verarbeitet, überspringe...")
-    
-    dvc_data_file_name = "data_"+os.getenv("STOCK_NAME")+".csv"
-    git_data_file_name = "data_"+os.getenv("STOCK_NAME")+".csv.dvc"
-    subprocess.run(["dvc", "add", "output/", f"{dvc_data_file_name}"])
-    subprocess.run(["dvc", "push"])
-    subprocess.run(["git", "add", f"output/{git_data_file_name}"])
-    subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
-    subprocess.run(["git", "push"])
 
     print("Prozess abgeschlossen.")
 
@@ -448,6 +439,12 @@ def getStockData(context) -> None:
     context.log.info(initial_df.head())
     os.makedirs("data", exist_ok=True)
     initial_df.to_csv(f'data/{file_name}', index=False)        
+
+    subprocess.run(["dvc", "add", f"data/{file_name}"])
+    subprocess.run(["dvc", "push"])
+    subprocess.run(["git", "add", f"data/{file_name}.dvc"])
+    subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
+    subprocess.run(["git", "push"])
 
 
 @asset(deps=[getStockData], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
