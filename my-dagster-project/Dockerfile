@@ -17,9 +17,11 @@ COPY setup.py .
 COPY .env .
 RUN pip install dvc
 ADD .dvc .
-RUN git config --global user.email "bajonettgaming@gmail.com" && git config --global user.name "PriXss"
+
+RUN git config user.email "bajonettgaming@gmail.com"
+RUN git config user.name "PriXss"
 
 EXPOSE 3000
 
-CMD [ "dagster-webserver" , "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000"]
+CMD [ "dagster-webserver" , "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000" "-v" "$HOME/.ssh:/root/.ssh"]
 
