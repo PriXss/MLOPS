@@ -3,10 +3,17 @@ FROM python:3.11-slim-bookworm
 WORKDIR /usr/src/app
 ENV DAGSTER_HOME=/usr/src/app
 RUN apt-get update && apt-get install -y git
-RUN git clone https://github.com/PriXss/MLOPS.git
-RUN apt install -y python3-boto3
+
+RUN git clone https://github.com/PriXss/MLOPS.git .
+RUN git checkout origin/DagsterPipelineProdRun
+
+WORKDIR /usr/src/app/my-dagster-project
+
+#RUN apt install -y python3-boto3
 RUN pip install dagster dagster-webserver dagit boto3 pandas pyarrow botocore dagster-postgres SQLAlchemy psycopg2-binary
+
 #COPY requirements.txt .
+#RUN pip install -r requirements.txt
 #RUN pip install ludwig
 #COPY dagster.yaml .
 #COPY workspace.yaml .
@@ -16,9 +23,15 @@ RUN pip install dagster dagster-webserver dagit boto3 pandas pyarrow botocore da
 #COPY setup.py .
 COPY .env .
 RUN pip install dvc
+RUN dvc init
+
+RUN git config --global user.email "bajonettgaming@gmail.com"
+RUN git config --global user.name "PriXss"
+
 #ADD .dvc .
-RUN git clone https://github.com/PriXss/MLOPS.git
-RUN pip install -r requirements.txt
+
+COPY .env .
+
 
 EXPOSE 3000
 
