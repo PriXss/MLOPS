@@ -388,14 +388,12 @@ def setupDVCandVersioningBucket(context) -> None:
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
 
-    subprocess.run(["dvc", "remote", "add", "-d", "versioning", "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp])
-    subprocess.run(["dvc", "remote", "modify", "versioning", "endpointurl", os.getenv("ENDPOINT_URL")])
-    subprocess.run(["dvc", "remote", "modify", "versioning", "access_key_id", os.getenv("AWS_ACCESS_KEY_ID")])
-    subprocess.run(["dvc", "remote", "modify", "versioning", "secret_access_key", os.getenv("AWS_SECRET_ACCESS_KEY")])
+    subprocess.run(["dvc", "remote", "add", "-d", "my-dvc", "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp])
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
     subprocess.run(["git", "push"])
-    
+    context.log.info(subprocess.run(["dvc", "status"]))
+
 
   
 @asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
@@ -441,6 +439,8 @@ def getStockData(context) -> None:
     initial_df.to_csv(f'data/{file_name}', index=False)        
 
     subprocess.run(["dvc", "add", f"data/{file_name}"])
+    context.log.info(subprocess.run(["dvc", "status"]))
+
     subprocess.run(["dvc", "push"])
     subprocess.run(["git", "add", f"data/{file_name}.dvc"])
     subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
