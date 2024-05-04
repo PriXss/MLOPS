@@ -9,29 +9,17 @@ RUN git checkout origin/DagsterPipelineProdRun
 
 WORKDIR /usr/src/app/my-dagster-project
 
-#RUN apt install -y python3-boto3
+RUN apt install -y python3-boto3
 RUN pip install dagster dagster-webserver dagit boto3 pandas pyarrow botocore dagster-postgres SQLAlchemy psycopg2-binary
 
-#COPY requirements.txt .
-#RUN pip install -r requirements.txt
-#RUN pip install ludwig
-#COPY dagster.yaml .
-#COPY workspace.yaml .
-#COPY quickstart_etl ./quickstart_etl
-#COPY pyproject.toml .
-#COPY setup.cfg .
-#COPY setup.py .
+RUN pip install -r requirements.txt
+RUN pip install ludwig
 COPY .env .
+
 RUN pip install dvc
-RUN dvc init
 
 RUN git config --global user.email "bajonettgaming@gmail.com"
 RUN git config --global user.name "PriXss"
-
-#ADD .dvc .
-
-COPY .env .
-
 
 EXPOSE 3000
 

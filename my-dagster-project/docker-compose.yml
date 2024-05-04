@@ -31,4 +31,4 @@ services:
 volumes:
   dagster-postgres:
     driver: local
-  volume-data:
+  #volume-data:
