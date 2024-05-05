@@ -390,13 +390,11 @@ def setupDVCandVersioningBucket(context) -> None:
 
     subprocess.run(["dvc", "remote", "modify", "versioning", "url" "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp])
     subprocess.run(["dvc" "remote" "modify" "versioning" "endpointurl" "http://http://85.215.53.91:9000"])
-    subprocess.run(["dvc" "remote" "modify" "versioning" "endpointurl" "http://http://85.215.53.91:9000"])
-    subprocess.run(["dvc" "remote" "modify" "versioning" "endpointurl" "http://http://85.215.53.91:9000"])
 
     subprocess.run(["dvc", "push"])
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
-    subprocess.run(["git", "push" "origin" "HEAD:origin/DagsterPipelineProdRun" "--force"])
+    subprocess.run(["git", "push" "origin" "DagsterPipelineProdRun:DagsterPipelineProdRun"])
     
 
 
