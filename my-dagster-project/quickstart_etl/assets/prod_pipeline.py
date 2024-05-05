@@ -394,7 +394,7 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.run(["dvc", "push"])
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
-    subprocess.run(["git", "push" "origin" "DagsterPipelineProdRun:DagsterPipelineProdRun"])
+    subprocess.run(["git", "push" "origin" "HEAD:origin/DagsterPipelineProdRun"])
     
 
 
