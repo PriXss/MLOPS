@@ -19,7 +19,7 @@ from evidently.metric_preset import DataDriftPreset, TargetDriftPreset, DataQual
 from evidently.metrics import *
 from evidently.tests import *
 import warnings
-import mlflow
+#import mlflow
 from botocore.exceptions import NoCredentialsError
 
 timestamp=""
