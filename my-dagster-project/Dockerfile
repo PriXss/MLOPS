@@ -6,8 +6,9 @@ RUN apt-get update && apt-get install -y git
 
 RUN git init 
 RUN git clone https://github.com/PriXss/MLOPS.git .
-RUN git fetch
-RUN git checkout origin/DagsterPipelineProdRun
+RUN git checkout DagsterPipelineProdRun
+RUN git pull
+
 
 WORKDIR /usr/src/app/my-dagster-project
 
