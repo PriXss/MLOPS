@@ -4,7 +4,7 @@ import pandas as pd
 import boto3
 import botocore
 from dagster import asset
-from ludwig.api import LudwigModel
+#from ludwig.api import LudwigModel
 import shutil
 import tempfile
 import zipfile
@@ -165,6 +165,7 @@ s3_client = session.client(
     )
 
 ##---------------------training area----------------------------------------------
+'''
 class MLFlowTrainer:
     def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name=""):
         self.model_bucket_url = model_bucket_url
@@ -371,7 +372,7 @@ def trainLudwigModelRegression(context) -> None:
     trainer = MLFlowTrainer(model_bucket_url, ludwig_config_file_name=ludwig_config_file_name,
                             data_file_name=data_file)
     trainer.train_model()
-
+'''
 
 ##-----------------training area ----------------------------------------------------
 
