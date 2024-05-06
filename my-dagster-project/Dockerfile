@@ -4,6 +4,8 @@ WORKDIR /usr/src/app
 ENV DAGSTER_HOME=/usr/src/app/my-dagster-project
 RUN apt-get update && apt-get install -y git
 
+RUN apt install gcc musl-dev python3-dev -y
+
 RUN git clone https://github.com/PriXss/MLOPS.git .
 RUN git checkout DagsterPipelineProdRun
 RUN git pull
