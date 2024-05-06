@@ -1,10 +1,11 @@
-FROM python:3.11-slim-bookworm
+FROM python:3.9-slim-bookworm
 
 WORKDIR /usr/src/app
 ENV DAGSTER_HOME=/usr/src/app/my-dagster-project
 RUN apt-get update && apt-get install -y git
 
 RUN apt install gcc musl-dev python3-dev -y
+RUN pip install --upgrade pip
 
 RUN git clone https://github.com/PriXss/MLOPS.git .
 RUN git checkout DagsterPipelineProdRun
@@ -17,7 +18,7 @@ RUN apt install -y python3-boto3
 RUN pip install dagster dagster-webserver dagit boto3 pandas pyarrow botocore dagster-postgres SQLAlchemy psycopg2-binary
 
 RUN pip install -r requirements.txt
-RUN pip install ludwig
+#RUN pip install ludwig --no-binary :all:
 COPY .env .
 
 RUN pip install dvc

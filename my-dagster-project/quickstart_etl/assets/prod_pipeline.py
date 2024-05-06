@@ -4,7 +4,7 @@ import pandas as pd
 import boto3
 import botocore
 from dagster import asset
-from ludwig.api import LudwigModel
+#from ludwig.api import LudwigModel
 import shutil
 import tempfile
 import zipfile
@@ -19,7 +19,7 @@ from evidently.metric_preset import DataDriftPreset, TargetDriftPreset, DataQual
 from evidently.metrics import *
 from evidently.tests import *
 import warnings
-import mlflow
+#import mlflow
 from botocore.exceptions import NoCredentialsError
 
 timestamp=""
@@ -165,7 +165,7 @@ s3_client = session.client(
     )
 
 ##---------------------training area----------------------------------------------
-
+'''
 class MLFlowTrainer:
     def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name=""):
         self.model_bucket_url = model_bucket_url
@@ -373,7 +373,7 @@ def trainLudwigModelRegression(context) -> None:
                             data_file_name=data_file)
     trainer.train_model()
 
-
+'''
 ##-----------------training area ----------------------------------------------------
 
 
@@ -382,8 +382,6 @@ def trainLudwigModelRegression(context) -> None:
 @asset(deps=[], group_name="DVCVersioning", compute_kind="DVC")
 def setupDVCandVersioningBucket(context) -> None:
     context.log.info('Settings for DVC and S3')
-    
-
     
     # setup default remote
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -397,7 +395,6 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
     subprocess.run(["git", "push" "-u" "origin" "DagsterPipelineProdRun"])
     
-
 
   
 @asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
