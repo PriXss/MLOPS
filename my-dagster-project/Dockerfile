@@ -17,7 +17,7 @@ RUN apt install -y python3-boto3
 RUN pip install dagster dagster-webserver dagit boto3 pandas pyarrow botocore dagster-postgres SQLAlchemy psycopg2-binary
 
 RUN pip install -r requirements.txt
-#RUN pip install ludwig
+RUN pip install ludwig
 COPY .env .
 
 RUN pip install dvc
