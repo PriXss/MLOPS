@@ -388,7 +388,6 @@ def setupDVCandVersioningBucket(context) -> None:
     timestamp=timestampTemp
 
     subprocess.run(["dvc", "remote", "modify", "versioning", "url" "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp])
-    subprocess.run(["dvc" "remote" "modify" "versioning" "endpointurl" "http://85.215.53.91:9000"])
 
     subprocess.run(["dvc", "push"])
     subprocess.run(["git", "add", "."])
