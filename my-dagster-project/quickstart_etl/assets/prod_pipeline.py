@@ -21,6 +21,7 @@ from evidently.tests import *
 import warnings
 #import mlflow
 from botocore.exceptions import NoCredentialsError
+from dvc.repo import Repo
 
 timestamp=""
 
@@ -387,8 +388,8 @@ def setupDVCandVersioningBucket(context) -> None:
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
 
-    subprocess.run(["dvc", "remote", "modify", "versioning", "url" "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp])
-
+    subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp])
+    subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
