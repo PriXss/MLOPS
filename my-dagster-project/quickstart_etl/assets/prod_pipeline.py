@@ -388,7 +388,7 @@ def setupDVCandVersioningBucket(context) -> None:
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
 
-    subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET")+"/"+timestamp])
+    subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
     subprocess.run(["git", "add", "."])
@@ -440,8 +440,8 @@ def getStockData(context) -> None:
     initial_df.to_csv(f'data/{file_name}', index=False)        
 
     subprocess.run(["dvc", "add", f"data/{file_name}"])
-    context.log.info(subprocess.run(["dvc", "status"]))
 
+    subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
     subprocess.run(["git", "add", f"data/{file_name}.dvc"])
     subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
