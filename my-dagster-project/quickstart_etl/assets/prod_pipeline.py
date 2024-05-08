@@ -35,15 +35,8 @@ def pruefe_extreme_werte(reihe, grenzwerte):
 def process_and_upload_symbol_data(
         symbol,
         api_key=os.getenv("API_KEY"),
-        minio_access_key=os.getenv("AWS_ACCESS_KEY_ID"),
-        minio_secret_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-        minio_endpoint=os.getenv("ENDPOINT_URL"),
-        minio_bucket=os.getenv("STOCK_INPUT_BUCKET"),
         output_directory=os.getenv("OUTPUT_DIRECTORY")
         ):
-
-        # S3-Verbindung herstellen
-        s3 = boto3.client('s3', aws_access_key_id=minio_access_key, aws_secret_access_key=minio_secret_key, endpoint_url=minio_endpoint)
 
     # Speicherung der CSV Datei
         if not os.path.exists(output_directory):
@@ -147,8 +140,11 @@ def process_and_upload_symbol_data(
         if not upload_abgelehnt:
         # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
             try:
-                s3.upload_file(csv_filepath, minio_bucket, minio_object_name)
-                print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
+                subprocess.run(["dvc", "add", f"{output_directory}/{csv_filename}"])
+                print('DVC add successfully')
+                subprocess.run(["dvc", "commit"])
+                subprocess.run(["dvc", "push"])
+                print('DVC push successfully')   
             except FileNotFoundError:
                 print(f'Die Datei {csv_filepath} wurde nicht gefunden.')
             except NoCredentialsError:
@@ -415,7 +411,7 @@ def setupDVCandVersioningBucket(context) -> None:
 
     s3_client.put_object(
     Bucket= os.getenv("VERSIONING_BUCKET"),
-    Key= timestamp+'/'
+    Key= timestamp
     )
 
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
@@ -425,10 +421,8 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.run(["dvc", "push"])
     
     context.log.info('Continueing with Git')
-    
-    subprocess.run(["git", "config", "--global", "user.email", "bajonettgaming@gmail.com"])
-    subprocess.run(["git", "config", "--global", "user.name", "PriXss"])
-    subprocess.run(["git", "remote", "set-url", "origin",  "https://PriXss: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@github.com/PriXss/MLOPS.git"])
+
+    #subprocess.run(["git", "remote", "set-url", "origin",  "https://PriXss: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@github.com/PriXss/MLOPS.git"])
 
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
@@ -440,7 +434,8 @@ def setupDVCandVersioningBucket(context) -> None:
 def fetchStockDataFromSource(context) -> None:
     
 
-    symbols = ['AAPL', 'IBM', 'TSLA', 'NKE', 'AMZN', 'MSFT', 'GOOGL']
+    #symbols = ['AAPL', 'IBM', 'TSLA', 'NKE', 'AMZN', 'MSFT', 'GOOGL']
+    symbols = [os.getenv("STOCK_INPUT")]
 
     print("Starte den Prozess...")
         
@@ -451,12 +446,8 @@ def fetchStockDataFromSource(context) -> None:
             print(f"Verarbeite Symbol: {symbol}")
             process_and_upload_symbol_data(
                     api_key='69SMJJ4C2JIW86LI',
-                    minio_access_key='test',
-                    minio_secret_key='testpassword',
-                    minio_endpoint='http://85.215.53.91:9000',
-                    minio_bucket='data',
                     symbol=symbol,
-                    output_directory='output'
+                    output_directory='data'
                 )
             processed_symbols.append(symbol)  # Füge das Symbol zur Liste der verarbeiteten Symbole hinzu
         else:
@@ -465,37 +456,7 @@ def fetchStockDataFromSource(context) -> None:
     print("Prozess abgeschlossen.")
 
 
-@asset(deps=[fetchStockDataFromSource] ,group_name="DataCollectionPhase", compute_kind="S3DataCollection")
-def getStockData(context) -> None:
-    
-    bucket = os.getenv("STOCK_INPUT_BUCKET")
-    stock_name= os.getenv("STOCK_NAME")
-    file_name = "data_"+stock_name+".csv"
-    obj = s3_client.get_object(Bucket= bucket, Key= file_name) 
-    initial_df = pd.read_csv(obj['Body'])
-    context.log.info('Data Extraction complete')
-    context.log.info(initial_df.head())
-    os.makedirs("data", exist_ok=True)
-    initial_df.to_csv(f'data/{file_name}', index=False)        
-
-    subprocess.run(["dvc", "add", f"data/{file_name}"])
-    context.log.info('DVC add successfully')
-
-    subprocess.run(["dvc", "commit"])
-    subprocess.run(["dvc", "push"])
-    context.log.info('DVC push successfully')
-
-    
-    subprocess.run(["git", "add", f"data/{file_name}.dvc"])
-    subprocess.run(["git", "add", f"data/.gitignore"])
-
-    subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
-    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
-    context.log.info('Data git pushed')
-
-
-
-@asset(deps=[getStockData], group_name="ModelPhase", compute_kind="ModelAPI")
+@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI")
 def requestToModel(context) -> None:
      
     ##### Get Input Data from csv file in S3 bucket ##### 
