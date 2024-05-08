@@ -413,7 +413,14 @@ def setupDVCandVersioningBucket(context) -> None:
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
 
+    s3_client.put_object(
+    Bucket= os.getenv("VERSIONING_BUCKET"),
+    Key= timestamp+'/'
+    )
+
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
+    
+    
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
     
