@@ -2,6 +2,6 @@
     remote = versioning
 ['remote "versioning"']
     url = s3://dvcversioning
-    endpointurl = http://85.215.53.91/9000
+    endpointurl = http://85.215.53.91:9000
     access_key_id = test
     secret_access_key = testpassword
