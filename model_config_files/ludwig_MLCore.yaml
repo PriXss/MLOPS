@@ -1,0 +1,55 @@
+{
+    "input_features": [
+        {
+            "name": "Datum",
+            "type": "date"
+        },
+        {
+            "name": "Eroeffnung",
+            "type": "numerical"
+        },
+        {
+            "name": "Tageshoch",
+            "type": "numerical"
+        },
+        {
+            "name": "Tagestief",
+            "type": "numerical"
+        },
+        {
+            "name": "Umsatz",
+            "type": "numerical"
+        },
+        {
+            "name": "RSI",
+            "type": "numerical"
+        },
+        {
+            "name": "EMA",
+            "type": "numerical"
+        }
+    ],
+    "output_features": [
+        {
+            "name": "Schluss",
+            "type": "numerical"
+        }
+    ],
+    "training": {
+        "batch_size": 32,
+        "epochs": 2,
+        "learning_rate": 0.001,
+        "optimizer": {
+            "type": "adam"
+        }
+    },
+    "model": {
+        "type": "deep_lstm",
+        "num_layers": 2,
+        "num_hidden_units": 64,
+        "dropout": 0.1,
+        "recurrent_dropout": 0.1,
+        "output_activation": "linear"
+    }
+
+}
