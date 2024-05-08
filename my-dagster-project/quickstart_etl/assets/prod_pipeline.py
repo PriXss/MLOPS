@@ -168,19 +168,24 @@ s3_client = session.client(
 ##---------------------training area----------------------------------------------
 '''
 class MLFlowTrainer:
-    def __init__(self, model_bucket_url, model_name="", ludwig_config_file_name="", data_file_name=""):
-        self.model_bucket_url = model_bucket_url
+    def __init__(self, model_name="", ludwig_config_file_name="", data_name="", ludwig_config_path="",
+                 model_bucket_url="", mlflow_bucket_url="", data_bucket_url="", model_configs_bucket_url=""):
+        self.run_id = None
         self.model_name = model_name
         self.ludwig_config_file_name = ludwig_config_file_name
-        self.data_file_name = data_file_name
+        self.data_file_name = data_name
+        self.path_to_ludwig_config_file = ludwig_config_path
 
         # Setzen der Bucket-URLs
-        self.mlflow_bucket_url = "mlflowtracking"
-        self.data_bucket_url = "data"
-        self.model_configs_bucket_url = "modelconfigs"
-        self.access_key_id = "test"
-        self.secret_access_key = "testpassword"
-        self.endpoint_url = "http://85.215.53.91:9000"
+        self.model_bucket_url = model_bucket_url
+        self.mlflow_bucket_url = mlflow_bucket_url
+        self.data_bucket_url = data_bucket_url
+        self.model_configs_bucket_url = model_configs_bucket_url
+        
+        # Setzten der Zugriffsparameter für S3 via Umgebungsvariablen
+        self.access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+        self.secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        self.endpoint_url = os.getenv("AWS_SECRET_ACCESS_KEY")
 
         # Setzen der Umgebungsvariablen für den Zugriff auf Buckets
         os.environ["AWS_ACCESS_KEY_ID"] = self.access_key_id
@@ -190,14 +195,14 @@ class MLFlowTrainer:
         # Initialisierung des globalen Timestamps
         self.global_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    def train_model(self):
-        # Extrahieren der Variable data_name aus der Textdatei im Bucket
-        data_name = self.get_data_name_from_bucket()
 
-        # Pfade anpassen
-        data_file = f"data_{data_name}.csv"
+        def train_model(self):
 
-        # Laden der Daten aus dem Bucket
+        # Zuweisen der gewünschten Aktien_Daten
+        data_naming = self.data_file_name
+        data_file = f"data_{data_naming}.csv"
+
+        # Laden der Aktien-Daten aus dem Bucket
         s3 = boto3.client('s3')
         obj = s3.get_object(Bucket=self.data_bucket_url, Key=data_file)
         data = pd.read_csv(obj['Body'])
@@ -207,73 +212,82 @@ class MLFlowTrainer:
             self.run_id = run.info.run_id  # Run-ID speichern
 
             try:
-                # Temporäre Datei für die Ludwig-Konfigurationsdatei erstellen
-                temp_ludwig_config_file = tempfile.NamedTemporaryFile(delete=False)
-                try:
-                    # Ludwig-Konfigurationsdatei aus dem Bucket herunterladen und lokal speichern
-                    s3.download_fileobj(Bucket=self.model_configs_bucket_url, Key=self.ludwig_config_file_name,
-                                        Fileobj=temp_ludwig_config_file)
+                # Den Config-Ablage Pfad bestimmen
+                config_file_path = os.path.join(self.path_to_ludwig_config_file, self.ludwig_config_file_name)
 
-                    temp_ludwig_config_file.close()
+                # Kurzer Check ob die Datei da ist
+                if os.path.isfile(config_file_path):
+                    # Datei öffnen und weiterverarbeiten
+                    with open(config_file_path, 'r') as file:
+                        ludwig_file_content = file.read()
+                        print("Dateiinhalt:", ludwig_file_content)
+                else:
+                    print("Die Datei existiert nicht:", config_file_path)
 
-                    # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
-                    model_name = self.extract_model_name(temp_ludwig_config_file.name)
 
-                    # Namensgebung ML Run
-                    mlflow.set_tag('mlflow.runName', f'{data_name}_{model_name}_{self.global_timestamp}')
 
-                    # Ludwig-Modell trainieren
-                    ludwig_model = LudwigModel(config=temp_ludwig_config_file.name)
-                    train_stats, _, _ = ludwig_model.train(dataset=data, split=[0.8, 0.1, 0.1],
-                                                           skip_save_processed_input=True)
+                
+                #Ab hier kann die Model (Ludwig) Config Yaml die Verwendet wird Versioniert werden und in den S3 hochgeladen werden
+                
 
-                    # Loggen der Parameter
-                    self.log_params(data_name, data_file, model_name)
 
-                    # Loggen der Metriken
-                    self.log_metrics(train_stats)
 
-                    # Speichern von Artefakten
-                    with tempfile.TemporaryDirectory() as temp_dir_model:
-                        # Modell speichern
-                        model_path = os.path.join(temp_dir_model, model_name)
-                        ludwig_model.save(model_path)
-                        mlflow.log_artifact(model_path, artifact_path='')
+                # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
+                model_name = self.extract_model_name(config_file_path)
 
-                    # Speichern von Artefakten
-                    self.save_model_to_s3(ludwig_model, model_name, data_name)
+                # Namensgebung ML Run
+                mlflow.set_tag('mlflow.runName', f'{data_naming}_{model_name}_{self.global_timestamp}')
 
-                    # Hochladen der meta.yaml-Datei in den S3-Bucket modelconfigs
-                    local_path = os.path.join(os.getcwd(), 'mlruns', '0', self.run_id)
-                    self.upload_meta_yaml_to_s3(local_path)
+                # Ludwig-Modell trainieren
+                ludwig_model = LudwigModel(config=config_file_path)
+                train_stats, _, _ = ludwig_model.train(dataset=data, split=[0.8, 0.1, 0.1],
+                                                       skip_save_processed_input=True)
 
-                finally:
-                    os.unlink(temp_ludwig_config_file.name)
+                # Loggen der Parameter
+                self.log_params(data_naming, data_file, model_name)
+
+                # Loggen der Metriken
+                self.log_metrics(train_stats)
+
+                # Speichern von Artefakten
+                with tempfile.TemporaryDirectory() as temp_dir_model:
+                    # Modell speichern
+                    model_path = os.path.join(temp_dir_model, model_name)
+                    ludwig_model.save(model_path)
+                    mlflow.log_artifact(model_path, artifact_path='')
+
+                # Ab hier müssten wir Mit DVC Versionieren
+                # und zwar den MLRun Ordner?
+                
+                # Frage: safe_model_to_S3 wird eher das Versionierte Model sein
+
+                # Speichern von Artefakten
+                self.save_model_to_s3(ludwig_model, model_name, data_naming)
+
+                # Die Meta yaml muss auch versioniert und dann erst hochgeladen werden
+                # Pfadfestlegung der meta.yaml-Datei
+                local_path = os.path.join(os.getcwd(), 'mlruns', '0', self.run_id)
+                # Uploade in den S3-Bucket modelconfigs
+                self.upload_meta_yaml_to_s3(local_path)
 
             finally:
                 # MLflow-Lauf beenden
                 mlflow.end_run()
-
+                #Hier wird der Zip folder in den S3 hochgeladen für den Tracking Server, das sollte man auch noch
+                #versionieren
                 # Den Ordner des aktuellen MLflow-Laufs komprimieren und als Zip-Datei hochladen
                 zip_file_name = f"{self.run_id}.zip"
                 zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
                 shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
                 s3.upload_file(zip_file_path, "mlflowtracking", zip_file_name)
 
+                #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
+
                 # Lokale Runs nach dem Upload löschen
-                shutil.rmtree(os.path.join(os.getcwd(),'mlruns'))
+            shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
 
-    def get_data_name_from_bucket(self):
-        # Verbindung zum S3-Client herstellen
-        s3 = boto3.client('s3')
 
-        # Datei mit der Variable data_name aus dem Bucket modelconfigs herunterladen
-        obj = s3.get_object(Bucket=self.model_configs_bucket_url, Key="data_name.txt")
-        data_name = obj['Body'].read().decode('utf-8').strip()
-
-        return data_name
-
-    def upload_directory_to_s3(self, local_path, bucket, s3_path):
+        def upload_directory_to_s3(self, local_path, bucket, s3_path):
         s3_client = boto3.client('s3')
         for root, dirs, files in os.walk(local_path):
             for file in files:
@@ -318,16 +332,19 @@ class MLFlowTrainer:
             model.save(model_path)
 
             # Kopiere den Inhalt von 'api_experiment_run' in das temporäre Verzeichnis
-            api_experiment_run_src = os.path.join(os.getcwd(), 'results', 'api_experiment_run')
+            api_experiment_run_src = os.path.join(os.getcwd(), '../src/results', 'api_experiment_run')
             if os.path.exists(api_experiment_run_src):
                 api_experiment_run_dst = os.path.join(temp_dir_api, 'api_experiment_run')
                 shutil.copytree(api_experiment_run_src, api_experiment_run_dst)
 
-            # Verzeichnisse in Zip-Dateien komprimieren
+            # Model Verzeichnis in Zip-Dateien komprimieren
             model_zip_file_name = f"trained_model_{data_name}_{model_name}_{self.global_timestamp}.zip"
+            # Experiment Run Verzeichnis in Zip-Dateien komprimieren
             api_zip_file_name = f"api_experiment_run_{data_name}_{model_name}_{self.global_timestamp}.zip"
 
+            # Model Zip Datei Verzeichnis definieren
             model_zip_file_path = os.path.join(temp_dir_model, model_zip_file_name)
+            # Experiment Run Zip Datei Verzeichnis definieren
             api_zip_file_path = os.path.join(temp_dir_api, api_zip_file_name)
 
             for folder, zip_file_path in [(model_path, model_zip_file_path),
@@ -343,7 +360,8 @@ class MLFlowTrainer:
             if api_experiment_run_dst:
                 s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
 
-        shutil.rmtree(os.path.join(os.getcwd(), 'results'))
+        #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
+        shutil.rmtree(os.path.join(os.getcwd(), '../src/results'))
 
     def log_params(self, data_name, data_file, model_name):
         mlflow.log_param("Stock", data_name)
@@ -363,16 +381,22 @@ class MLFlowTrainer:
 @asset(deps=[], group_name="TrainingPhase", compute_kind="LudwigModel")
 def trainLudwigModelRegression(context) -> None:
     context.log.info('Trainin Running')
-      # Pfade anpassen
-    ludwig_config_file_name = os.getenv("TRAINING_CONFIG")  # Name der Ludwig-Konfigurationsdatei
-    model_bucket_url = os.getenv("MODEL_BUCKET") 
-    stock_name= os.getenv("STOCK_NAME")
-    data_file = "data_"+stock_name+".csv"
-
-    # Instanz der Klasse erstellen und das Modell trainieren
-    trainer = MLFlowTrainer(model_bucket_url, ludwig_config_file_name=ludwig_config_file_name,
-                            data_file_name=data_file)
-    trainer.train_model()
+    # Pfade und Werte anpassen
+      
+    path_ludwig_config = os.getenv("TRAINING_CONFIG_PATH")
+    ludwig_config_file_name = os.getenv("TRAINING_CONFIG_NAME")
+    data_name = os.getenv("STOCK_NAME")
+    model_bucket_url = os.getenv("MODEL_BUCKET")
+    mlflow_bucket_url = os.getenv("MLFLOW_BUCKET")
+    data_bucket_url = os.getenv("STOCK_INPUT_BUCKET")
+    model_configs_bucket_url = os.getenv("MODEL_CONFIG_BUCKET")
+    
+    # Instanz der Klasse erstellen und das Modell trainieren  
+    trainer = MLFlowTrainer(ludwig_config_file_name=ludwig_config_file_name, data_name=data_name,
+                            ludwig_config_path=path_ludwig_config, model_bucket_url = model_bucket_url,
+                            mlflow_bucket_url=mlflow_bucket_url, data_bucket_url=data_bucket_url,
+                            model_configs_bucket_url=model_configs_bucket_url)
+    trainer.train_model()  
 
 '''
 ##-----------------training area ----------------------------------------------------
