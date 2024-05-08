@@ -279,6 +279,7 @@ class MLFlowTrainer:
                 zip_file_name = f"{self.run_id}.zip"
                 zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
                 shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
+                 #--> Ab hier kann das mlrun ZIP File versioniert werden
                 s3.upload_file(zip_file_path, "mlflowtracking", zip_file_name)
 
                 #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
@@ -355,7 +356,7 @@ class MLFlowTrainer:
                             for file in files:
                                 zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder))
 
-            # Zip-Dateien in die S3-Buckets hochladen
+            # Zip-Dateien in die S3-Buckets hochladen --> Ab hier können die ZIP Files versioniert werden
             s3.upload_file(model_zip_file_path, self.model_bucket_url, model_zip_file_name)
             if api_experiment_run_dst:
                 s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
