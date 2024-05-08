@@ -468,13 +468,17 @@ def getStockData(context) -> None:
     initial_df.to_csv(f'data/{file_name}', index=False)        
 
     subprocess.run(["dvc", "add", f"data/{file_name}"])
+    context.log.info('DVC add successfully')
 
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
+    context.log.info('DVC push successfully')
+
+    
     subprocess.run(["git", "add", f"data/{file_name}.dvc"])
     subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
-    subprocess.run(["git", "push"])
-    context.log.info('Data successfully versioned')
+    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
+    context.log.info('Data git pushed')
 
 
 
