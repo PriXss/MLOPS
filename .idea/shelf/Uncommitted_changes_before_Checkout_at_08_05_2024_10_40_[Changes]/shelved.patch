@@ -1,0 +1,34 @@
+Index: src/trackingfiles_download.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import os\r\nimport boto3\r\nimport zipfile\r\nimport yaml\r\n\r\n\r\ndef download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, s3_client):\r\n    # Liste aller Objekte im MLflow-Bucket abrufen\r\n    mlflow_objects = s3_client.list_objects_v2(Bucket=mlflow_bucket_name)['Contents']\r\n\r\n    # Ludwig-Konfigurationsdatei und Modellname extrahieren\r\n    ludwig_config_file_name = \"ludwig_MLCore.yaml\"\r\n    model_name = extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, s3_client)\r\n\r\n    # Lokales Verzeichnis für mlruns erstellen, falls es nicht existiert\r\n    mlruns_dir = os.path.join(local_directory, 'mlruns', '0')\r\n    os.makedirs(mlruns_dir, exist_ok=True)\r\n\r\n    # Durch jedes Objekt im MLflow-Bucket iterieren\r\n    for obj in mlflow_objects:\r\n        # Objekt-Key abrufen\r\n        obj_key = obj['Key']\r\n\r\n        # Datei herunterladen\r\n        local_file_path = os.path.join(mlruns_dir, obj_key)\r\n        s3_client.download_file(mlflow_bucket_name, obj_key, local_file_path)\r\n\r\n        # Überprüfen, ob die heruntergeladene Datei eine Zip-Datei ist\r\n        if obj_key.endswith('.zip'):\r\n            # Zip-Datei entpacken\r\n            with zipfile.ZipFile(local_file_path, 'r') as zip_ref:\r\n                zip_ref.extractall(os.path.join(mlruns_dir, os.path.splitext(obj_key)[0]))\r\n            # Heruntergeladene Zip-Datei löschen, nachdem sie entpackt wurde\r\n            os.remove(local_file_path)\r\n\r\n            # Pfade für den entpackten Run und die meta.yaml-Datei erstellen\r\n            run_dir = os.path.join(mlruns_dir, os.path.splitext(obj_key)[0])\r\n            meta_yaml_path = os.path.join(run_dir, 'meta.yaml')\r\n\r\n            # Den artifact_uri in der meta.yaml-Datei aktualisieren\r\n            with open(meta_yaml_path, 'r') as meta_file:\r\n                meta_data = yaml.safe_load(meta_file)\r\n\r\n            # Aktuellen Pfad des Skripts ermitteln\r\n            script_path = os.path.dirname(os.path.realpath(__file__))\r\n            # Aktuellen Run-ID ermitteln\r\n            run_id = os.path.basename(run_dir)\r\n            # Pfad zur artefakt_uri erstellen\r\n            artifact_uri = os.path.abspath(os.path.join(script_path, '..', 'mlruns', '0', run_id, 'artifacts'))\r\n\r\n            # Neuen absoluten Pfad zur artefakt_uri verwenden\r\n            meta_data['artifact_uri'] = f'file://{artifact_uri}'\r\n\r\n            with open(meta_yaml_path, 'w') as meta_file:\r\n                yaml.safe_dump(meta_data, meta_file)\r\n\r\n    # Herunterladen der meta.yaml-Datei aus dem \"modelconfigs\"-Bucket\r\n    modelconfigs_meta_yaml_path = os.path.join(mlruns_dir, 'meta.yaml')\r\n    s3_client.download_file(modelconfigs_bucket_name, 'meta.yaml', modelconfigs_meta_yaml_path)\r\n\r\n\r\ndef extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, s3_client):\r\n    # Ludwig-Konfigurationsdatei aus dem S3-Bucket herunterladen\r\n    obj = s3_client.get_object(Bucket=modelconfigs_bucket_name, Key=ludwig_config_file_name)\r\n    ludwig_config_content = obj['Body'].read().decode('utf-8')\r\n\r\n    # Modellnamen aus der Ludwig-Konfigurationsdatei extrahieren\r\n    yaml_content = yaml.safe_load(ludwig_config_content)\r\n    if 'model' in yaml_content and 'type' in yaml_content['model']:\r\n        model_name = yaml_content['model']['type']\r\n        return model_name\r\n    else:\r\n        raise ValueError(\"Model name not found in Ludwig config file.\")\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    # Bucket-Namen und lokales Verzeichnis festlegen\r\n    mlflow_bucket_name = \"mlflowtracking\"\r\n    modelconfigs_bucket_name = \"modelconfigs\"\r\n    local_directory = os.path.join(os.getcwd(), '..')  # Eine Ebene höher im Ordner MLOPS\r\n\r\n    # Zugangsdaten\r\n    access_key_id = \"test\"\r\n    secret_access_key = \"testpassword\"\r\n    endpoint_url = \"http://85.215.53.91:9000\"\r\n\r\n    # Verbindung zum S3-Client herstellen\r\n    s3_client = boto3.client('s3',\r\n                             aws_access_key_id=access_key_id,\r\n                             aws_secret_access_key=secret_access_key,\r\n                             endpoint_url=endpoint_url)\r\n\r\n    # MLflow-Runs herunterladen und Zip-Dateien entpacken\r\n    download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, s3_client)\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/trackingfiles_download.py b/src/trackingfiles_download.py
+--- a/src/trackingfiles_download.py	(revision fa5c2a79e7e897e5011ac536bfa2269f017f3013)
++++ b/src/trackingfiles_download.py	(date 1715157630708)
+@@ -46,7 +46,7 @@
+             # Aktuellen Run-ID ermitteln
+             run_id = os.path.basename(run_dir)
+             # Pfad zur artefakt_uri erstellen
+-            artifact_uri = os.path.abspath(os.path.join(script_path, '..', 'mlruns', '0', run_id, 'artifacts'))
++            artifact_uri = os.path.abspath(os.path.join(script_path, 'mlruns', '0', run_id, 'artifacts'))
+ 
+             # Neuen absoluten Pfad zur artefakt_uri verwenden
+             meta_data['artifact_uri'] = f'file://{artifact_uri}'
+@@ -77,7 +77,8 @@
+     # Bucket-Namen und lokales Verzeichnis festlegen
+     mlflow_bucket_name = "mlflowtracking"
+     modelconfigs_bucket_name = "modelconfigs"
+-    local_directory = os.path.join(os.getcwd(), '..')  # Eine Ebene höher im Ordner MLOPS
++    local_directory = '/app'
++
+ 
+     # Zugangsdaten
+     access_key_id = "test"
+@@ -92,3 +93,4 @@
+ 
+     # MLflow-Runs herunterladen und Zip-Dateien entpacken
+     download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, s3_client)
++    print(local_directory)

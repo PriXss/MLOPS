@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7129941a-7e3c-46d3-aeda-e70cd3d18c72" name="Changes" comment="Merged Add to MLCore branch" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+        <option value="Dockerfile" />
+      </list>
+    </option>
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="PREVIEW_PUSH_PROTECTED_ONLY" value="true" />
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="MLCore" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;SJaksc&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="be61370e-e9b9-4ef8-9fed-f9b5b2bfe350" />
+        <option name="url" value="git@github.com:PriXss/MLOPS.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2ZOrQdhyCy8zxQ9DFxfUuhFveeK" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;DagsterPipelineProdRun&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/simon/PycharmProjects/MLOPS&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\simon\PycharmProjects\MLOPS\Docker_Train_Model" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\simon\PycharmProjects\MLOPS\ludwig_configs" />
+      <recent name="C:\Users\simon\PycharmProjects\MLOPS\ludwig_config_yamls" />
+      <recent name="C:\Users\simon\PycharmProjects\MLOPS" />
+      <recent name="C:\Users\simon\PycharmProjects\MLOPS\src" />
+      <recent name="C:\Users\simon\PycharmProjects\MLOPS\Docker_Train_Model" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.train_ludwig_model (1)">
+    <configuration name="docker_train_ludwig_model" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="MLOPS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Docker_Train_Model" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Docker_Train_Model/docker_train_ludwig_model.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="predict_ludwig_model" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="MLOPS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/predict_ludwig_model.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="trackingfiles_download" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="MLOPS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trackingfiles_download.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train_ludwig_model (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="MLOPS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/train_ludwig_model.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train_ludwig_model" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="MLOPS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Docker_Train_Model" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\simon\PycharmProjects\MLOPS\src\train_ludwig_model.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train_ludwig_model" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="MLOPS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/train_ludwig_model.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train_ludwig_model" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="MLOPS" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/train_ludwig_model.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="docker-image" temporary="true">
+      <deployment type="docker-image">
+        <settings />
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="dockerfile" temporary="true">
+      <deployment type="dockerfile">
+        <settings />
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.train_ludwig_model (1)" />
+        <item itemvalue="Python.train_ludwig_model" />
+        <item itemvalue="Python.trackingfiles_download" />
+        <item itemvalue="Python.predict_ludwig_model" />
+        <item itemvalue="Python.docker_train_ludwig_model" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7129941a-7e3c-46d3-aeda-e70cd3d18c72" name="Changes" comment="" />
+      <created>1702303952826</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1702303952826</updated>
+      <workItem from="1702303954256" duration="1335000" />
+      <workItem from="1702369691710" duration="43000" />
+      <workItem from="1702404344922" duration="617000" />
+      <workItem from="1702407663236" duration="745000" />
+      <workItem from="1702461879422" duration="2355000" />
+      <workItem from="1702471296698" duration="2647000" />
+      <workItem from="1702484116452" duration="4763000" />
+      <workItem from="1703074692520" duration="16000" />
+      <workItem from="1703077280867" duration="130000" />
+      <workItem from="1703077498494" duration="3505000" />
+      <workItem from="1704742529624" duration="2627000" />
+      <workItem from="1704787856112" duration="1050000" />
+      <workItem from="1704993306694" duration="127000" />
+      <workItem from="1706456827507" duration="9584000" />
+      <workItem from="1706547543355" duration="1426000" />
+      <workItem from="1706557947250" duration="35000" />
+      <workItem from="1706715689035" duration="2485000" />
+      <workItem from="1706719476037" duration="1370000" />
+      <workItem from="1706722674569" duration="26000" />
+      <workItem from="1706803261127" duration="1689000" />
+      <workItem from="1706806603556" duration="4449000" />
+      <workItem from="1706811491774" duration="36000" />
+      <workItem from="1707147627969" duration="5881000" />
+      <workItem from="1707410792281" duration="2975000" />
+      <workItem from="1707902629348" duration="6482000" />
+      <workItem from="1708016382282" duration="743000" />
+      <workItem from="1708019397896" duration="40000" />
+      <workItem from="1708258935696" duration="6002000" />
+      <workItem from="1708362246196" duration="889000" />
+      <workItem from="1708436338750" duration="18044000" />
+      <workItem from="1708532049342" duration="2830000" />
+      <workItem from="1708681648939" duration="13289000" />
+      <workItem from="1709029575725" duration="6783000" />
+      <workItem from="1709132528392" duration="1477000" />
+      <workItem from="1709225673743" duration="1400000" />
+      <workItem from="1709381190907" duration="12054000" />
+      <workItem from="1709468940368" duration="112000" />
+      <workItem from="1709469275259" duration="4185000" />
+      <workItem from="1709474542342" duration="108000" />
+      <workItem from="1709484911215" duration="9158000" />
+      <workItem from="1709564168186" duration="3191000" />
+      <workItem from="1709569152760" duration="6887000" />
+      <workItem from="1709830591297" duration="624000" />
+      <workItem from="1710078539355" duration="1094000" />
+      <workItem from="1710091792311" duration="118000" />
+      <workItem from="1710748784711" duration="27000" />
+      <workItem from="1710767892953" duration="41000" />
+      <workItem from="1715154408592" duration="153000" />
+      <workItem from="1715154591658" duration="4429000" />
+      <workItem from="1715159480548" duration="1159000" />
+      <workItem from="1715160663248" duration="1972000" />
+    </task>
+    <task id="LOCAL-00001" summary="Data Extraction Code V1&#10;Chromedriver wird benötigt. Ablageverzeichnis evtl noch anpassen.&#10;Nur bis jetzt von einer Aktie">
+      <option name="closed" value="true" />
+      <created>1702404576477</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1702404576477</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Data Extraction Code V1&#10;Chromedriver wird benötigt. Ablageverzeichnis evtl noch anpassen.&#10;Nur bis jetzt von einer Aktie">
+      <option name="closed" value="true" />
+      <created>1702404777370</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1702404777370</updated>
+    </task>
+    <task id="LOCAL-00003" summary="fixed Datum Extraction&#10;added requirements.txt">
+      <option name="closed" value="true" />
+      <created>1702408370930</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1702408370930</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Added Mlflow and Ludwig base structure file&#10;added new directories&#10;added new packages requirements.txt">
+      <option name="closed" value="true" />
+      <created>1702472111878</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1702472111878</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Added others files">
+      <option name="closed" value="true" />
+      <created>1702472370537</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1702472370537</updated>
+    </task>
+    <task id="LOCAL-00006" summary="New files">
+      <option name="closed" value="true" />
+      <created>1704743825967</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1704743825967</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Changes v1">
+      <option name="closed" value="true" />
+      <created>1706457404324</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1706457404324</updated>
+    </task>
+    <task id="LOCAL-00008" summary="added seperate ludwig run file">
+      <option name="closed" value="true" />
+      <created>1706460901283</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1706460901283</updated>
+    </task>
+    <task id="LOCAL-00009" summary="changed code in file">
+      <option name="closed" value="true" />
+      <created>1706465737606</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1706465737607</updated>
+    </task>
+    <task id="LOCAL-00010" summary="some changes">
+      <option name="closed" value="true" />
+      <created>1706469845233</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1706469845233</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Updated the Ludwig train files">
+      <option name="closed" value="true" />
+      <created>1707413739926</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1707413739926</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Updated Script to get Model Config from Bucket">
+      <option name="closed" value="true" />
+      <created>1707915073825</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1707915073825</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Clean-up für Default MLCore">
+      <option name="closed" value="true" />
+      <created>1708260182767</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1708260182767</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Added clearing the temp folder">
+      <option name="closed" value="true" />
+      <created>1708265480417</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1708265480417</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Added mlflow for the experimentation part">
+      <option name="closed" value="true" />
+      <created>1708453613589</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1708453613589</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Added log metric function and others for mlflow for the experimentation part">
+      <option name="closed" value="true" />
+      <created>1708701354721</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1708701354721</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Created a Docker Base for the MLDate Download">
+      <option name="closed" value="true" />
+      <created>1709383731744</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1709383731744</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Added the MlFlow server in the Dockerfile">
+      <option name="closed" value="true" />
+      <created>1709395482698</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1709395482698</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Changes and Ready to create a Docker Image. docker run -p 8080:8080 mlopsmlflowserver">
+      <option name="closed" value="true" />
+      <created>1709474220299</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1709474220299</updated>
+    </task>
+    <task id="LOCAL-00020" summary="adapt Host">
+      <option name="closed" value="true" />
+      <created>1709474630548</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1709474630548</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Finalisiert! Kann als fertiger Dockercontainer aufgesetzt werden. MLFLow Tracking Server läuft. Daten werden jede Minute aus dem Bucket gezogen">
+      <option name="closed" value="true" />
+      <created>1709567437548</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1709567437548</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Finalisiert! Kann als fertiger Dockercontainer aufgesetzt werden. MLFLow Tracking Server läuft. Daten werden jede Minute aus dem Bucket gezogen">
+      <option name="closed" value="true" />
+      <created>1710078959131</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1710078959131</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Cleanup Branch">
+      <option name="closed" value="true" />
+      <created>1715155176028</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1715155176028</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Merged Add to MLCore branch">
+      <option name="closed" value="true" />
+      <created>1715158098215</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1715158098215</updated>
+    </task>
+    <task id="LOCAL-00025" summary="Merged Add to MLCore branch">
+      <option name="closed" value="true" />
+      <created>1715158308946</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1715158308946</updated>
+    </task>
+    <task id="LOCAL-00026" summary="Merged Add to MLCore branch">
+      <option name="closed" value="true" />
+      <created>1715158548261</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1715158548261</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Merged Add to MLCore branch">
+      <option name="closed" value="true" />
+      <created>1715158650123</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1715158650123</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="MLCore" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/MLCore" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Data Extraction Code V1&#10;Chromedriver wird benötigt. Ablageverzeichnis evtl noch anpassen.&#10;Nur bis jetzt von einer Aktie" />
+    <MESSAGE value="fixed Datum Extraction&#10;added requirements.txt" />
+    <MESSAGE value="Added Mlflow and Ludwig base structure file&#10;added new directories&#10;added new packages requirements.txt" />
+    <MESSAGE value="Added others files" />
+    <MESSAGE value="New files" />
+    <MESSAGE value="Changes v1" />
+    <MESSAGE value="added seperate ludwig run file" />
+    <MESSAGE value="changed code in file" />
+    <MESSAGE value="some changes" />
+    <MESSAGE value="Updated the Ludwig train files" />
+    <MESSAGE value="Updated Script to get Model Config from Bucket" />
+    <MESSAGE value="Clean-up für Default MLCore" />
+    <MESSAGE value="Added clearing the temp folder" />
+    <MESSAGE value="Added mlflow for the experimentation part" />
+    <MESSAGE value="Added log metric function and others for mlflow for the experimentation part" />
+    <MESSAGE value="Created a Docker Base for the MLDate Download" />
+    <MESSAGE value="Added the MlFlow server in the Dockerfile" />
+    <MESSAGE value="Changes and Ready to create a Docker Image. docker run -p 8080:8080 mlopsmlflowserver" />
+    <MESSAGE value="adapt Host" />
+    <MESSAGE value="Finalisiert! Kann als fertiger Dockercontainer aufgesetzt werden. MLFLow Tracking Server läuft. Daten werden jede Minute aus dem Bucket gezogen" />
+    <MESSAGE value="Cleanup Branch" />
+    <MESSAGE value="Merged Add to MLCore branch" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merged Add to MLCore branch" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/MLOPS$data_extraction.coverage" NAME="data_extraction Coverage Results" MODIFIED="1702484164463" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/MLOPS$Data_Extraction.coverage" NAME="Data_Extraction Coverage Results" MODIFIED="1702407781357" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/MLOPS$docker_train_ludwig_model.coverage" NAME="docker_train_ludwig_model Coverage Results" MODIFIED="1707914736302" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Docker_Train_Model" />
+    <SUITE FILE_PATH="coverage/MLOPS$predict_ludwig_model.coverage" NAME="predict_ludwig_model Coverage Results" MODIFIED="1707152506321" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/MLOPS$trackingfiles_download.coverage" NAME="trackingfiles_download Coverage Results" MODIFIED="1709493326397" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/MLOPS$data_preprocessing.coverage" NAME="data_preprocessing Coverage Results" MODIFIED="1703080833046" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/MLOPS$train_ludwig_model.coverage" NAME="train_ludwig_model Coverage Results" MODIFIED="1708264889179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/MLOPS$train_ludwig_model__1_.coverage" NAME="train_ludwig_model (1) Coverage Results" MODIFIED="1715160076375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+  </component>
+</project>
