@@ -1,30 +1,25 @@
-FROM python:3.9-slim-bookworm
+FROM glennverhaag/mlops:mlops-base-latest
 
 WORKDIR /usr/src/app
 ENV DAGSTER_HOME=/usr/src/app/my-dagster-project
-RUN apt-get update && apt-get install -y git
 
-RUN apt install gcc musl-dev python3-dev -y
-RUN pip install --upgrade pip
+RUN mkdir -p -m 0600 ~/.ssh && \
+    ssh-keyscan -H github.com bitbucket.org >> ~/.ssh/known_hosts
+RUN --mount=type=ssh \
+    git clone git@github.com:PriXss/MLOPS.git .
 
-RUN git clone https://github.com/PriXss/MLOPS.git .
 RUN git checkout DagsterPipelineProdRun
 RUN git pull
 
+RUN touch test.txt
+RUN git add .
+RUN git commit -m "Jo"
+RUN git push --force
 
 WORKDIR /usr/src/app/my-dagster-project
 
-RUN apt install -y python3-boto3
-RUN pip install dagster dagster-webserver dagit boto3 pandas pyarrow botocore dagster-postgres SQLAlchemy psycopg2-binary
-
-RUN pip install -r requirements.txt
-#RUN pip install ludwig --no-binary :all:
 COPY .env .
 
-RUN pip install dvc
-
-RUN git config --global user.email "bajonettgaming@gmail.com"
-RUN git config --global user.name "PriXss"
 
 EXPOSE 3000
 

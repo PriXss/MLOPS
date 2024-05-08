@@ -6,8 +6,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - 3000:3000
-    #volumes:
-      #- volume-data:/usr/src/app
 
   dagster-daemon:
     build:
@@ -17,8 +15,6 @@ services:
     environment:
       - PGPASS=demopass
       - PGUID=postgres
-    #volumes:
-      #- volume-data:/usr/src/app
 
   dagster-postgres:
     image: postgres:13.3

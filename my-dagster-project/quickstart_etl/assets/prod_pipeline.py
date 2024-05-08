@@ -388,38 +388,14 @@ def setupDVCandVersioningBucket(context) -> None:
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
 
-    try:
-        subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
-
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing DVC command: {e}")
-    print("DVC command executed successfully")
+    subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
+    subprocess.run(["dvc", "commit"])
+    subprocess.run(["dvc", "push"])
     
-    
-    try:
-        subprocess.run(["dvc", "commit"])
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing DVC command: {e}")
-    print("DVC command executed successfully")
-    
-    
-    try:
-        subprocess.run(["dvc", "push"])
-
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing DVC command: {e}")
-    print("DVC command executed successfully")
-    
-    
-
-
-    #subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
-    #subprocess.run(["dvc", "commit"])
-    #subprocess.run(["dvc", "push"])
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
-    subprocess.run(["git", "push" "-u" "origin" "DagsterPipelineProdRun"])
-    
+    subprocess.run(["git", "push", "origin", "DagsterPipelineProdRun"])
+     
 
   
 @asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
