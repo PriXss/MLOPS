@@ -524,7 +524,7 @@ def requestToModel(context) -> None:
 
     
 
-@asset(deps=[fetchStockDataFromSource], group_name="MonitoringPhase", compute_kind="Reporting")
+@asset(deps=[requestToModel], group_name="MonitoringPhase", compute_kind="Reporting")
 def monitoringAndReporting(context) -> None:
     
     ##### Ignore warnings #####
