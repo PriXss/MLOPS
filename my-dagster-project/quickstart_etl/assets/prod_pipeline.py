@@ -417,9 +417,11 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
     
+    context.log.info('Continueing with Git')
+
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
-    subprocess.run(["git", "push", "origin", "DagsterPipelineProdRun"])
+    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
      
 
   
