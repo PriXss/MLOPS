@@ -419,6 +419,8 @@ def setupDVCandVersioningBucket(context) -> None:
     
     context.log.info('Continueing with Git')
     
+    subprocess.run(["git", "config", "--global", "user.email", "bajonettgaming@gmail.com"])
+    subprocess.run(["git", "config", "--global", "user.name", "PriXss"])
     subprocess.run(["git", "remote", "set-url", "origin",  "https://PriXss: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@github.com/PriXss/MLOPS.git"])
 
     subprocess.run(["git", "add", "."])
