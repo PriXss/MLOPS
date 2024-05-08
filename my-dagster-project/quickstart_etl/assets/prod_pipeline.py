@@ -419,9 +419,7 @@ def setupDVCandVersioningBucket(context) -> None:
     
     context.log.info('Continueing with Git')
     
-    
-    subprocess.run(["git", "remote", "set-url", "origin"  "https://PriXss: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@github.com/PriXss/MLOPS.git"])
-
+    subprocess.run(["git", "remote", "set-url", "origin",  "https://PriXss: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@github.com/PriXss/MLOPS.git"])
 
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
@@ -480,6 +478,8 @@ def getStockData(context) -> None:
 
     
     subprocess.run(["git", "add", f"data/{file_name}.dvc"])
+    subprocess.run(["git", "add", f"data/.gitignore"])
+
     subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
     context.log.info('Data git pushed')
