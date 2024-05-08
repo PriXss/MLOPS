@@ -420,7 +420,7 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
     
-    context.log.info('Continueing with Git')
+    context.log.info('Continuing with Git')
 
     #subprocess.run(["git", "remote", "set-url", "origin",  "https://PriXss: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@github.com/PriXss/MLOPS.git"])
 
@@ -459,13 +459,9 @@ def fetchStockDataFromSource(context) -> None:
 @asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI")
 def requestToModel(context) -> None:
      
-    ##### Get Input Data from csv file in S3 bucket ##### 
-    bucket = os.getenv("STOCK_INPUT_BUCKET")
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
-    obj = s3_client.get_object(Bucket= bucket, Key= file_name) 
-    df = pd.read_csv(obj['Body'])
-    context.log.info('Data Extraction complete')
+    df = pd.read_csv(f"data/{file_name}")
     context.log.info(df.head())
     
     ##### Prepare the payload and headers #####  
@@ -486,6 +482,15 @@ def requestToModel(context) -> None:
 
     ##### Upload prediction to S3 bucket #####
     path = f"predictions/{result_file_name}"
+    
+    subprocess.run(["dvc", "add", path])
+    print('DVC add successfully')
+    subprocess.run(["dvc", "commit"])
+    subprocess.run(["dvc", "push"])
+    print('DVC push successfully')   
+    
+    
+    
     bucket = os.getenv("PREDICTIONS_BUCKET")
     try:
         s3_client.head_object(Bucket=bucket, Key=result_file_name)
@@ -504,20 +509,22 @@ def requestToModel(context) -> None:
     s3_client.upload_file(path, bucket, result_file_name)
     context.log.info("Upload to S3 succesful")
     
-    subprocess.run(["dvc", "add", path])
-    subprocess.run(["git", "add", path])
-    subprocess.run(["git", "add", "predictions/.gitignore"])
+    
+    s3_client.put_object(
+    Bucket= os.getenv("PREDICTION_HISTORY"),
+    Key= timestamp+"/"
+    )
+    subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("PREDICTION_HISTORY") + "/" +timestamp])
+    subprocess.run(["dvc", "commit"])
+    subprocess.run(["dvc", "push"])
+    
+    
+    #subprocess.run(["git", "add", path])
+    #subprocess.run(["git", "add", "predictions/.gitignore"])
 
     
-@asset(deps=[requestToModel], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
-def versionPrediction(context) -> None:
-  
-    subprocess.run(["git", "commit", "-m", "Add new Predicition from Prod Run"])
-    subprocess.run(["dvc", "push"])
-    context.log.info('Prediction successfully versioned')
 
-
-@asset(deps=[versionPrediction], group_name="MonitoringPhase", compute_kind="Reporting")
+@asset(deps=[fetchStockDataFromSource], group_name="MonitoringPhase", compute_kind="Reporting")
 def monitoringAndReporting(context) -> None:
     
     ##### Ignore warnings #####
