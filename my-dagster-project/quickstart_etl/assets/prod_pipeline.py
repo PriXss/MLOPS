@@ -139,7 +139,7 @@ def process_and_upload_symbol_data(
         if not upload_abgelehnt:
         # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
             try:
-                subprocess.run(["dvc", "add", "{output_directory}/{csv_filename}"])
+                subprocess.run(["dvc", "add", f"{output_directory}/{csv_filename}"])
                 print('DVC add successfully')
                 subprocess.run(["dvc", "commit"])
                 subprocess.run(["dvc", "push"])
@@ -150,7 +150,7 @@ def process_and_upload_symbol_data(
                 print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
             except Exception as e:
                 print(f'Ein Fehler ist aufgetreten: {str(e)}')
-        subprocess.run("git", "add", f"{output_directory}/{csv_filename}", shell=True) 
+        subprocess.run(["git", "add", f"{output_directory}/{csv_filename}"]) 
 
 
 session = boto3.session.Session()
@@ -501,7 +501,7 @@ def requestToModel(context) -> None:
     
     dvcpath= path+".dvc"
     
-    subprocess.call(["git", "add", dvcpath])
+    subprocess.call(["git", "add", f"{dvcpath}"])
     subprocess.call(["git", "add", "predictions/.gitignore"])
     print("added prediction files to git ")
 
@@ -556,7 +556,7 @@ def monitoringAndReporting(context) -> None:
     subprocess.run(["dvc", "push"])
     print('DVC push successfully')   
     
-    subprocess.run("git", "add", "reportings/.gitignore", "reportings/report.html.dvc", shell=True)
+    subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
     print("added reporting files to git ")
-    subprocess.run("git", "commit", "-m", f"Pipeline run from {timestamp} run",shell=True)
-    subprocess.run("git", "push", shell=True)
+    subprocess.run(["git", "commit", "-m", f"Pipeline run from {timestamp} run"])
+    subprocess.run(["git", "push"])
