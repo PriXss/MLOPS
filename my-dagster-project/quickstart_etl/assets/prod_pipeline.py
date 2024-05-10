@@ -428,7 +428,7 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.run(["git", "config", "--global", f"user.email={email}"])
     subprocess.run(["git", "config", "--global", f"user.name={name}"])
     
-    subprocess.run([f"GIT_AITHOR_EMAIL={email}", "&&", f"GIT_AUTHOR_NAME={name}", f"user.name={name}"])
+    subprocess.run([f"GIT_AUTHOR_EMAIL={email}", "&&", f"GIT_AUTHOR_NAME={name}"])
 
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
