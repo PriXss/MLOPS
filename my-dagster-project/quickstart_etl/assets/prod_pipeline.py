@@ -412,15 +412,9 @@ def setupDVCandVersioningBucket(context) -> None:
     Bucket= os.getenv("VERSIONING_BUCKET"),
     Key= timestamp+"/"
     )
-
-    subprocess.run(["git", "remote", "set-url", "origin", "https://PriXss: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@github.com/PriXss/MLOPS.git"])
-    print("pulling latest repo commits")
+    
     subprocess.run(["git", "pull"])
     print("rep up to date")
-    
-    print("pushing")
-    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
-
     
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
     subprocess.run(["dvc", "commit"])
@@ -560,4 +554,4 @@ def monitoringAndReporting(context) -> None:
     
     subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
     subprocess.run(["git", "commit", "-m", f"Pipeline run from {timestamp} run"])
-    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
+    subprocess.run(["git", "push"])
