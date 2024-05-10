@@ -12,6 +12,7 @@ RUN git pull
 RUN cd my-dagster-project
 
 
+
 WORKDIR /usr/src/app/my-dagster-project
 
 COPY .env .
