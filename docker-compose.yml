@@ -16,11 +16,6 @@ services:
     command: server --console-address ":9090" /data
     restart: always
 
-
-
-
-
-
 volumes:
   minio-data:
     driver: local

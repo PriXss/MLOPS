@@ -4,6 +4,7 @@ FROM python:3.11.7
 # Setze das Arbeitsverzeichnis im Container
 WORKDIR /app
 
+COPY .env .
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
