@@ -419,9 +419,16 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.call(["git", "pull"])
     print("repo is up to date")
     
+    subprocess.run(["git", "config", "--local", "user.email", "PriXss@users.noreply.github.com"])
+    subprocess.run(["git", "config", "--local", "user.name", "Marcel Thomas"])
+    
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
+
+    subprocess.run(["git", "add", "../.dvc/config"])
+
+
 
   
 @asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
