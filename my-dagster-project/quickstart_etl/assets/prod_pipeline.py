@@ -419,9 +419,9 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.call(["git", "pull"])
     print("repo is up to date")
     
-    subprocess.run(["git", "config", "--local", "user.email", "PriXss@users.noreply.github.com"])
-    subprocess.run(["git", "config", "--local", "user.name", "Marcel Thomas"])
-    
+    subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
+    subprocess.run(["git", "config", "--global", "user.email", "PriXss@users.noreply.github.com"])
+        
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
@@ -568,4 +568,4 @@ def monitoringAndReporting(context) -> None:
     subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
     print("added reporting files to git ")
     subprocess.run(["git", "commit", "-m", f"Pipeline run from: {timestamp}"])
-    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
+    subprocess.run(["git", "push"])
