@@ -22,6 +22,9 @@ import warnings
 #import mlflow
 from botocore.exceptions import NoCredentialsError
 from dvc.repo import Repo
+from git import Repo
+
+existing_repo = Repo('usr/src/app/')
 
 timestamp=""
 
@@ -139,18 +142,23 @@ def process_and_upload_symbol_data(
         if not upload_abgelehnt:
         # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
             try:
-                subprocess.run(["dvc", "add", f"{output_directory}/{csv_filename}"])
+                subprocess.run(["dvc", "add", "{output_directory}/{csv_filename}"])
                 print('DVC add successfully')
                 subprocess.run(["dvc", "commit"])
                 subprocess.run(["dvc", "push"])
                 print('DVC push successfully')  
-                subprocess.call(["git", "add", f"{output_directory}/{csv_filename}"]) 
             except FileNotFoundError:
                 print(f'Die Datei {csv_filepath} wurde nicht gefunden.')
             except NoCredentialsError:
                 print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
             except Exception as e:
                 print(f'Ein Fehler ist aufgetreten: {str(e)}')
+        subprocess.call(["git", "add", f"{output_directory}/{csv_filename}"]) 
+        existing_repo.index.add([f"{output_directory}/{csv_filename}"])
+        existing_repo.index.commit(["Testcommit"])
+        origin = existing_repo.remote(name='origin')
+        origin.push()
+
 
 
 session = boto3.session.Session()
