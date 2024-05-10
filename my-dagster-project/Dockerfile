@@ -10,6 +10,7 @@ RUN git pull
 RUN cd my-dagster-project
 
 RUN git remote set-url origin  https://PriXss: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@github.com/PriXss/MLOPS.git
+RUN git config --global credential.helper '!f() { sleep 1; echo "username=git token=<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>"; }; f'
 
 WORKDIR /usr/src/app/my-dagster-project
 

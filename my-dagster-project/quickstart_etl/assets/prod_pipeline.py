@@ -560,3 +560,8 @@ def monitoringAndReporting(context) -> None:
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
     print('DVC push successfully')   
+    
+    subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
+    subprocess.run(["git", "commit", "-m", f"Pipeline run from {timestamp} run"])
+    subprocess.run(["git", "push", "reportings/.gitignore", "reportings/report.html.dvc"])
+    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
