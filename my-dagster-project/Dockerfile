@@ -3,23 +3,15 @@ FROM glennverhaag/mlops:mlops-base-latest
 WORKDIR /usr/src/app
 ENV DAGSTER_HOME=/usr/src/app/my-dagster-project
 
-RUN mkdir -p -m 0600 ~/.ssh && \
-    ssh-keyscan -H github.com bitbucket.org >> ~/.ssh/known_hosts
-RUN --mount=type=ssh \
-    git clone git@github.com:PriXss/MLOPS.git .
+RUN pip install dvc_s3
 
-RUN git checkout DagsterPipelineProdRun
-RUN git pull
+ARG TOKEN=invalidtoken
 
-RUN touch test.txt
-RUN git add .
-RUN git commit -m "Jo"
-RUN git push --force
+RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=DagsterPipelineProdRun .
 
 WORKDIR /usr/src/app/my-dagster-project
 
 COPY .env .
-
 
 EXPOSE 3000
 

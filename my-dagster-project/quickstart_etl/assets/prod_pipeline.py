@@ -25,7 +25,6 @@ from dvc.repo import Repo
 
 timestamp=""
 
-
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
             if reihe[spalte] < min_wert or reihe[spalte] > max_wert:
@@ -35,15 +34,8 @@ def pruefe_extreme_werte(reihe, grenzwerte):
 def process_and_upload_symbol_data(
         symbol,
         api_key=os.getenv("API_KEY"),
-        minio_access_key=os.getenv("AWS_ACCESS_KEY_ID"),
-        minio_secret_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-        minio_endpoint=os.getenv("ENDPOINT_URL"),
-        minio_bucket=os.getenv("STOCK_INPUT_BUCKET"),
         output_directory=os.getenv("OUTPUT_DIRECTORY")
         ):
-
-        # S3-Verbindung herstellen
-        s3 = boto3.client('s3', aws_access_key_id=minio_access_key, aws_secret_access_key=minio_secret_key, endpoint_url=minio_endpoint)
 
     # Speicherung der CSV Datei
         if not os.path.exists(output_directory):
@@ -147,14 +139,20 @@ def process_and_upload_symbol_data(
         if not upload_abgelehnt:
         # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
             try:
-                s3.upload_file(csv_filepath, minio_bucket, minio_object_name)
-                print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
+                subprocess.run(["dvc", "add", f"{output_directory}/{csv_filename}"])
+                print('DVC add successfully')
+                subprocess.run(["dvc", "commit"])
+                subprocess.run(["dvc", "push"])
+                print('DVC push successfully')  
             except FileNotFoundError:
                 print(f'Die Datei {csv_filepath} wurde nicht gefunden.')
             except NoCredentialsError:
                 print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
             except Exception as e:
                 print(f'Ein Fehler ist aufgetreten: {str(e)}')
+        subprocess.run(["git", "add", f"{output_directory}/{csv_filename}.dvc"]) 
+        subprocess.run(["git", "add", f"{output_directory}/.gitignore"]) 
+
 
 
 session = boto3.session.Session()
@@ -413,21 +411,32 @@ def setupDVCandVersioningBucket(context) -> None:
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
 
+    s3_client.put_object(
+    Bucket= os.getenv("VERSIONING_BUCKET"),
+    Key= timestamp+"/"
+    )
+    
+    subprocess.call(["git", "pull"])
+    print("repo is up to date")
+    
+    subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
+    subprocess.run(["git", "config", "--global", "user.email", "PriXss@users.noreply.github.com"])
+        
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
-    
-    subprocess.run(["git", "add", "."])
-    subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
-    subprocess.run(["git", "push", "origin", "DagsterPipelineProdRun"])
-     
+
+    subprocess.run(["git", "add", "../.dvc/config"])
+
+
 
   
 @asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
 def fetchStockDataFromSource(context) -> None:
     
 
-    symbols = ['AAPL', 'IBM', 'TSLA', 'NKE', 'AMZN', 'MSFT', 'GOOGL']
+    #symbols = ['AAPL', 'IBM', 'TSLA', 'NKE', 'AMZN', 'MSFT', 'GOOGL']
+    symbols = [os.getenv("STOCK_INPUT")]
 
     print("Starte den Prozess...")
         
@@ -438,12 +447,8 @@ def fetchStockDataFromSource(context) -> None:
             print(f"Verarbeite Symbol: {symbol}")
             process_and_upload_symbol_data(
                     api_key='69SMJJ4C2JIW86LI',
-                    minio_access_key='test',
-                    minio_secret_key='testpassword',
-                    minio_endpoint='http://85.215.53.91:9000',
-                    minio_bucket='data',
                     symbol=symbol,
-                    output_directory='output'
+                    output_directory='data'
                 )
             processed_symbols.append(symbol)  # Füge das Symbol zur Liste der verarbeiteten Symbole hinzu
         else:
@@ -452,40 +457,12 @@ def fetchStockDataFromSource(context) -> None:
     print("Prozess abgeschlossen.")
 
 
-@asset(deps=[fetchStockDataFromSource] ,group_name="DataCollectionPhase", compute_kind="S3DataCollection")
-def getStockData(context) -> None:
-    
-    bucket = os.getenv("STOCK_INPUT_BUCKET")
-    stock_name= os.getenv("STOCK_NAME")
-    file_name = "data_"+stock_name+".csv"
-    obj = s3_client.get_object(Bucket= bucket, Key= file_name) 
-    initial_df = pd.read_csv(obj['Body'])
-    context.log.info('Data Extraction complete')
-    context.log.info(initial_df.head())
-    os.makedirs("data", exist_ok=True)
-    initial_df.to_csv(f'data/{file_name}', index=False)        
-
-    subprocess.run(["dvc", "add", f"data/{file_name}"])
-
-    subprocess.run(["dvc", "commit"])
-    subprocess.run(["dvc", "push"])
-    subprocess.run(["git", "add", f"data/{file_name}.dvc"])
-    subprocess.run(["git", "commit", "-m", "Add new Data for Todays run"])
-    subprocess.run(["git", "push"])
-    context.log.info('Data successfully versioned')
-
-
-
-@asset(deps=[getStockData], group_name="ModelPhase", compute_kind="ModelAPI")
+@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI")
 def requestToModel(context) -> None:
      
-    ##### Get Input Data from csv file in S3 bucket ##### 
-    bucket = os.getenv("STOCK_INPUT_BUCKET")
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
-    obj = s3_client.get_object(Bucket= bucket, Key= file_name) 
-    df = pd.read_csv(obj['Body'])
-    context.log.info('Data Extraction complete')
+    df = pd.read_csv(f"data/{file_name}")
     context.log.info(df.head())
     
     ##### Prepare the payload and headers #####  
@@ -506,6 +483,7 @@ def requestToModel(context) -> None:
 
     ##### Upload prediction to S3 bucket #####
     path = f"predictions/{result_file_name}"
+    
     bucket = os.getenv("PREDICTIONS_BUCKET")
     try:
         s3_client.head_object(Bucket=bucket, Key=result_file_name)
@@ -524,20 +502,20 @@ def requestToModel(context) -> None:
     s3_client.upload_file(path, bucket, result_file_name)
     context.log.info("Upload to S3 succesful")
     
-    subprocess.run(["dvc", "add", path])
-    subprocess.run(["git", "add", path])
-    subprocess.run(["git", "add", "predictions/.gitignore"])
-
-    
-@asset(deps=[requestToModel], group_name="VersioningPhase", compute_kind="DVCDataVersioning")
-def versionPrediction(context) -> None:
-  
-    subprocess.run(["git", "commit", "-m", "Add new Predicition from Prod Run"])
+    subprocess.run(["dvc", "add", f"predictions/{result_file_name}"])
+    print('DVC add successfully')
+    subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
-    context.log.info('Prediction successfully versioned')
+    print('DVC push successfully')   
+    
+    dvcpath= path+".dvc"
+    
+    subprocess.call(["git", "add", f"{dvcpath}"])
+    subprocess.call(["git", "add", "predictions/.gitignore"])
+    print("added prediction files to git ")
 
 
-@asset(deps=[versionPrediction], group_name="MonitoringPhase", compute_kind="Reporting")
+@asset(deps=[requestToModel], group_name="MonitoringPhase", compute_kind="Reporting")
 def monitoringAndReporting(context) -> None:
     
     ##### Ignore warnings #####
@@ -570,12 +548,24 @@ def monitoringAndReporting(context) -> None:
         RegressionPreset()
     ])
 
+    os.makedirs("reportings", exist_ok=True)
     reportName=os.getenv("REPORT_NAME")
+    reportPath= f"reportings/{reportName}"
     report.run(reference_data=None, current_data=df)
-    report.save_html(reportName)    
+    report.save_html(reportPath)    
 
     reportsBucket= os.getenv("REPORT_BUCKET")
     path = data_stock+"/"+data_model_version+"/"+reportName
 
-    s3_client.upload_file(reportName ,reportsBucket, path)      
+    s3_client.upload_file(reportPath ,reportsBucket, path)      
     
+    subprocess.run(["dvc", "add", reportPath])
+    print('DVC add successfully')
+    subprocess.run(["dvc", "commit"])
+    subprocess.run(["dvc", "push"])
+    print('DVC push successfully')   
+    
+    subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
+    print("added reporting files to git ")
+    subprocess.run(["git", "commit", "-m", f"Pipeline run from: {timestamp}"])
+    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
