@@ -10,10 +10,6 @@ RUN git pull
 RUN cd my-dagster-project
 
 RUN git remote set-url origin  https://PriXss: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@github.com/PriXss/MLOPS.git
-RUN git config --global user.email="PriXss@users.noreply.github.com"
-RUN git config --global user.name="Marcel"
-RUN GIT_AUTHOR_EMAIL="PriXss@users.noreply.github.com" && GIT_AUTHOR_NAME="Marcel" && git commit
-
 
 WORKDIR /usr/src/app/my-dagster-project
 
