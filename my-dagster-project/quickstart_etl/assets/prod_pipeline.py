@@ -418,9 +418,11 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.run(["git", "pull"])
     print("rep up to date")
     
-    
-    subprocess.run(["git", "config", "--global", "credential.helper", "store"])
-    subprocess.run(["git", "push", "https://PriXss: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@github.com/PriXss/MLOPS.git"])
+    print("pushing")
+    subprocess.run(["git", "config", "--local", "user.email" "PriXss@users.noreply.github.com"])
+    subprocess.run(["git", "config", "--local", "user.name" "Marcel"])
+    subprocess.run(["git", "push"])
+
     
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
     subprocess.run(["dvc", "commit"])
