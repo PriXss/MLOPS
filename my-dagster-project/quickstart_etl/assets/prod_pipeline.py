@@ -23,10 +23,6 @@ import warnings
 from botocore.exceptions import NoCredentialsError
 from dvc.repo import Repo
 
-timestamp=""
-name="Marcel"
-email="PriXss@users.noreply.github.com"
-
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
             if reihe[spalte] < min_wert or reihe[spalte] > max_wert:
@@ -415,20 +411,13 @@ def setupDVCandVersioningBucket(context) -> None:
     Key= timestamp+"/"
     )
 
+    subprocess.run(["git", "remote", "set-url", "origin", "https://PriXss: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@github.com/PriXss/MLOPS.git"])
+    subprocess.run(["git", "pull"])
+    
+    
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
-    
-    
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
-    
-    context.log.info('Continuing with Git')
-
-    subprocess.run(["git", "remote", "set-url", "origin", "https://PriXss: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@github.com/PriXss/MLOPS.git"])
-    
-    subprocess.run(["git", "config", "--global", f"user.email={email}"])
-    subprocess.run(["git", "config", "--global", f"user.name={name}"])
-    
-    subprocess.run([f"GIT_AUTHOR_EMAIL={email}", "&&", f"GIT_AUTHOR_NAME={name}"])
 
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
