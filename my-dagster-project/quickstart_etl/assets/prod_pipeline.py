@@ -413,15 +413,13 @@ def setupDVCandVersioningBucket(context) -> None:
     Key= timestamp+"/"
     )
 
-    subprocess.run(["git", "remote", "set-url", "origin", "https://PriXss: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@github.com/PriXss/MLOPS.git"])
+    subprocess.run(["git", "remote", "set-url", "origin", "https://PriXss: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@github.com/PriXss/MLOPS.git"])
     print("pulling latest repo commits")
     subprocess.run(["git", "pull"])
     print("rep up to date")
     
     print("pushing")
-    subprocess.run(["git", "config", "--local", "user.email" "PriXss@users.noreply.github.com"])
-    subprocess.run(["git", "config", "--local", "user.name" "Marcel"])
-    subprocess.run(["git", "push"])
+    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
 
     
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])

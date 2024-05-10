@@ -9,7 +9,10 @@ RUN git pull
 
 RUN cd my-dagster-project
 
-RUN git remote set-url origin  https://PriXss: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@github.com/PriXss/MLOPS.git
+RUN git remote set-url origin  https://PriXss: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@github.com/PriXss/MLOPS.git
+RUN git config --local user.email "PriXss@users.noreply.github.com"
+RUN git config --local user.name "Marcel"
+RUN git push -u origin DagsterPipelineProdRun
 
 WORKDIR /usr/src/app/my-dagster-project
 
