@@ -568,4 +568,4 @@ def monitoringAndReporting(context) -> None:
     subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
     print("added reporting files to git ")
     subprocess.run(["git", "commit", "-m", f"Pipeline run from: {timestamp}"])
-    subprocess.run(["git", "push"])
+    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
