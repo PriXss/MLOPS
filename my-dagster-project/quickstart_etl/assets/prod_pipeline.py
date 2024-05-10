@@ -483,14 +483,6 @@ def requestToModel(context) -> None:
     ##### Upload prediction to S3 bucket #####
     path = f"predictions/{result_file_name}"
     
-    subprocess.run(["dvc", "add", path])
-    print('DVC add successfully')
-    subprocess.run(["dvc", "commit"])
-    subprocess.run(["dvc", "push"])
-    print('DVC push successfully')   
-    
-    
-    
     bucket = os.getenv("PREDICTIONS_BUCKET")
     try:
         s3_client.head_object(Bucket=bucket, Key=result_file_name)
@@ -509,20 +501,15 @@ def requestToModel(context) -> None:
     s3_client.upload_file(path, bucket, result_file_name)
     context.log.info("Upload to S3 succesful")
     
-    
-    s3_client.put_object(
-    Bucket= os.getenv("PREDICTION_HISTORY"),
-    Key= timestamp+"/"
-    )
-    subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("PREDICTION_HISTORY") + "/" +timestamp])
+    subprocess.run(["dvc", "add", f"predictions/{result_file_name}"])
+    print('DVC add successfully')
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
-    
+    print('DVC push successfully')   
     
     #subprocess.run(["git", "add", path])
     #subprocess.run(["git", "add", "predictions/.gitignore"])
 
-    
 
 @asset(deps=[requestToModel], group_name="MonitoringPhase", compute_kind="Reporting")
 def monitoringAndReporting(context) -> None:
