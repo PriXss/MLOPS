@@ -422,8 +422,7 @@ def setupDVCandVersioningBucket(context) -> None:
     
     context.log.info('Continuing with Git')
 
-    #subprocess.run(["git", "remote", "set-url", "origin",  "https://PriXss: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@github.com/PriXss/MLOPS.git"])
-
+    subprocess.run(["git", "remote", "set-url", "origin",  "https://PriXss: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@github.com/PriXss/MLOPS.git"])
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
