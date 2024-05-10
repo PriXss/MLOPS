@@ -544,9 +544,9 @@ def monitoringAndReporting(context) -> None:
         RegressionPreset()
     ])
 
-    os.makedirs("reports", exist_ok=True)
+    os.makedirs("reportings", exist_ok=True)
     reportName=os.getenv("REPORT_NAME")
-    reportPath= f"reports/{reportName}"
+    reportPath= f"reportings/{reportName}"
     report.run(reference_data=None, current_data=df)
     report.save_html(reportPath)    
 
