@@ -544,12 +544,19 @@ def monitoringAndReporting(context) -> None:
         RegressionPreset()
     ])
 
+    os.makedirs("reports", exist_ok=True)
     reportName=os.getenv("REPORT_NAME")
+    reportPath= f"reports/{reportName}"
     report.run(reference_data=None, current_data=df)
-    report.save_html(reportName)    
+    report.save_html(reportPath)    
 
     reportsBucket= os.getenv("REPORT_BUCKET")
     path = data_stock+"/"+data_model_version+"/"+reportName
 
-    s3_client.upload_file(reportName ,reportsBucket, path)      
+    s3_client.upload_file(reportPath ,reportsBucket, path)      
     
+    subprocess.run(["dvc", "add", reportPath])
+    print('DVC add successfully')
+    subprocess.run(["dvc", "commit"])
+    subprocess.run(["dvc", "push"])
+    print('DVC push successfully')   
