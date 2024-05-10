@@ -150,7 +150,9 @@ def process_and_upload_symbol_data(
                 print('Zugriffsberechtigungsfehler. Stellen Sie sicher, dass Ihre Minio S3-Zugriffsdaten korrekt sind.')
             except Exception as e:
                 print(f'Ein Fehler ist aufgetreten: {str(e)}')
-        subprocess.run(["git", "add", f"{output_directory}/{csv_filename}"]) 
+        subprocess.run(["git", "add", f"{output_directory}/{csv_filename}.dvc"]) 
+        subprocess.run(["git", "add", f"{output_directory}/.gitignore"]) 
+
 
 
 session = boto3.session.Session()
