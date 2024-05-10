@@ -23,6 +23,8 @@ import warnings
 from botocore.exceptions import NoCredentialsError
 from dvc.repo import Repo
 
+timestamp=""
+
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
             if reihe[spalte] < min_wert or reihe[spalte] > max_wert:
@@ -412,17 +414,17 @@ def setupDVCandVersioningBucket(context) -> None:
     )
 
     subprocess.run(["git", "remote", "set-url", "origin", "https://PriXss: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@github.com/PriXss/MLOPS.git"])
+    print("pulling latest repo commits")
     subprocess.run(["git", "pull"])
+    print("rep up to date")
     
+    
+    subprocess.run(["git", "config", "--global", "credential.helper", "store"])
+    subprocess.run(["git", "push", "https://PriXss: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@github.com/PriXss/MLOPS.git"])
     
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
-
-    subprocess.run(["git", "add", "."])
-    subprocess.run(["git", "commit", "-m", "Add new DVC Config for todays run"])
-    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
-
 
   
 @asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
@@ -558,5 +560,4 @@ def monitoringAndReporting(context) -> None:
     
     subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
     subprocess.run(["git", "commit", "-m", f"Pipeline run from {timestamp} run"])
-    subprocess.run(["git", "push", "reportings/.gitignore", "reportings/report.html.dvc"])
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
