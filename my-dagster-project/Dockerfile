@@ -5,9 +5,9 @@ ENV DAGSTER_HOME=/usr/src/app/my-dagster-project
 
 RUN pip install dvc_s3
 
-ENV TOKEN=$GIT_TOKEN
+ARG TOKEN=invalidtoken
 
-RUN git clone https://PriXss:TOKEN@github.com/PriXss/MLOPS.git --branch=DagsterPipelineProdRun .
+RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=DagsterPipelineProdRun .
 
 WORKDIR /usr/src/app/my-dagster-project
 
