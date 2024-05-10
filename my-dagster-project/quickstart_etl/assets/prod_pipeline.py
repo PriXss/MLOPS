@@ -22,9 +22,6 @@ import warnings
 #import mlflow
 from botocore.exceptions import NoCredentialsError
 from dvc.repo import Repo
-from git import Repo
-
-existing_repo = Repo('usr/src/app/')
 
 timestamp=""
 
@@ -154,11 +151,6 @@ def process_and_upload_symbol_data(
             except Exception as e:
                 print(f'Ein Fehler ist aufgetreten: {str(e)}')
         subprocess.call(["git", "add", f"{output_directory}/{csv_filename}"]) 
-        existing_repo.index.add([f"{output_directory}/{csv_filename}"])
-        existing_repo.index.commit(["Testcommit"])
-        origin = existing_repo.remote(name='origin')
-        origin.push()
-
 
 
 session = boto3.session.Session()
