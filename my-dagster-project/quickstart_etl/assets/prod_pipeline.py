@@ -143,7 +143,8 @@ def process_and_upload_symbol_data(
                 print('DVC add successfully')
                 subprocess.run(["dvc", "commit"])
                 subprocess.run(["dvc", "push"])
-                print('DVC push successfully')   
+                print('DVC push successfully')  
+                subprocess.call(["git", "add", f"{output_directory}/{csv_filename}"]) 
             except FileNotFoundError:
                 print(f'Die Datei {csv_filepath} wurde nicht gefunden.')
             except NoCredentialsError:
@@ -413,7 +414,7 @@ def setupDVCandVersioningBucket(context) -> None:
     Key= timestamp+"/"
     )
     
-    subprocess.run(["git", "pull"])
+    subprocess.call(["git", "pull"])
     print("repo is up to date")
     
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
@@ -500,8 +501,8 @@ def requestToModel(context) -> None:
     
     dvcpath= path+".dvc"
     
-    subprocess.run(["git", "add", dvcpath])
-    subprocess.run(["git", "add", "predictions/.gitignore"])
+    subprocess.call(["git", "add", dvcpath])
+    subprocess.call(["git", "add", "predictions/.gitignore"])
     print("added prediction files to git ")
 
 
@@ -555,7 +556,7 @@ def monitoringAndReporting(context) -> None:
     subprocess.run(["dvc", "push"])
     print('DVC push successfully')   
     
-    subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
+    subprocess.call(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
     print("added reporting files to git ")
-    subprocess.run(["git", "commit", "-m", f"Pipeline run from {timestamp} run"])
-    subprocess.run(["git", "push"])
+    subprocess.call(["git", "commit", "-m", f"Pipeline run from {timestamp} run"])
+    subprocess.call(["git", "push"])
