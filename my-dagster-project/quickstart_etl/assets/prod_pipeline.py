@@ -414,7 +414,7 @@ def setupDVCandVersioningBucket(context) -> None:
     )
     
     subprocess.run(["git", "pull"])
-    print("rep up to date")
+    print("repo is up to date")
     
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
     subprocess.run(["dvc", "commit"])
@@ -498,8 +498,11 @@ def requestToModel(context) -> None:
     subprocess.run(["dvc", "push"])
     print('DVC push successfully')   
     
-    #subprocess.run(["git", "add", path])
-    #subprocess.run(["git", "add", "predictions/.gitignore"])
+    dvcpath= path+".dvc"
+    
+    subprocess.run(["git", "add", dvcpath])
+    subprocess.run(["git", "add", "predictions/.gitignore"])
+    print("added prediction files to git ")
 
 
 @asset(deps=[requestToModel], group_name="MonitoringPhase", compute_kind="Reporting")
@@ -553,5 +556,6 @@ def monitoringAndReporting(context) -> None:
     print('DVC push successfully')   
     
     subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
+    print("added reporting files to git ")
     subprocess.run(["git", "commit", "-m", f"Pipeline run from {timestamp} run"])
     subprocess.run(["git", "push"])
