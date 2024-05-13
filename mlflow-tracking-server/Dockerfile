@@ -1,5 +1,5 @@
 # Verwende ein Basisimage, das die erforderlichen Tools enthält (z. B. Python)
-FROM python:3.11.7
+FROM python:3.11
 
 # Setze das Arbeitsverzeichnis im Container
 WORKDIR /app

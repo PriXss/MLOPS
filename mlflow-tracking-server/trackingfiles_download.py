@@ -8,6 +8,10 @@ def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_dir
     # Liste aller Objekte im MLflow-Bucket abrufen
     mlflow_objects = s3_client.list_objects_v2(Bucket=mlflow_bucket_name)['Contents']
 
+    # Ludwig-Konfigurationsdatei und Modellname extrahieren
+    ludwig_config_file_name = "ludwig_MLCore.yaml"
+    model_name = extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, s3_client)
+
     # Lokales Verzeichnis für mlruns erstellen, falls es nicht existiert
     mlruns_dir = os.path.join(local_directory, 'mlruns', '0')
     os.makedirs(mlruns_dir, exist_ok=True)
@@ -55,17 +59,31 @@ def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_dir
     s3_client.download_file(modelconfigs_bucket_name, 'meta.yaml', modelconfigs_meta_yaml_path)
 
 
+def extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, s3_client):
+    # Ludwig-Konfigurationsdatei aus dem S3-Bucket herunterladen
+    obj = s3_client.get_object(Bucket=modelconfigs_bucket_name, Key=ludwig_config_file_name)
+    ludwig_config_content = obj['Body'].read().decode('utf-8')
+
+    # Modellnamen aus der Ludwig-Konfigurationsdatei extrahieren
+    yaml_content = yaml.safe_load(ludwig_config_content)
+    if 'model' in yaml_content and 'type' in yaml_content['model']:
+        model_name = yaml_content['model']['type']
+        return model_name
+    else:
+        raise ValueError("Model name not found in Ludwig config file.")
+
+
 if __name__ == "__main__":
     # Bucket-Namen und lokales Verzeichnis festlegen
-    mlflow_bucket_name = os.getenv("MLFLOW_BUCKET")
-    modelconfigs_bucket_name = os.getenv("MODEL_CONFIG_BUCKET")
-
+    mlflow_bucket_name = "mlflowtracking"
+    modelconfigs_bucket_name = "modelconfigs"
     local_directory = '/app'
 
+
     # Zugangsdaten
-    access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
-    secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-    endpoint_url = os.getenv("AWS_SECRET_ACCESS_KEY")
+    access_key_id = "test"
+    secret_access_key = "testpassword"
+    endpoint_url = "http://85.215.53.91:9000"
 
     # Verbindung zum S3-Client herstellen
     s3_client = boto3.client('s3',
