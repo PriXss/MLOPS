@@ -258,6 +258,14 @@ class MLFlowTrainer:
                         
                         
                         #versionieren
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
                         training_config_name = os.getenv("TRAINING_CONFIG_NAME")
                         s3_client = boto3.client('s3')
                         s3_client.upload_file(config_file_path, self.model_configs_bucket_url, training_config_name)
