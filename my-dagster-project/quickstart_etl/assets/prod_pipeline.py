@@ -318,7 +318,7 @@ class MLFlowTrainer:
                 #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
 
                 # Lokale Runs nach dem Upload löschen
-            shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+            #shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
 
 
     def upload_directory_to_s3(self, local_path, bucket, s3_path):
