@@ -164,7 +164,7 @@ s3_client = session.client(
     )
 
 ##---------------------training area----------------------------------------------
-'''
+
 class MLFlowTrainer:
     def __init__(self, model_name="", ludwig_config_file_name="", data_name="", ludwig_config_path="",
                  model_bucket_url="", mlflow_bucket_url="", data_bucket_url="", model_configs_bucket_url=""):
@@ -194,7 +194,7 @@ class MLFlowTrainer:
         self.global_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
-        def train_model(self):
+    def train_model(self):
 
         # Zuweisen der gewünschten Aktien_Daten
         data_naming = self.data_file_name
@@ -286,7 +286,7 @@ class MLFlowTrainer:
             shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
 
 
-        def upload_directory_to_s3(self, local_path, bucket, s3_path):
+    def upload_directory_to_s3(self, local_path, bucket, s3_path):
         s3_client = boto3.client('s3')
         for root, dirs, files in os.walk(local_path):
             for file in files:
@@ -397,7 +397,7 @@ def trainLudwigModelRegression(context) -> None:
                             model_configs_bucket_url=model_configs_bucket_url)
     trainer.train_model()  
 
-'''
+
 ##-----------------training area ----------------------------------------------------
 
 
