@@ -3,7 +3,7 @@ FROM glennverhaag/mlops:mlops-base-latest
 WORKDIR /usr/src/app
 ENV DAGSTER_HOME=/usr/src/app/my-dagster-project
 
-RUN pip install dvc_s3
+RUN pip install dvc_s3 ludwig
 
 ARG TOKEN=invalidtoken
 
