@@ -360,7 +360,19 @@ class MLFlowTrainer:
             # Speichere den angepassten Inhalt zurück in die meta.yaml-Datei
             with open(meta_yaml_path, 'w') as file:
                 yaml.dump(meta_yaml_content, file)
-
+            
+            
+            
+            
+            
+            
+            
+            #meta yaml versionieren
+            
+            
+            
+            
+            
             # Lade die angepasste meta.yaml-Datei in den S3-Bucket hoch
             s3_client = boto3.client('s3')
             s3_client.upload_file(meta_yaml_path, self.model_configs_bucket_url, "meta.yaml")
