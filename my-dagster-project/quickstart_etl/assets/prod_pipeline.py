@@ -172,6 +172,32 @@ s3_client = session.client(
     )
 
 ##---------------------training area----------------------------------------------
+@asset(group_name="DVCVersioning", compute_kind="DVC")
+def setupDVCandVersioningBucketForTraining(context) -> None:
+    context.log.info('Settings for DVC and S3 for Training')
+    
+    # setup default remote
+    timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    timestamp=timestampTemp
+
+    s3_client.put_object(
+    Bucket= os.getenv("VERSIONING_TRAINING_BUCKET"),
+    Key= timestamp+"/"
+    )
+    
+    subprocess.call(["git", "pull"])
+    print("repo is up to date")
+    
+    subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
+    subprocess.run(["git", "config", "--global", "user.email", "PriXss@users.noreply.github.com"])
+        
+    subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_TRAINING_BUCKET") + "/" +timestamp])
+    subprocess.run(["dvc", "commit"])
+    subprocess.run(["dvc", "push"])
+
+    subprocess.run(["git", "add", "../.dvc/config"])
+
+
 
 class MLFlowTrainer:
     def __init__(self, model_name="", ludwig_config_file_name="", data_name="", ludwig_config_path="",
@@ -385,7 +411,7 @@ class MLFlowTrainer:
                     mlflow.log_metric(f"{phase}_{metric_name}", value)
 
 
-@asset(deps=[], group_name="TrainingPhase", compute_kind="LudwigModel")
+@asset(deps=[setupDVCandVersioningBucketForTraining], group_name="TrainingPhase", compute_kind="LudwigModel")
 def trainLudwigModelRegression(context) -> None:
     context.log.info('Trainin Running')
     # Pfade und Werte anpassen
