@@ -254,13 +254,23 @@ class MLFlowTrainer:
                     with open(config_file_path, 'r') as file:
                         ludwig_file_content = file.read()
                         print("Dateiinhalt:", ludwig_file_content)
+                        
+                        
+                        
+                        #versionieren
+                        
+                        
+                        
+                        #bitte noch config ins s3 laden, simpler s3_upload und dann dahin wos muss
+                        
+                        
+                         
                 else:
                     print("Die Datei existiert nicht:", config_file_path)
 
 
 
                 
-                #Ab hier kann die Model (Ludwig) Config Yaml die Verwendet wird Versioniert werden und in den S3 hochgeladen werden
                 
 
 
@@ -318,6 +328,13 @@ class MLFlowTrainer:
                 #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
 
                 # Lokale Runs nach dem Upload löschen
+                
+                
+                ########versionieren
+                
+                
+                
+                
             #shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
 
 
@@ -395,7 +412,17 @@ class MLFlowTrainer:
                 s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
 
         #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
-        shutil.rmtree(os.path.join(os.getcwd(), 'results'))
+        
+        
+        
+        
+        
+        ############Versionieren
+        
+        
+        
+        
+        #shutil.rmtree(os.path.join(os.getcwd(), 'results'))
 
     def log_params(self, data_name, data_file, model_name):
         mlflow.log_param("Stock", data_name)
