@@ -422,7 +422,7 @@ def trainLudwigModelRegression(context) -> None:
     data_name = os.getenv("STOCK_NAME")
     model_bucket_url = os.getenv("MODEL_BUCKET")
     mlflow_bucket_url = os.getenv("MLFLOW_BUCKET")
-    data_bucket_url = os.getenv("STOCK_INPUT_BUCKET")
+    data_bucket_url = os.getenv("OUTPUT_DIRECTORY")
     model_configs_bucket_url = os.getenv("MODEL_CONFIG_BUCKET")
     
     # Instanz der Klasse erstellen und das Modell trainieren  
