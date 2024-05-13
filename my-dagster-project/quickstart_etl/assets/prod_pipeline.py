@@ -34,8 +34,14 @@ def pruefe_extreme_werte(reihe, grenzwerte):
 def process_and_upload_symbol_data(
         symbol,
         api_key=os.getenv("API_KEY"),
-        output_directory=os.getenv("OUTPUT_DIRECTORY")
+        output_directory=os.getenv("OUTPUT_DIRECTORY"),
+        minio_access_key=os.getenv("AWS_ACCESS_KEY_ID"),
+        minio_secret_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        minio_endpoint=os.getenv("ENDPOINT_URL"),
+        minio_bucket=os.getenv("STOCK_INPUT_BUCKET")
         ):
+    
+        s3 = boto3.client('s3', aws_access_key_id=minio_access_key, aws_secret_access_key=minio_secret_key, endpoint_url=minio_endpoint)
 
     # Speicherung der CSV Datei
         if not os.path.exists(output_directory):
@@ -139,6 +145,8 @@ def process_and_upload_symbol_data(
         if not upload_abgelehnt:
         # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
             try:
+                s3.upload_file(csv_filepath, minio_bucket, minio_object_name)
+                print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
                 subprocess.run(["dvc", "add", f"{output_directory}/{csv_filename}"])
                 print('DVC add successfully')
                 subprocess.run(["dvc", "commit"])
