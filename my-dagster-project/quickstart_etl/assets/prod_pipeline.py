@@ -366,7 +366,7 @@ class MLFlowTrainer:
             model.save(model_path)
 
             # Kopiere den Inhalt von 'api_experiment_run' in das temporäre Verzeichnis
-            api_experiment_run_src = os.path.join(os.getcwd(), '../src/results', 'api_experiment_run')
+            api_experiment_run_src = os.path.join(os.getcwd(), 'results', 'api_experiment_run')
             if os.path.exists(api_experiment_run_src):
                 api_experiment_run_dst = os.path.join(temp_dir_api, 'api_experiment_run')
                 shutil.copytree(api_experiment_run_src, api_experiment_run_dst)
