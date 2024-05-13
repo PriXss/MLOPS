@@ -24,6 +24,7 @@ from botocore.exceptions import NoCredentialsError
 from dvc.repo import Repo
 
 timestamp=""
+timestampTraining=""
 
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
@@ -178,11 +179,11 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     
     # setup default remote
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    timestamp=timestampTemp
+    timestampTraining=timestampTemp
 
     s3_client.put_object(
     Bucket= os.getenv("VERSIONING_TRAINING_BUCKET"),
-    Key= timestamp+"/"
+    Key= timestampTraining+"/"
     )
     
     subprocess.call(["git", "pull"])
@@ -191,7 +192,7 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
     subprocess.run(["git", "config", "--global", "user.email", "PriXss@users.noreply.github.com"])
         
-    subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_TRAINING_BUCKET") + "/" +timestamp])
+    subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_TRAINING_BUCKET") + "/" +timestampTraining])
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
 
