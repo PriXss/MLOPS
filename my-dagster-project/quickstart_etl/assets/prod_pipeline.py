@@ -217,7 +217,7 @@ class MLFlowTrainer:
         # Setzten der Zugriffsparameter für S3 via Umgebungsvariablen
         self.access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
         self.secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        self.endpoint_url = os.getenv("AWS_SECRET_ACCESS_KEY")
+        self.endpoint_url = os.getenv("ENDPOINT_URL")
 
         # Setzen der Umgebungsvariablen für den Zugriff auf Buckets
         os.environ["AWS_ACCESS_KEY_ID"] = self.access_key_id
