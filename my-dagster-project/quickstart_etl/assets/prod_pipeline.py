@@ -395,7 +395,7 @@ class MLFlowTrainer:
                 s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
 
         #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
-        shutil.rmtree(os.path.join(os.getcwd(), '../src/results'))
+        shutil.rmtree(os.path.join(os.getcwd(), 'results'))
 
     def log_params(self, data_name, data_file, model_name):
         mlflow.log_param("Stock", data_name)
