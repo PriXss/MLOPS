@@ -27,6 +27,8 @@ timestamp=""
 timestampTraining=""
 model = os.getenv("MODEL_NAME")
 data = os.getenv("STOCK_NAME")
+timestamp_string= str(timestamp)
+timestampTraining_string = str(timestampTraining)
 
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
@@ -484,7 +486,8 @@ def trainLudwigModelRegression(context) -> None:
                             model_configs_bucket_url=model_configs_bucket_url)
     trainer.train_model()  
     
-    subprocess.run(["git", "commit", "-m", "Trainings run from: "+timestamp+"with data from: "+data+"and the model: "+model+"." ])
+    
+    subprocess.run(["git", "commit", "-m", "Trainings run from: "+timestampTraining_string+" with data from: "+data+" and the model: "+model+"." ])
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
 
 
@@ -657,5 +660,5 @@ def monitoringAndReporting(context) -> None:
     
     subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
     print("added reporting files to git ")
-    subprocess.run(["git", "commit", "-m", "Pipeline run from: "+timestamp+"with data from: "+data+"and the model: "+model+"." ])
+    subprocess.run(["git", "commit", "-m", "Pipeline run from: "+timestamp_string+" with data from: "+data+" and the model: "+model+"." ])
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
