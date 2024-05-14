@@ -502,15 +502,14 @@ def setupDVCandVersioningBucket(context) -> None:
     
      # Check if all required buckets for the pipeline exist. If not, create them.
     buckets = [os.getenv("OUTPUT_DIRECTORY"), os.getenv("PREDICTIONS_BUCKET"), os.getenv("MODEL_BUCKET"), os.getenv("MLFLOW_BUCKET"), os.getenv("MODEL_CONFIG_BUCKET"), os.getenv("LOGS_BUCKET"), os.getenv("VERSIONING_BUCKET"), os.getenv("VERSIONING_TRAINING_BUCKET")]
-    s3 = boto3.resource('s3')
     for bucket in buckets:
     
-        s3_bucket = s3.Bucket(bucket)
+        s3_bucket = s3_client.Bucket(bucket)
 
         if s3_bucket.creation_date:
             print("Bucket", bucket, "already exists!")
         else:
-            s3.create_bucket(Bucket=bucket)
+            s3_client.create_bucket(Bucket=bucket)
             print("Created Bucket", bucket)    
     
     
