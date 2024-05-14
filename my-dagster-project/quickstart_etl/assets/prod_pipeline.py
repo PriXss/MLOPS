@@ -500,13 +500,12 @@ def setupDVCandVersioningBucket(context) -> None:
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
     
+    '''
      # Check if all required buckets for the pipeline exist. If not, create them.
     
-    context.log.info("Dagster suckt rein Teil 1!")
 
     buckets = [os.getenv("OUTPUT_DIRECTORY"), os.getenv("PREDICTIONS_BUCKET"), os.getenv("MODEL_BUCKET"), os.getenv("MLFLOW_BUCKET"), os.getenv("MODEL_CONFIG_BUCKET"), os.getenv("LOGS_BUCKET"), os.getenv("VERSIONING_BUCKET"), os.getenv("VERSIONING_TRAINING_BUCKET")]
     for bucket in buckets:
-        context.log.info("Dagster suckt rein!")
 
         s3_bucket = s3_client.Bucket(bucket)
 
@@ -518,10 +517,9 @@ def setupDVCandVersioningBucket(context) -> None:
             s3_client.create_bucket(Bucket=bucket)
             print("Created Bucket", bucket) 
             context.log.info("Bucket erstellt!")
-   
+    '''
     
     
-
     s3_client.put_object(
     Bucket= os.getenv("VERSIONING_BUCKET"),
     Key= timestamp+"/"
