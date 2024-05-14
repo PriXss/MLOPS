@@ -150,7 +150,7 @@ def process_and_upload_symbol_data(
         if not upload_abgelehnt:
         # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
             try:
-                s3.upload_file(csv_filepath, minio_bucket, minio_object_name)
+                s3.upload_file(csv_filepath, minio_bucket, csv_filename)
                 print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
                 subprocess.run(["dvc", "add", f"{output_directory}/{csv_filename}"])
                 print('DVC add successfully')
