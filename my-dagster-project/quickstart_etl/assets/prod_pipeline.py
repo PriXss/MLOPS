@@ -30,6 +30,16 @@ data = os.getenv("STOCK_NAME")
 timestamp_string= str(timestamp)
 timestampTraining_string = str(timestampTraining)
 
+
+session = boto3.session.Session()
+s3_client = session.client(
+    service_name= os.getenv("SERVICE_NAME"),
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    endpoint_url=os.getenv("ENDPOINT_URL"),
+    )
+
+
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
             if reihe[spalte] < min_wert or reihe[spalte] > max_wert:
@@ -40,14 +50,9 @@ def process_and_upload_symbol_data(
         symbol,
         api_key=os.getenv("API_KEY"),
         output_directory=os.getenv("OUTPUT_DIRECTORY"),
-        minio_access_key=os.getenv("AWS_ACCESS_KEY_ID"),
-        minio_secret_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-        minio_endpoint=os.getenv("ENDPOINT_URL"),
-        minio_bucket=os.getenv("STOCK_INPUT_BUCKET")
+        minio_bucket=os.getenv("OUTPUT_DIRECTORY")
         ):
     
-        s3 = boto3.client('s3', aws_access_key_id=minio_access_key, aws_secret_access_key=minio_secret_key, endpoint_url=minio_endpoint)
-
     # Speicherung der CSV Datei
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
@@ -143,14 +148,14 @@ def process_and_upload_symbol_data(
                 break  # Beendet die Schleife, da mindestens ein Wert 0 ist
 
         # Sortierten DataFrame als CSV exportieren
-        csv_filepath = os.getcwd.join(output_directory, csv_filename)
+        csv_filepath = os.path.join(output_directory, csv_filename)
         merged_data_sorted.to_csv(csv_filepath, index=False)
 
 
         if not upload_abgelehnt:
         # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
             try:
-                s3.upload_file(csv_filepath, minio_bucket, csv_filename)
+                s3_client.upload_file(csv_filepath ,minio_bucket, minio_object_name)  
                 print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
                 subprocess.run(["dvc", "add", f"{output_directory}/{csv_filename}"])
                 print('DVC add successfully')
@@ -167,14 +172,6 @@ def process_and_upload_symbol_data(
         subprocess.run(["git", "add", f"{output_directory}/.gitignore"]) 
 
 
-
-session = boto3.session.Session()
-s3_client = session.client(
-    service_name= os.getenv("SERVICE_NAME"),
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    endpoint_url=os.getenv("ENDPOINT_URL"),
-    )
 
 ##---------------------training area----------------------------------------------
 @asset(group_name="DVCVersioning", compute_kind="DVC")
@@ -201,19 +198,6 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     subprocess.run(["dvc", "push"])
 
     subprocess.run(["git", "add", "../.dvc/config"])
-    
-    # Check if all required buckets for the pipeline exist. If not, create them.
-    buckets = [os.getenv("OUTPUT_DIRECTORY"), os.getenv("PREDICTIONS_BUCKET"), os.getenv("MODEL_BUCKET"), os.getenv("MLFLOW_BUCKET"), os.getenv("MODEL_CONFIG_BUCKET"), os.getenv("LOGS_BUCKET"), os.getenv("VERSIONING_BUCKET"), os.getenv("VERSIONING_TRAINING_BUCKET")]
-    s3 = boto3.resource('s3')
-    for bucket in buckets:
-    
-        s3_bucket = s3.Bucket(bucket)
-
-        if s3_bucket.creation_date:
-            print("Bucket", bucket, "already exists!")
-        else:
-            s3.create_bucket(Bucket=bucket)
-            print("Created Bucket", bucket)    
 
 
 
