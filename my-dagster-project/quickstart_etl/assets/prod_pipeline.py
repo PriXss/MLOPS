@@ -143,7 +143,7 @@ def process_and_upload_symbol_data(
                 break  # Beendet die Schleife, da mindestens ein Wert 0 ist
 
         # Sortierten DataFrame als CSV exportieren
-        csv_filepath = os.path.join(output_directory, csv_filename)
+        csv_filepath = os.getcwd.join(output_directory, csv_filename)
         merged_data_sorted.to_csv(csv_filepath, index=False)
 
 
