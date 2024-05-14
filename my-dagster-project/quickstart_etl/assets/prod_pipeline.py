@@ -259,12 +259,18 @@ class MLFlowTrainer:
                         
                         #versionieren
                         
+                        temp_path= os.path.join(os.getcwd(), 'config_versioned', self.ludwig_config_file_name)
+                        shutil.copyfile(config_file_path, temp_path)
                         
-                        
-                        
-                        
-                        
-                        
+                        subprocess.run(["dvc", "add", "config_versioned/ludwig_MLCore.yaml"])
+                        print('DVC add successfully')
+                        subprocess.run(["dvc", "commit"])
+                        subprocess.run(["dvc", "push"])
+                        print('DVC push successfully')   
+                            
+                        subprocess.call(["git", "add", "config_versioned/ludwig_MLCore.yaml.dvc"])
+                        subprocess.call(["git", "add", "config_versioned/.gitignore"])
+                        print("added mlruns files to git ")
                         
                         training_config_name = os.getenv("TRAINING_CONFIG_NAME")
                         s3_client = boto3.client('s3')
@@ -273,14 +279,7 @@ class MLFlowTrainer:
                          
                 else:
                     print("Die Datei existiert nicht:", config_file_path)
-
-
-
-                
-                
-
-
-
+                    
                 # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
                 model_name = self.extract_model_name(config_file_path)
 
@@ -334,23 +333,15 @@ class MLFlowTrainer:
                 #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
 
                 # Lokale Runs nach dem Upload löschen
-                
-                
                 subprocess.run(["dvc", "add", "mlruns"])
                 print('DVC add successfully')
                 subprocess.run(["dvc", "commit"])
                 subprocess.run(["dvc", "push"])
                 print('DVC push successfully')   
-                
-                
-                
+            
                 subprocess.call(["git", "add", "mlruns.dvc"])
-                #subprocess.call(["git", "add", "predictions/.gitignore"])
+                subprocess.call(["git", "add", ".gitignore"])
                 print("added mlruns files to git ")
-
-                
-                
-                
                 
             #shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
 
@@ -378,17 +369,19 @@ class MLFlowTrainer:
             with open(meta_yaml_path, 'w') as file:
                 yaml.dump(meta_yaml_content, file)
             
+            temp_path= os.path.join(os.getcwd(), 'config_versioned', 'meta.yaml')
+            shutil.copyfile(meta_yaml_path, temp_path)
             
-            
-            
-            
-            
-            
+            subprocess.run(["dvc", "add", "config_versioned/meta.yaml"])
+            print('DVC add successfully')
+            subprocess.run(["dvc", "commit"])
+            subprocess.run(["dvc", "push"])
+            print('DVC push successfully')   
+                
+            subprocess.call(["git", "add", "config_versioned/meta.yaml.dvc"])
+            subprocess.call(["git", "add", "config_versioned/.gitignore"])
+            print("added mlruns files to git ")
             #meta yaml versionieren
-            
-            
-            
-            
             
             # Lade die angepasste meta.yaml-Datei in den S3-Bucket hoch
             s3_client = boto3.client('s3')
@@ -487,6 +480,9 @@ def trainLudwigModelRegression(context) -> None:
                             mlflow_bucket_url=mlflow_bucket_url, data_bucket_url=data_bucket_url,
                             model_configs_bucket_url=model_configs_bucket_url)
     trainer.train_model()  
+    
+    subprocess.run(["git", "commit", "-m", f"Trainings run from: {timestamp}"])
+    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
 
 
 ##-----------------training area ----------------------------------------------------
