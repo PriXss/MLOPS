@@ -336,7 +336,18 @@ class MLFlowTrainer:
                 # Lokale Runs nach dem Upload löschen
                 
                 
-                ########versionieren
+                subprocess.run(["dvc", "add", "mlruns"])
+                print('DVC add successfully')
+                subprocess.run(["dvc", "commit"])
+                subprocess.run(["dvc", "push"])
+                print('DVC push successfully')   
+                
+                
+                
+                subprocess.call(["git", "add", "mlruns.dvc"])
+                #subprocess.call(["git", "add", "predictions/.gitignore"])
+                print("added mlruns files to git ")
+
                 
                 
                 
