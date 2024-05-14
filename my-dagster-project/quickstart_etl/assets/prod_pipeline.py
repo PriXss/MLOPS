@@ -25,6 +25,8 @@ from dvc.repo import Repo
 
 timestamp=""
 timestampTraining=""
+model = os.getenv("MODEL_NAME")
+data = os.getenv("STOCK_NAME")
 
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
@@ -435,15 +437,16 @@ class MLFlowTrainer:
 
         #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
         
-        
-        
-        
-        
+        subprocess.run(["dvc", "add", "results"])
+        print('DVC add successfully')
+        subprocess.run(["dvc", "commit"])
+        subprocess.run(["dvc", "push"])
+        print('DVC push successfully')   
+                            
+        subprocess.call(["git", "add", "results.dvc"])
+        subprocess.call(["git", "add", ".gitignore"])
+        print("added mlruns files to git ")
         ############Versionieren
-        
-        
-        
-        
         #shutil.rmtree(os.path.join(os.getcwd(), 'results'))
 
     def log_params(self, data_name, data_file, model_name):
@@ -481,7 +484,7 @@ def trainLudwigModelRegression(context) -> None:
                             model_configs_bucket_url=model_configs_bucket_url)
     trainer.train_model()  
     
-    subprocess.run(["git", "commit", "-m", f"Trainings run from: {timestamp}"])
+    subprocess.run(["git", "commit", "-m", "Trainings run from: "+timestamp+"with data from: "+data+"and the model: "+model+"." ])
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
 
 
@@ -654,5 +657,5 @@ def monitoringAndReporting(context) -> None:
     
     subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
     print("added reporting files to git ")
-    subprocess.run(["git", "commit", "-m", f"Pipeline run from: {timestamp}"])
+    subprocess.run(["git", "commit", "-m", "Pipeline run from: "+timestamp+"with data from: "+data+"and the model: "+model+"." ])
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
