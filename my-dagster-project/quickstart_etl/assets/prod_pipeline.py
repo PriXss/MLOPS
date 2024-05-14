@@ -259,22 +259,22 @@ class MLFlowTrainer:
                         
                         #versionieren
                         
-                        temp_path= os.path.join(os.getcwd(), 'config_versioned', self.ludwig_config_file_name)
-                        shutil.copyfile(config_file_path, temp_path)
+                    temp_path= os.path.join(os.getcwd(), 'config_versioned', self.ludwig_config_file_name)
+                    shutil.copyfile(config_file_path, temp_path)
                         
-                        subprocess.run(["dvc", "add", "config_versioned/ludwig_MLCore.yaml"])
-                        print('DVC add successfully')
-                        subprocess.run(["dvc", "commit"])
-                        subprocess.run(["dvc", "push"])
-                        print('DVC push successfully')   
+                    subprocess.run(["dvc", "add", "config_versioned/ludwig_MLCore.yaml"])
+                    print('DVC add successfully')
+                    subprocess.run(["dvc", "commit"])
+                    subprocess.run(["dvc", "push"])
+                    print('DVC push successfully')   
                             
-                        subprocess.call(["git", "add", "config_versioned/ludwig_MLCore.yaml.dvc"])
-                        subprocess.call(["git", "add", "config_versioned/.gitignore"])
-                        print("added mlruns files to git ")
+                    subprocess.call(["git", "add", "config_versioned/ludwig_MLCore.yaml.dvc"])
+                    subprocess.call(["git", "add", "config_versioned/.gitignore"])
+                    print("added mlruns files to git ")
                         
-                        training_config_name = os.getenv("TRAINING_CONFIG_NAME")
-                        s3_client = boto3.client('s3')
-                        s3_client.upload_file(config_file_path, self.model_configs_bucket_url, training_config_name)
+                    training_config_name = os.getenv("TRAINING_CONFIG_NAME")
+                    s3_client = boto3.client('s3')
+                    s3_client.upload_file(config_file_path, self.model_configs_bucket_url, training_config_name)
                         
                          
                 else:
