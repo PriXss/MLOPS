@@ -508,9 +508,13 @@ def setupDVCandVersioningBucket(context) -> None:
 
         if s3_bucket.creation_date:
             print("Bucket", bucket, "already exists!")
+            context.log.info("Bucket already exists!")
+
         else:
             s3_client.create_bucket(Bucket=bucket)
-            print("Created Bucket", bucket)    
+            print("Created Bucket", bucket) 
+            context.log.info("Bucket erstellt!")
+   
     
     
 
