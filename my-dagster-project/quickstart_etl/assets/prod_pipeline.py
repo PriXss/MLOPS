@@ -676,7 +676,7 @@ def monitoringAndReporting(context) -> None:
     
     subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
     print("added reporting files to git ")
-    subprocess.run(["git", "commit", "-m", "Pipeline run from "+ date.today() +" | Stock: "+ data +" | Model: "+ model ])
+    subprocess.run(["git", "commit", "-m", "Pipeline run from "+ date.today().strftime("%d/%m/%Y") +" | Stock: "+ data +" | Model: "+ model ])
     
     context.log.info(subprocess.run(["git", "status"]) )  
     
