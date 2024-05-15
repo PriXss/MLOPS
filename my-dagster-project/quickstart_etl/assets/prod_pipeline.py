@@ -8,7 +8,7 @@ from ludwig.api import LudwigModel
 import shutil
 import tempfile
 import zipfile
-from datetime import datetime
+from datetime import datetime, date
 import yaml
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
@@ -190,8 +190,8 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     subprocess.call(["git", "pull"])
     print("repo is up to date")
     
-    subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
-    subprocess.run(["git", "config", "--global", "user.email", "PriXss@users.noreply.github.com"])
+    subprocess.run(["git", "config", "--global", "user.name", "GlennVerhaag"])
+    subprocess.run(["git", "config", "--global", "user.email", "74454853+GlennVerhaag@users.noreply.github.com"])
         
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_TRAINING_BUCKET") + "/" +timestampTraining])
     subprocess.run(["dvc", "commit"])
@@ -676,5 +676,5 @@ def monitoringAndReporting(context) -> None:
     
     subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
     print("added reporting files to git ")
-    subprocess.run(["git", "commit", "-m", "Pipeline run from: "+timestamp_string+" with data from: "+data+" and the model: "+model+"." ])
+    subprocess.run(["git", "commit", "-m", "Pipeline run from "+ date.today() +" | Stock: "+ data +" | Model: "+ model ])
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
