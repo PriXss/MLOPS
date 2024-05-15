@@ -20,7 +20,7 @@ from evidently.metrics import *
 from evidently.tests import *
 import warnings
 import mlflow
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import NoCredentialsError, ClientError
 from dvc.repo import Repo
 
 timestamp=""
@@ -171,7 +171,19 @@ def process_and_upload_symbol_data(
         subprocess.run(["git", "add", f"{output_directory}/{csv_filename}.dvc"]) 
         subprocess.run(["git", "add", f"{output_directory}/.gitignore"]) 
 
-
+def check_bucket_exists(bucket_name):
+    
+    try:
+        s3_client.head_bucket(Bucket=bucket_name)
+        return True
+    except ClientError as e:
+        # If a client error is thrown, then the bucket does not exist
+        error_code = e.response['Error']['Code']
+        if error_code == '404':
+            return False
+        else:
+            # Handle other exceptions if needed
+            return False
 
 ##---------------------training area----------------------------------------------
 @asset(group_name="DVCVersioning", compute_kind="DVC")
@@ -500,25 +512,16 @@ def setupDVCandVersioningBucket(context) -> None:
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
     
-    '''
-    Test
+   
      # Check if all required buckets for the pipeline exist. If not, create them.
-    
-
+     
     buckets = [os.getenv("OUTPUT_DIRECTORY"), os.getenv("PREDICTIONS_BUCKET"), os.getenv("MODEL_BUCKET"), os.getenv("MLFLOW_BUCKET"), os.getenv("MODEL_CONFIG_BUCKET"), os.getenv("LOGS_BUCKET"), os.getenv("VERSIONING_BUCKET"), os.getenv("VERSIONING_TRAINING_BUCKET")]
     for bucket in buckets:
-
-        s3_bucket = s3_client.Bucket(bucket)
-
-        if s3_bucket.creation_date:
-            print("Bucket", bucket, "already exists!")
-            context.log.info("Bucket already exists!")
-
+        
+        if check_bucket_exists(bucket):
+            context.log.info(f"The bucket '{bucket}' exists.")
         else:
-            s3_client.create_bucket(Bucket=bucket)
-            print("Created Bucket", bucket) 
-            context.log.info("Bucket erstellt!")
-    '''
+            context.log.info(f"The bucket '{bucket}' does not exists.")
     
     
     s3_client.put_object(
@@ -640,46 +643,45 @@ def monitoringAndReporting(context) -> None:
     obj = s3_client.get_object(Bucket=data_bucket_url, Key= "Predictions_"+data_stock+"_"+data_model_version+".csv" )
     df = pd.read_csv(obj['Body'])
     
-    ##### Data prep #####
-    df = df.rename(columns={'Schluss': 'target', 'Schluss_predictions': 'prediction'}) # Rename columns to fit evidently input
-    df['prediction'] = df['prediction'].shift(1) # Shift predictions to match them with the actual target (close price of the following day)
-    df = df.iloc[1:] # drop first row, as theres no matching prediction 
+    if (len(df.index) > 1): 
+        ##### Data prep #####
+        df = df.rename(columns={'Schluss': 'target', 'Schluss_predictions': 'prediction'}) # Rename columns to fit evidently input
+        df['prediction'] = df['prediction'].shift(1) # Shift predictions to match them with the actual target (close price of the following day)
+        df = df.iloc[1:] # drop first row, as theres no matching prediction 
+        
+        ##### Create report #####
+        #Reference-Current split
+        #reference = df.iloc[int(len(df.index)/2):,:]
+        #current = df.iloc[:int(len(df.index)/2),:]
+
+        report = Report(metrics=[
+            #DataDriftPreset(), 
+            #TargetDriftPreset(),
+            DataQualityPreset(),
+            RegressionPreset()
+        ])
+
+        os.makedirs("reportings", exist_ok=True)
+        reportName=os.getenv("REPORT_NAME")
+        reportPath= f"reportings/{reportName}"
+        report.run(reference_data=None, current_data=df)
+        report.save_html(reportPath)    
+
+        reportsBucket= os.getenv("REPORT_BUCKET")
+        path = data_stock+"/"+data_model_version+"/"+reportName
+
+        s3_client.upload_file(reportPath ,reportsBucket, path)      
     
-    ##### Create report #####
-    #Reference-Current split
-    #reference = df.iloc[int(len(df.index)/2):,:]
-    #current = df.iloc[:int(len(df.index)/2),:]
-
-    report = Report(metrics=[
-        #DataDriftPreset(), 
-        #TargetDriftPreset(),
-        DataQualityPreset(),
-        RegressionPreset()
-    ])
-
-    os.makedirs("reportings", exist_ok=True)
-    reportName=os.getenv("REPORT_NAME")
-    reportPath= f"reportings/{reportName}"
-    report.run(reference_data=None, current_data=df)
-    report.save_html(reportPath)    
-
-    reportsBucket= os.getenv("REPORT_BUCKET")
-    path = data_stock+"/"+data_model_version+"/"+reportName
-
-    s3_client.upload_file(reportPath ,reportsBucket, path)      
-    
-    subprocess.run(["dvc", "add", reportPath])
-    print('DVC add successfully')
-    subprocess.run(["dvc", "commit"])
-    subprocess.run(["dvc", "push"])
-    print('DVC push successfully')   
-    
-    subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
-    print("added reporting files to git ")
+        subprocess.run(["dvc", "add", reportPath])
+        print('DVC add successfully')
+        subprocess.run(["dvc", "commit"])
+        subprocess.run(["dvc", "push"])
+        print('DVC push successfully')   
+        subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
+        print("added reporting files to git ")
+        
+        
     subprocess.run(["git", "commit", "-m", "Pipeline run from "+ date.today().strftime("%d/%m/%Y") +" | Stock: "+ data +" | Model: "+ model ])
-    
     context.log.info(subprocess.run(["git", "status"]) )  
-    
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
-    
     context.log.info(subprocess.run(["git", "log", "--oneline"]) ) 
