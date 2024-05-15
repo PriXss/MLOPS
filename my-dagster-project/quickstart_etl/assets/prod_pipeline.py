@@ -4,11 +4,11 @@ import pandas as pd
 import boto3
 import botocore
 from dagster import asset
-#from ludwig.api import LudwigModel
+from ludwig.api import LudwigModel
 import shutil
 import tempfile
 import zipfile
-from datetime import datetime
+from datetime import datetime, date
 import yaml
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
@@ -19,11 +19,26 @@ from evidently.metric_preset import DataDriftPreset, TargetDriftPreset, DataQual
 from evidently.metrics import *
 from evidently.tests import *
 import warnings
-#import mlflow
-from botocore.exceptions import NoCredentialsError
+import mlflow
+from botocore.exceptions import NoCredentialsError, ClientError
 from dvc.repo import Repo
 
 timestamp=""
+timestampTraining=""
+model = os.getenv("MODEL_NAME")
+data = os.getenv("STOCK_NAME")
+timestamp_string= str(timestamp)
+timestampTraining_string = str(timestampTraining)
+
+
+session = boto3.session.Session()
+s3_client = session.client(
+    service_name= os.getenv("SERVICE_NAME"),
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    endpoint_url=os.getenv("ENDPOINT_URL"),
+    )
+
 
 def pruefe_extreme_werte(reihe, grenzwerte):
         for spalte, (min_wert, max_wert) in grenzwerte.items():
@@ -34,9 +49,10 @@ def pruefe_extreme_werte(reihe, grenzwerte):
 def process_and_upload_symbol_data(
         symbol,
         api_key=os.getenv("API_KEY"),
-        output_directory=os.getenv("OUTPUT_DIRECTORY")
+        output_directory=os.getenv("OUTPUT_DIRECTORY"),
+        minio_bucket=os.getenv("OUTPUT_DIRECTORY")
         ):
-
+    
     # Speicherung der CSV Datei
         if not os.path.exists(output_directory):
             os.makedirs(output_directory)
@@ -139,6 +155,8 @@ def process_and_upload_symbol_data(
         if not upload_abgelehnt:
         # Wenn keiner der Werte 0 ist, wird CSV-Datei auf Minio S3 hochgeladen
             try:
+                s3_client.upload_file(csv_filepath ,minio_bucket, minio_object_name)  
+                print(f'Datei wurde auf Minio S3 in den Bucket {minio_bucket} hochgeladen.')
                 subprocess.run(["dvc", "add", f"{output_directory}/{csv_filename}"])
                 print('DVC add successfully')
                 subprocess.run(["dvc", "commit"])
@@ -153,18 +171,52 @@ def process_and_upload_symbol_data(
         subprocess.run(["git", "add", f"{output_directory}/{csv_filename}.dvc"]) 
         subprocess.run(["git", "add", f"{output_directory}/.gitignore"]) 
 
-
-
-session = boto3.session.Session()
-s3_client = session.client(
-    service_name= os.getenv("SERVICE_NAME"),
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    endpoint_url=os.getenv("ENDPOINT_URL"),
-    )
+def check_and_create_bucket(bucket_name):
+    try:
+        # Attempt to head the bucket
+        s3_client.head_bucket(Bucket=bucket_name)
+        print(f"The bucket '{bucket_name}' already exists.")
+    except ClientError as e:
+        # If a client error is thrown, then the bucket does not exist
+        error_code = e.response['Error']['Code']
+        if error_code == '404':
+            # Bucket does not exist, create it
+            try:
+                s3_client.create_bucket(Bucket=bucket_name)
+                print(f"The bucket '{bucket_name}' has been created successfully.")
+            except ClientError as create_error:
+                print(f"Failed to create bucket '{bucket_name}': {create_error}")
+        else:
+            # Handle other exceptions if needed
+            print(f"Failed to check bucket '{bucket_name}': {e}")
 
 ##---------------------training area----------------------------------------------
-'''
+@asset(group_name="DVCVersioning", compute_kind="DVC")
+def setupDVCandVersioningBucketForTraining(context) -> None:
+    context.log.info('Settings for DVC and S3 for Training')
+    
+    # setup default remote
+    timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    timestampTraining=timestampTemp
+
+    s3_client.put_object(
+    Bucket= os.getenv("VERSIONING_TRAINING_BUCKET"),
+    Key= timestampTraining+"/"
+    )
+    
+    subprocess.run(["git", "config", "--global", "user.name", "GlennVerhaag"])
+    subprocess.run(["git", "config", "--global", "user.email", "74454853+GlennVerhaag@users.noreply.github.com"])
+    
+    subprocess.call(["git", "pull"])
+    print("repo is up to date")
+        
+    subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_TRAINING_BUCKET") + "/" +timestampTraining])
+    subprocess.run(["dvc", "commit"])
+    subprocess.run(["dvc", "push"])
+
+    subprocess.run(["git", "add", "../.dvc/config"])
+
+
 class MLFlowTrainer:
     def __init__(self, model_name="", ludwig_config_file_name="", data_name="", ludwig_config_path="",
                  model_bucket_url="", mlflow_bucket_url="", data_bucket_url="", model_configs_bucket_url=""):
@@ -194,7 +246,7 @@ class MLFlowTrainer:
         self.global_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
-        def train_model(self):
+    def train_model(self):
 
         # Zuweisen der gewünschten Aktien_Daten
         data_naming = self.data_file_name
@@ -219,17 +271,32 @@ class MLFlowTrainer:
                     with open(config_file_path, 'r') as file:
                         ludwig_file_content = file.read()
                         print("Dateiinhalt:", ludwig_file_content)
+                        
+                        
+                        
+                        #versionieren
+                        
+                    temp_path= os.path.join(os.getcwd(), 'config_versioned', self.ludwig_config_file_name)
+                    shutil.copyfile(config_file_path, temp_path)
+                        
+                    subprocess.run(["dvc", "add", "config_versioned/ludwig_MLCore.yaml"])
+                    print('DVC add successfully')
+                    subprocess.run(["dvc", "commit"])
+                    subprocess.run(["dvc", "push"])
+                    print('DVC push successfully')   
+                            
+                    subprocess.call(["git", "add", "config_versioned/ludwig_MLCore.yaml.dvc"])
+                    subprocess.call(["git", "add", "config_versioned/.gitignore"])
+                    print("added mlruns files to git ")
+                        
+                    training_config_name = os.getenv("TRAINING_CONFIG_NAME")
+                    s3_client = boto3.client('s3')
+                    s3_client.upload_file(config_file_path, self.model_configs_bucket_url, training_config_name)
+                        
+                         
                 else:
                     print("Die Datei existiert nicht:", config_file_path)
-
-
-
-                
-                #Ab hier kann die Model (Ludwig) Config Yaml die Verwendet wird Versioniert werden und in den S3 hochgeladen werden
-                
-
-
-
+                    
                 # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
                 model_name = self.extract_model_name(config_file_path)
 
@@ -283,10 +350,20 @@ class MLFlowTrainer:
                 #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
 
                 # Lokale Runs nach dem Upload löschen
-            shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+                subprocess.run(["dvc", "add", "mlruns"])
+                print('DVC add successfully')
+                subprocess.run(["dvc", "commit"])
+                subprocess.run(["dvc", "push"])
+                print('DVC push successfully')   
+            
+                subprocess.call(["git", "add", "mlruns.dvc"])
+                subprocess.call(["git", "add", ".gitignore"])
+                print("added mlruns files to git ")
+                
+            #shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
 
 
-        def upload_directory_to_s3(self, local_path, bucket, s3_path):
+    def upload_directory_to_s3(self, local_path, bucket, s3_path):
         s3_client = boto3.client('s3')
         for root, dirs, files in os.walk(local_path):
             for file in files:
@@ -308,7 +385,21 @@ class MLFlowTrainer:
             # Speichere den angepassten Inhalt zurück in die meta.yaml-Datei
             with open(meta_yaml_path, 'w') as file:
                 yaml.dump(meta_yaml_content, file)
-
+            
+            temp_path= os.path.join(os.getcwd(), 'config_versioned', 'meta.yaml')
+            shutil.copyfile(meta_yaml_path, temp_path)
+            
+            subprocess.run(["dvc", "add", "config_versioned/meta.yaml"])
+            print('DVC add successfully')
+            subprocess.run(["dvc", "commit"])
+            subprocess.run(["dvc", "push"])
+            print('DVC push successfully')   
+                
+            subprocess.call(["git", "add", "config_versioned/meta.yaml.dvc"])
+            subprocess.call(["git", "add", "config_versioned/.gitignore"])
+            print("added mlruns files to git ")
+            #meta yaml versionieren
+            
             # Lade die angepasste meta.yaml-Datei in den S3-Bucket hoch
             s3_client = boto3.client('s3')
             s3_client.upload_file(meta_yaml_path, self.model_configs_bucket_url, "meta.yaml")
@@ -331,7 +422,7 @@ class MLFlowTrainer:
             model.save(model_path)
 
             # Kopiere den Inhalt von 'api_experiment_run' in das temporäre Verzeichnis
-            api_experiment_run_src = os.path.join(os.getcwd(), '../src/results', 'api_experiment_run')
+            api_experiment_run_src = os.path.join(os.getcwd(), 'results', 'api_experiment_run')
             if os.path.exists(api_experiment_run_src):
                 api_experiment_run_dst = os.path.join(temp_dir_api, 'api_experiment_run')
                 shutil.copytree(api_experiment_run_src, api_experiment_run_dst)
@@ -360,7 +451,18 @@ class MLFlowTrainer:
                 s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
 
         #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
-        shutil.rmtree(os.path.join(os.getcwd(), '../src/results'))
+        
+        subprocess.run(["dvc", "add", "results"])
+        print('DVC add successfully')
+        subprocess.run(["dvc", "commit"])
+        subprocess.run(["dvc", "push"])
+        print('DVC push successfully')   
+                            
+        subprocess.call(["git", "add", "results.dvc"])
+        subprocess.call(["git", "add", ".gitignore"])
+        print("added mlruns files to git ")
+        ############Versionieren
+        #shutil.rmtree(os.path.join(os.getcwd(), 'results'))
 
     def log_params(self, data_name, data_file, model_name):
         mlflow.log_param("Stock", data_name)
@@ -377,7 +479,7 @@ class MLFlowTrainer:
                     mlflow.log_metric(f"{phase}_{metric_name}", value)
 
 
-@asset(deps=[], group_name="TrainingPhase", compute_kind="LudwigModel")
+@asset(deps=[setupDVCandVersioningBucketForTraining], group_name="TrainingPhase", compute_kind="LudwigModel")
 def trainLudwigModelRegression(context) -> None:
     context.log.info('Trainin Running')
     # Pfade und Werte anpassen
@@ -387,7 +489,7 @@ def trainLudwigModelRegression(context) -> None:
     data_name = os.getenv("STOCK_NAME")
     model_bucket_url = os.getenv("MODEL_BUCKET")
     mlflow_bucket_url = os.getenv("MLFLOW_BUCKET")
-    data_bucket_url = os.getenv("STOCK_INPUT_BUCKET")
+    data_bucket_url = os.getenv("OUTPUT_DIRECTORY")
     model_configs_bucket_url = os.getenv("MODEL_CONFIG_BUCKET")
     
     # Instanz der Klasse erstellen und das Modell trainieren  
@@ -396,8 +498,12 @@ def trainLudwigModelRegression(context) -> None:
                             mlflow_bucket_url=mlflow_bucket_url, data_bucket_url=data_bucket_url,
                             model_configs_bucket_url=model_configs_bucket_url)
     trainer.train_model()  
+    
+    
+    subprocess.run(["git", "commit", "-m", "Trainings run from: "+timestampTraining_string+" with data from: "+data+" and the model: "+model+"." ])
+    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
 
-'''
+
 ##-----------------training area ----------------------------------------------------
 
 
@@ -410,7 +516,14 @@ def setupDVCandVersioningBucket(context) -> None:
     # setup default remote
     timestampTemp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     timestamp=timestampTemp
-
+    
+    # Check if all required buckets for the pipeline exist. If not, create them.
+    buckets = [os.getenv("OUTPUT_DIRECTORY"), os.getenv("PREDICTIONS_BUCKET"), os.getenv("MODEL_BUCKET"), os.getenv("MLFLOW_BUCKET"), os.getenv("MODEL_CONFIG_BUCKET"), os.getenv("VERSIONING_BUCKET"), os.getenv("VERSIONING_TRAINING_BUCKET"), os.getenv("REPORT_BUCKET")]
+    for bucket in buckets:
+        
+        check_and_create_bucket(bucket)
+    
+    
     s3_client.put_object(
     Bucket= os.getenv("VERSIONING_BUCKET"),
     Key= timestamp+"/"
@@ -419,16 +532,14 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.call(["git", "pull"])
     print("repo is up to date")
     
-    subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
-    subprocess.run(["git", "config", "--global", "user.email", "PriXss@users.noreply.github.com"])
-        
+    subprocess.run(["git", "config", "--global", "user.name", "GlennVerhaag"])
+    subprocess.run(["git", "config", "--global", "user.email", "74454853+GlennVerhaag@users.noreply.github.com"])
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
     subprocess.run(["dvc", "commit"])
     subprocess.run(["dvc", "push"])
 
     subprocess.run(["git", "add", "../.dvc/config"])
-
-
+    
 
   
 @asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
@@ -531,41 +642,45 @@ def monitoringAndReporting(context) -> None:
     obj = s3_client.get_object(Bucket=data_bucket_url, Key= "Predictions_"+data_stock+"_"+data_model_version+".csv" )
     df = pd.read_csv(obj['Body'])
     
-    ##### Data prep #####
-    df = df.rename(columns={'Schluss': 'target', 'Schluss_predictions': 'prediction'}) # Rename columns to fit evidently input
-    df['prediction'] = df['prediction'].shift(1) # Shift predictions to match them with the actual target (close price of the following day)
-    df = df.iloc[1:] # drop first row, as theres no matching prediction 
+    if (len(df.index) > 1): 
+        ##### Data prep #####
+        df = df.rename(columns={'Schluss': 'target', 'Schluss_predictions': 'prediction'}) # Rename columns to fit evidently input
+        df['prediction'] = df['prediction'].shift(1) # Shift predictions to match them with the actual target (close price of the following day)
+        df = df.iloc[1:] # drop first row, as theres no matching prediction 
+        
+        ##### Create report #####
+        #Reference-Current split
+        #reference = df.iloc[int(len(df.index)/2):,:]
+        #current = df.iloc[:int(len(df.index)/2),:]
+
+        report = Report(metrics=[
+            #DataDriftPreset(), 
+            #TargetDriftPreset(),
+            DataQualityPreset(),
+            RegressionPreset()
+        ])
+
+        os.makedirs("reportings", exist_ok=True)
+        reportName=os.getenv("REPORT_NAME")
+        reportPath= f"reportings/{reportName}"
+        report.run(reference_data=None, current_data=df)
+        report.save_html(reportPath)    
+
+        reportsBucket= os.getenv("REPORT_BUCKET")
+        path = data_stock+"/"+data_model_version+"/"+reportName
+
+        s3_client.upload_file(reportPath ,reportsBucket, path)      
     
-    ##### Create report #####
-    #Reference-Current split
-    #reference = df.iloc[int(len(df.index)/2):,:]
-    #current = df.iloc[:int(len(df.index)/2),:]
-
-    report = Report(metrics=[
-        #DataDriftPreset(), 
-        #TargetDriftPreset(),
-        DataQualityPreset(),
-        RegressionPreset()
-    ])
-
-    os.makedirs("reportings", exist_ok=True)
-    reportName=os.getenv("REPORT_NAME")
-    reportPath= f"reportings/{reportName}"
-    report.run(reference_data=None, current_data=df)
-    report.save_html(reportPath)    
-
-    reportsBucket= os.getenv("REPORT_BUCKET")
-    path = data_stock+"/"+data_model_version+"/"+reportName
-
-    s3_client.upload_file(reportPath ,reportsBucket, path)      
-    
-    subprocess.run(["dvc", "add", reportPath])
-    print('DVC add successfully')
-    subprocess.run(["dvc", "commit"])
-    subprocess.run(["dvc", "push"])
-    print('DVC push successfully')   
-    
-    subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
-    print("added reporting files to git ")
-    subprocess.run(["git", "commit", "-m", f"Pipeline run from: {timestamp}"])
+        subprocess.run(["dvc", "add", reportPath])
+        print('DVC add successfully')
+        subprocess.run(["dvc", "commit"])
+        subprocess.run(["dvc", "push"])
+        print('DVC push successfully')   
+        subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
+        print("added reporting files to git ")
+        
+        
+    subprocess.run(["git", "commit", "-m", "Pipeline run from "+ date.today().strftime("%d/%m/%Y") +" | Stock: "+ data +" | Model: "+ model ])
+    context.log.info(subprocess.run(["git", "status"]) )  
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
+    context.log.info(subprocess.run(["git", "log", "--oneline"]) ) 
