@@ -171,19 +171,24 @@ def process_and_upload_symbol_data(
         subprocess.run(["git", "add", f"{output_directory}/{csv_filename}.dvc"]) 
         subprocess.run(["git", "add", f"{output_directory}/.gitignore"]) 
 
-def check_bucket_exists(bucket_name):
-    
+def check_and_create_bucket(bucket_name):
     try:
+        # Attempt to head the bucket
         s3_client.head_bucket(Bucket=bucket_name)
-        return True
+        print(f"The bucket '{bucket_name}' already exists.")
     except ClientError as e:
         # If a client error is thrown, then the bucket does not exist
         error_code = e.response['Error']['Code']
         if error_code == '404':
-            return False
+            # Bucket does not exist, create it
+            try:
+                s3_client.create_bucket(Bucket=bucket_name)
+                print(f"The bucket '{bucket_name}' has been created successfully.")
+            except ClientError as create_error:
+                print(f"Failed to create bucket '{bucket_name}': {create_error}")
         else:
             # Handle other exceptions if needed
-            return False
+            print(f"Failed to check bucket '{bucket_name}': {e}")
 
 ##---------------------training area----------------------------------------------
 @asset(group_name="DVCVersioning", compute_kind="DVC")
@@ -516,10 +521,7 @@ def setupDVCandVersioningBucket(context) -> None:
     buckets = [os.getenv("OUTPUT_DIRECTORY"), os.getenv("PREDICTIONS_BUCKET"), os.getenv("MODEL_BUCKET"), os.getenv("MLFLOW_BUCKET"), os.getenv("MODEL_CONFIG_BUCKET"), os.getenv("VERSIONING_BUCKET"), os.getenv("VERSIONING_TRAINING_BUCKET")]
     for bucket in buckets:
         
-        if check_bucket_exists(bucket):
-            context.log.info(f"The bucket '{bucket}' exists.")
-        else:
-            context.log.info(f"The bucket '{bucket}' does not exists.")
+        check_and_create_bucket(bucket)
     
     
     s3_client.put_object(
