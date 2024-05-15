@@ -187,11 +187,11 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     Key= timestampTraining+"/"
     )
     
-    subprocess.call(["git", "pull"])
-    print("repo is up to date")
-    
     subprocess.run(["git", "config", "--global", "user.name", "GlennVerhaag"])
     subprocess.run(["git", "config", "--global", "user.email", "74454853+GlennVerhaag@users.noreply.github.com"])
+    
+    subprocess.call(["git", "pull"])
+    print("repo is up to date")
         
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_TRAINING_BUCKET") + "/" +timestampTraining])
     subprocess.run(["dvc", "commit"])
@@ -529,8 +529,8 @@ def setupDVCandVersioningBucket(context) -> None:
     subprocess.call(["git", "pull"])
     print("repo is up to date")
     
-    subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
-    subprocess.run(["git", "config", "--global", "user.email", "PriXss@users.noreply.github.com"])
+    subprocess.run(["git", "config", "--global", "user.name", "GlennVerhaag"])
+    subprocess.run(["git", "config", "--global", "user.email", "74454853+GlennVerhaag@users.noreply.github.com"])
         
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_BUCKET") + "/" +timestamp])
     subprocess.run(["dvc", "commit"])
