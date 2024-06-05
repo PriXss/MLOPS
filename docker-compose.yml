@@ -12,6 +12,7 @@ services:
       - MINIO_ROOT_USER=test
       - MINIO_ROOT_PASSWORD=testpassword
       - MINIO_SERVER_URL=http://85.215.53.91:9000
+      - MINIO_DEFAULT_BUCKETS=your_bucket_name
     networks:
       - mlops
     volumes:
