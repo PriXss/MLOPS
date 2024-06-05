@@ -7,11 +7,9 @@ RUN pip install dvc_s3
 
 ARG TOKEN=invalidtoken
 
-RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=DagsterPipelineProdRun .
+RUN git clone https://GlennVerhaag:${TOKEN}@github.com/PriXss/MLOPS.git --branch=DagsterPipelineProdRun .
 
 WORKDIR /usr/src/app/my-dagster-project
-
-COPY .env .
 
 EXPOSE 3000
 
