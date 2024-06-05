@@ -2,7 +2,7 @@
 FROM python:3.11
 
 # Setze das Arbeitsverzeichnis im Container
-WORKDIR /app
+WORKDIR /usr/src/app
 
 COPY .env .
 COPY requirements.txt .
