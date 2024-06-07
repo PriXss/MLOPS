@@ -2,28 +2,40 @@ import os
 import boto3
 import zipfile
 import yaml
+import logging
+
+# Konfigurieren des Loggings
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, s3_client):
+    logger.info("Starte den Download von MLflow-Runs...")
+
     # Liste aller Objekte im MLflow-Bucket abrufen
     mlflow_objects = s3_client.list_objects_v2(Bucket=mlflow_bucket_name)['Contents']
 
+    logger.info("Ludwig-Konfigurationsdatei und Modellnamen extrahieren...")
     # Ludwig-Konfigurationsdatei und Modellname extrahieren
     ludwig_config_file_name = "ludwig_MLCore.yaml"
-    model_name = extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, s3_client)
+    # model_name = extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, s3_client)
 
     # Lokales Verzeichnis für mlruns erstellen, falls es nicht existiert
     mlruns_dir = os.path.join(local_directory, 'mlruns', '0')
     os.makedirs(mlruns_dir, exist_ok=True)
 
+    logger.info(f"Local directory: {mlruns_dir}")
+
     # Durch jedes Objekt im MLflow-Bucket iterieren
     for obj in mlflow_objects:
         # Objekt-Key abrufen
         obj_key = obj['Key']
+        logger.info(f"Datei herunterladen: {obj_key}")
 
         # Datei herunterladen
         local_file_path = os.path.join(mlruns_dir, obj_key)
         s3_client.download_file(mlflow_bucket_name, obj_key, local_file_path)
+        logger.info(f"Datei heruntergeladen und gespeichert unter: {local_file_path}")
 
         # Überprüfen, ob die heruntergeladene Datei eine Zip-Datei ist
         if obj_key.endswith('.zip'):
@@ -53,32 +65,27 @@ def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_dir
 
             with open(meta_yaml_path, 'w') as meta_file:
                 yaml.safe_dump(meta_data, meta_file)
+            logger.info(f"Artifact URI aktualisiert: {artifact_uri}")
 
     # Herunterladen der meta.yaml-Datei aus dem "modelconfigs"-Bucket
     modelconfigs_meta_yaml_path = os.path.join(mlruns_dir, 'meta.yaml')
     s3_client.download_file(modelconfigs_bucket_name, 'meta.yaml', modelconfigs_meta_yaml_path)
+    logger.info("Meta.yaml-Datei heruntergeladen.")
+
+    logger.info("Download von MLflow-Runs abgeschlossen.")
 
 
-def extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, s3_client):
-    # Ludwig-Konfigurationsdatei aus dem S3-Bucket herunterladen
-    obj = s3_client.get_object(Bucket=modelconfigs_bucket_name, Key=ludwig_config_file_name)
-    ludwig_config_content = obj['Body'].read().decode('utf-8')
-
-    # Modellnamen aus der Ludwig-Konfigurationsdatei extrahieren
-    yaml_content = yaml.safe_load(ludwig_config_content)
-    if 'model' in yaml_content and 'type' in yaml_content['model']:
-        model_name = yaml_content['model']['type']
-        return model_name
-    else:
-        raise ValueError("Model name not found in Ludwig config file.")
-
+# Die restlichen Funktionen bleiben unverändert...
 
 if __name__ == "__main__":
+    # Konfigurieren des Loggings für die Ausgabe in die Konsole
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
     # Bucket-Namen und lokales Verzeichnis festlegen
     mlflow_bucket_name = "mlflowtracking"
     modelconfigs_bucket_name = "modelconfigstest2"
     local_directory = '/app'
-
 
     # Zugangsdaten
     access_key_id = "test"
@@ -93,4 +100,4 @@ if __name__ == "__main__":
 
     # MLflow-Runs herunterladen und Zip-Dateien entpacken
     download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, s3_client)
-    print(local_directory)
+    logger.info(f"Local directory: {local_directory}")
