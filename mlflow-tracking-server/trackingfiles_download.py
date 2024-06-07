@@ -5,10 +5,19 @@ import zipfile
 import yaml
 import logging
 
-# Konfigurieren des Loggings
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+# Konfiguriere das Logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Füge einen StreamHandler hinzu, um Protokolle an die Konsole zu senden
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+logger.addHandler(console_handler)
+
+# Füge einen Handler für die Datei cron.log hinzu
+file_handler = logging.FileHandler('cron.log')
+file_handler.setLevel(logging.INFO)
+logger.addHandler(file_handler)
 
 def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_directory, s3_client):
     logger.info("Starte den Download von MLflow-Runs...")

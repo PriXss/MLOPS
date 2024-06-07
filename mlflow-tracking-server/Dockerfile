@@ -1,4 +1,3 @@
-# Verwende ein Basisimage, das die erforderlichen Tools enthält (z. B. Python)
 FROM python:3.11
 
 # Setze das Arbeitsverzeichnis im Container
@@ -12,10 +11,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY trackingfiles_download.py .
 COPY cron.sh .
 
-# Installiere die Python-Abhängigkeiten
+# Installiere die Python-Abhängigkeiten und Cron
 RUN apt-get update && apt-get install -y cron
-
-EXPOSE 5000
 
 # Setze Berechtigungen für das Cron-Script und führe es aus
 RUN chmod +x /app/cron.sh
@@ -24,6 +21,4 @@ RUN chmod +x /app/cron.sh
 RUN crontab /app/cron.sh
 
 # Starte den Cron-Dienst und den MLflow-Server
-CMD service cron start && mlflow server --host 0.0.0.0
-
-
+CMD touch /var/log/cron.log && cron && tail -f /var/log/cron.log & mlflow server --host 0.0.0.0
