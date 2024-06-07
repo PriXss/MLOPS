@@ -76,7 +76,7 @@ def extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name
 if __name__ == "__main__":
     # Bucket-Namen und lokales Verzeichnis festlegen
     mlflow_bucket_name = "mlflowtracking"
-    modelconfigs_bucket_name = "modelconfigs"
+    modelconfigs_bucket_name = "modelconfigstest2"
     local_directory = '/app'
 
 

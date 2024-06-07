@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import os
+import zipfile
 
 def install(package):
     subprocess.run([sys.executable, "-m", "pip", "install", package], check=True)
@@ -12,6 +13,16 @@ import boto3
 
 
 def main():
+
+  session = boto3.session.Session()
+  s3_client = session.client(
+    service_name= "s3",
+    aws_access_key_id="test",
+    aws_secret_access_key="testpassword",
+    endpoint_url="http://85.215.53.91:9000",
+  )
+
+
   s3 = boto3.resource('s3',
     endpoint_url='http://172.23.0.2:9000',
     aws_access_key_id='aIiLEEiXspwTutA8WLTD',
@@ -21,17 +32,12 @@ def main():
     verify=False
   )
 
-  bucket_name = os.environ.get("BUCKET_NAME","models")
-  model_name = os.environ.get("MODEL_NAME", "deep_lstm")
+  bucket_name = os.environ.get("BUCKET_NAME")
+  model_name = os.environ.get("MODEL_NAME")
   print(f"bucket_name is {bucket_name}")
   print(f"model_name is {model_name}")
-  bucket = s3.Bucket(bucket_name)
-  for obj in bucket.objects.filter(Prefix=model_name):
-    target = obj.key
-    if not os.path.exists(os.path.dirname(target)):
-      os.makedirs(os.path.dirname(target))
-    if obj.key[-1] == '/':
-      continue
-    bucket.download_file(obj.key, target)
-
+  s3_client.download_file(bucket_name, f"{model_name}.zip", f"{model_name}.zip")
+  with zipfile.ZipFile(f"{model_name}.zip", 'r') as zip_ref:
+    zip_ref.extractall(f"./{model_name}".lower())
+  
 main()
