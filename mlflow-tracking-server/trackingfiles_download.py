@@ -1,11 +1,12 @@
 import os
+import sys
 import boto3
 import zipfile
 import yaml
 import logging
 
 # Konfigurieren des Loggings
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
 
