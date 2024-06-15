@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     # Bucket-Namen und lokales Verzeichnis festlegen
     mlflow_bucket_name = "mlflowtracking"
-    modelconfigs_bucket_name = "modelconfigstest2"
+    modelconfigs_bucket_name = "modelconfigs"
     local_directory = '/app'
 
     # Zugangsdaten
