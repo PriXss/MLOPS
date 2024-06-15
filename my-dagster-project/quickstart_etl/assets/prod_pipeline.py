@@ -327,7 +327,7 @@ class MLFlowTrainer:
                 # Frage: safe_model_to_S3 wird eher das Versionierte Model sein
 
                 # Speichern von Artefakten
-                self.save_model_to_s3(ludwig_model, model_name, data_naming)
+                self.save_model_to_s3(ludwig_model, model_name, data_naming, os.getenv("MLCORE_OUTPUT_RUN"))
 
                 # Die Meta yaml muss auch versioniert und dann erst hochgeladen werden
                 # Pfadfestlegung der meta.yaml-Datei
@@ -345,7 +345,7 @@ class MLFlowTrainer:
                 zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
                 shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
                  #--> Ab hier kann das mlrun ZIP File versioniert werden
-                s3.upload_file(zip_file_path, "mlflowtracking", zip_file_name)
+                s3.upload_file(zip_file_path, os.getenv("MLFLOW_BUCKET"), zip_file_name)
 
                 #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
 
@@ -361,7 +361,6 @@ class MLFlowTrainer:
                 print("added mlruns files to git ")
                 
             #shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
-
 
     def upload_directory_to_s3(self, local_path, bucket, s3_path):
         s3_client = boto3.client('s3')
@@ -412,7 +411,7 @@ class MLFlowTrainer:
                 model_name = yaml_content['model']['type']
             return model_name
 
-    def save_model_to_s3(self, model, model_name, data_name):
+    def save_model_to_s3(self, model, model_name, data_name, bucket):
         s3 = boto3.client('s3')
 
         # Temporäre Verzeichnisse erstellen
@@ -448,7 +447,7 @@ class MLFlowTrainer:
             # Zip-Dateien in die S3-Buckets hochladen --> Ab hier können die ZIP Files versioniert werden
             s3.upload_file(model_zip_file_path, self.model_bucket_url, model_zip_file_name)
             if api_experiment_run_dst:
-                s3.upload_file(api_zip_file_path, "mlcoreoutputrun", api_zip_file_name)
+                s3.upload_file(api_zip_file_path, bucket, api_zip_file_name)
 
         #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
         
@@ -518,7 +517,7 @@ def setupDVCandVersioningBucket(context) -> None:
     timestamp=timestampTemp
     
     # Check if all required buckets for the pipeline exist. If not, create them.
-    buckets = [os.getenv("OUTPUT_DIRECTORY"), os.getenv("PREDICTIONS_BUCKET"), os.getenv("MODEL_BUCKET"), os.getenv("MLFLOW_BUCKET"), os.getenv("MODEL_CONFIG_BUCKET"), os.getenv("VERSIONING_BUCKET"), os.getenv("VERSIONING_TRAINING_BUCKET"), os.getenv("REPORT_BUCKET")]
+    buckets = [os.getenv("OUTPUT_DIRECTORY"), os.getenv("PREDICTIONS_BUCKET"), os.getenv("MODEL_BUCKET"), os.getenv("MLFLOW_BUCKET"), os.getenv("MODEL_CONFIG_BUCKET"), os.getenv("VERSIONING_BUCKET"), os.getenv("VERSIONING_TRAINING_BUCKET"), os.getenv("REPORT_BUCKET"), os.getenv("MLCORE_OUTPUT_RUN")]
     for bucket in buckets:
         
         check_and_create_bucket(bucket)
@@ -540,7 +539,6 @@ def setupDVCandVersioningBucket(context) -> None:
 
     subprocess.run(["git", "add", "../.dvc/config"])
     
-
   
 @asset(deps=[setupDVCandVersioningBucket], group_name="DataCollectionPhase", compute_kind="DVCDataVersioning")
 def fetchStockDataFromSource(context) -> None:
