@@ -37,19 +37,45 @@
     ],
     "training": {
         "batch_size": 32,
-        "epochs": 2,
+        "epochs": 100,
         "learning_rate": 0.001,
         "optimizer": {
             "type": "adam"
         }
     },
     "model": {
-        "type": "deep_lstm",
+        "type": "transformer",
         "num_layers": 2,
-        "num_hidden_units": 64,
+        "hidden_size": 64,
+        "num_attention_heads": 8,
         "dropout": 0.1,
-        "recurrent_dropout": 0.1,
-        "output_activation": "linear"
+        "activation": "gelu"
+    },
+    "preprocessing": {
+        "date": {
+            "datetime_format": "%Y-%m-%d"
+        },
+        "numerical": {
+            "normalization": "zscore"
+        }
+    },
+    "hyperopt": {
+        "goal": "minimize",
+        "metric": "loss",
+        "parameters": {
+            "trainer.learning_rate": {
+                "space": "uniform",
+                "lower": 0.0001,
+                "upper": 0.01
+            },
+            "model.hidden_size": {
+                "space": "choice",
+                "values": [32, 64, 128]
+            },
+            "model.num_layers": {
+                "space": "choice",
+                "values": [1, 2, 3]
+            }
+        }
     }
-
 }
