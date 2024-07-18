@@ -16,6 +16,10 @@ prod_job = define_asset_job(
     "prod_job", AssetSelection.groups("VersioningPhase", "DataCollectionPhase", "ModelPhase", "MonitoringPhase" )
     )
 
+serve_job = define_asset_job(
+    "serve_job", AssetSelection.groups("ServingPhase")
+)
+
 
 train_schedule = ScheduleDefinition(
     job=training_job, cron_schedule="0 8 * * *"
