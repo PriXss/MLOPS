@@ -696,18 +696,19 @@ def serviceScript(context) -> None:
     bucket_name = os.environ.get("BUCKET_NAME")
     model_name = os.environ.get("MODEL_NAME")
     port = os.environ.get("PORT")
-    print(f"bucket_name is {bucket_name}")
-    print(f"model_name is {model_name}")
+    context.log.info(f"bucket_name is {bucket_name}")
+    context.log.info(f"model_name is {model_name}")
     s3_client.download_file(bucket_name, f"{model_name}.zip", f"{model_name}.zip")
     with zipfile.ZipFile(f"{model_name}.zip", 'r') as zip_ref:
         zip_ref.extractall(f"./{model_name}".lower())
 
     # This was originally executed in a script after calling the part top of this
     imagename = model_name.lower()
-    print(f"image name is {imagename}")
+    context.log.info(f"iamgename is {imagename}")
     subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."])
+    context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
     subprocess.run(["docker" "run" "-d" "-it" "-p" f"{port}:8000" f"{imagename}"])
-    
+    context.log.info(subprocess.run(["docker" "run" "-d" "-it" "-p" f"{port}:8000" f"{imagename}"]))
     
 def install(package):
     subprocess.run([sys.executable, "-m", "pip", "install", package], check=True)
