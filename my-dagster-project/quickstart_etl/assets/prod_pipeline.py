@@ -676,8 +676,67 @@ def monitoringAndReporting(context) -> None:
         print('DVC push successfully')   
         subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
         print("added reporting files to git ")
+
+    subprocess.run(["git", "commit", "-m", "Pipeline run from "+ date.today().strftime("%d/%m/%Y") +" | Stock: "+ data +" | Model: "+ model ])
+    context.log.info(subprocess.run(["git", "status"]) )  
+    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
+    context.log.info(subprocess.run(["git", "log", "--oneline"]) ) 
+
+##-----------------serving ----------------------------------------------------
+
+@asset(deps=[], group_name="ServingPhase", compute_kind="Serving")
+def serviceScript(context) -> None:
+    
+    ##### Ignore warnings #####
+    warnings.filterwarnings('ignore')
+    warnings.simplefilter('ignore')
+
+    ##### Set file/bucket vars #####
+    data_bucket_url = os.getenv("PREDICTIONS_BUCKET")
+    data_stock = os.getenv("STOCK_NAME")
+    data_model_version = os.getenv("MODEL_NAME")
+
+    ##### Load data from the bucket #####
+    obj = s3_client.get_object(Bucket=data_bucket_url, Key= "Predictions_"+data_stock+"_"+data_model_version+".csv" )
+    df = pd.read_csv(obj['Body'])
+    
+    if (len(df.index) > 1): 
+        ##### Data prep #####
+        df = df.rename(columns={'Schluss': 'target', 'Schluss_predictions': 'prediction'}) # Rename columns to fit evidently input
+        df['prediction'] = df['prediction'].shift(1) # Shift predictions to match them with the actual target (close price of the following day)
+        df = df.iloc[1:] # drop first row, as theres no matching prediction 
         
-        
+        ##### Create report #####
+        #Reference-Current split
+        #reference = df.iloc[int(len(df.index)/2):,:]
+        #current = df.iloc[:int(len(df.index)/2),:]
+
+        report = Report(metrics=[
+            #DataDriftPreset(), 
+            #TargetDriftPreset(),
+            DataQualityPreset(),
+            RegressionPreset()
+        ])
+
+        os.makedirs("reportings", exist_ok=True)
+        reportName=os.getenv("REPORT_NAME")
+        reportPath= f"reportings/{reportName}"
+        report.run(reference_data=None, current_data=df)
+        report.save_html(reportPath)    
+
+        reportsBucket= os.getenv("REPORT_BUCKET")
+        path = data_stock+"/"+data_model_version+"/"+reportName
+
+        s3_client.upload_file(reportPath ,reportsBucket, path)      
+    
+        subprocess.run(["dvc", "add", reportPath])
+        print('DVC add successfully')
+        subprocess.run(["dvc", "commit"])
+        subprocess.run(["dvc", "push"])
+        print('DVC push successfully')   
+        subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
+        print("added reporting files to git ")
+
     subprocess.run(["git", "commit", "-m", "Pipeline run from "+ date.today().strftime("%d/%m/%Y") +" | Stock: "+ data +" | Model: "+ model ])
     context.log.info(subprocess.run(["git", "status"]) )  
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])

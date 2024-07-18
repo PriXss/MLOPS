@@ -30,6 +30,10 @@ prod_schedule = ScheduleDefinition(
     job=prod_job, cron_schedule="0 19 * * 1-5"
     )
 
+serve_schedule = ScheduleDefinition(
+    job=serve_job, cron_schedule="0 19 * * 1-5"
+)
+
 
 defs = Definitions(
     assets=load_assets_from_package_module(assets), schedules=[train_schedule, prod_schedule ]
