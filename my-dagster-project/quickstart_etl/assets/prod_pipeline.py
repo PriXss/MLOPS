@@ -3,7 +3,7 @@ import subprocess
 import pandas as pd
 import boto3
 import botocore
-from dagster import asset
+from dagster import asset, job
 from ludwig.api import LudwigModel
 import shutil
 import tempfile
@@ -741,3 +741,7 @@ def serviceScript(context) -> None:
     context.log.info(subprocess.run(["git", "status"]) )  
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
     context.log.info(subprocess.run(["git", "log", "--oneline"]) ) 
+
+@job
+def job1():
+    print(0)
