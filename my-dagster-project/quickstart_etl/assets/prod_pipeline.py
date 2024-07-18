@@ -22,6 +22,7 @@ import warnings
 import mlflow
 from botocore.exceptions import NoCredentialsError, ClientError
 from dvc.repo import Repo
+import sys
 
 timestamp=""
 timestampTraining=""
@@ -692,56 +693,28 @@ def serviceScript(context) -> None:
     warnings.simplefilter('ignore')
 
     ##### Set file/bucket vars #####
-    data_bucket_url = os.getenv("PREDICTIONS_BUCKET")
-    data_stock = os.getenv("STOCK_NAME")
-    data_model_version = os.getenv("MODEL_NAME")
+    bucket_name = os.environ.get("BUCKET_NAME")
+    model_name = os.environ.get("MODEL_NAME")
+    port = os.environ.get("port")
+    print(f"bucket_name is {bucket_name}")
+    print(f"model_name is {model_name}")
+    s3_client.download_file(bucket_name, f"{model_name}.zip", f"{model_name}.zip")
+    with zipfile.ZipFile(f"{model_name}.zip", 'r') as zip_ref:
+        zip_ref.extractall(f"./{model_name}".lower())
 
-    ##### Load data from the bucket #####
-    obj = s3_client.get_object(Bucket=data_bucket_url, Key= "Predictions_"+data_stock+"_"+data_model_version+".csv" )
-    df = pd.read_csv(obj['Body'])
+    # This was originally executed in a script after calling the part top of this
+    imagename = model_name.lower()
+    print(f"image name is {imagename}")
+    subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."])
+    subprocess.run(["docker" "run" "-d" "-it" "-p" f"{port}:8000" f"{imagename}"])
     
-    if (len(df.index) > 1): 
-        ##### Data prep #####
-        df = df.rename(columns={'Schluss': 'target', 'Schluss_predictions': 'prediction'}) # Rename columns to fit evidently input
-        df['prediction'] = df['prediction'].shift(1) # Shift predictions to match them with the actual target (close price of the following day)
-        df = df.iloc[1:] # drop first row, as theres no matching prediction 
-        
-        ##### Create report #####
-        #Reference-Current split
-        #reference = df.iloc[int(len(df.index)/2):,:]
-        #current = df.iloc[:int(len(df.index)/2),:]
-
-        report = Report(metrics=[
-            #DataDriftPreset(), 
-            #TargetDriftPreset(),
-            DataQualityPreset(),
-            RegressionPreset()
-        ])
-
-        os.makedirs("reportings", exist_ok=True)
-        reportName=os.getenv("REPORT_NAME")
-        reportPath= f"reportings/{reportName}"
-        report.run(reference_data=None, current_data=df)
-        report.save_html(reportPath)    
-
-        reportsBucket= os.getenv("REPORT_BUCKET")
-        path = data_stock+"/"+data_model_version+"/"+reportName
-
-        s3_client.upload_file(reportPath ,reportsBucket, path)      
     
-        subprocess.run(["dvc", "add", reportPath])
-        print('DVC add successfully')
-        subprocess.run(["dvc", "commit"])
-        subprocess.run(["dvc", "push"])
-        print('DVC push successfully')   
-        subprocess.run(["git", "add", "reportings/.gitignore", "reportings/report.html.dvc"])
-        print("added reporting files to git ")
+def install(package):
+    subprocess.run([sys.executable, "-m", "pip", "install", package], check=True)
 
-    subprocess.run(["git", "commit", "-m", "Pipeline run from "+ date.today().strftime("%d/%m/%Y") +" | Stock: "+ data +" | Model: "+ model ])
-    context.log.info(subprocess.run(["git", "status"]) )  
-    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
-    context.log.info(subprocess.run(["git", "log", "--oneline"]) ) 
+def serve_model():
+    directory = os.environ.get('model_name')
+    print(f'changing directory to {directory}')
+    os.system(f'cd {directory}')
+    os.system(f'ludwig serve -m {directory}')
 
-@job
-def job1():
-    print(0)
