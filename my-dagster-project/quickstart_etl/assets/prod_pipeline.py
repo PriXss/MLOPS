@@ -707,7 +707,7 @@ def serviceScript(context) -> None:
     context.log.info(f"iamgename is {imagename}")
     subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."])
     context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
-    subprocess.run(["docker" "run" "-d" "-it" "-p" f"{port}:8000" f"{imagename}"])
+    subprocess.run(["docker", "run", "-d", "-it", "-p", f"{port}:8000", f"{imagename}"])
     context.log.info(subprocess.run(["docker" "run" "-d" "-it" "-p" f"{port}:8000" f"{imagename}"]))
     
 def install(package):
