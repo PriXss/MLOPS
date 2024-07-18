@@ -695,7 +695,7 @@ def serviceScript(context) -> None:
     ##### Set file/bucket vars #####
     bucket_name = os.environ.get("BUCKET_NAME")
     model_name = os.environ.get("MODEL_NAME")
-    port = os.environ.get("port")
+    port = os.environ.get("PORT")
     print(f"bucket_name is {bucket_name}")
     print(f"model_name is {model_name}")
     s3_client.download_file(bucket_name, f"{model_name}.zip", f"{model_name}.zip")
@@ -713,8 +713,21 @@ def install(package):
     subprocess.run([sys.executable, "-m", "pip", "install", package], check=True)
 
 def serve_model():
-    directory = os.environ.get('model_name')
+    directory = os.environ.get('MODEL_NAME')
     print(f'changing directory to {directory}')
     os.system(f'cd {directory}')
     os.system(f'ludwig serve -m {directory}')
+
+def create_and_write_dockerfile():
+    docker_file_content = """FROM ludwigai/ludwig
+    ARG model_name
+    ENV model_name $model_name
+    WORKDIR /src
+    COPY ./ /src
+    EXPOSE 8000
+    RUN chmod +x serve_model.sh
+    ENTRYPOINT ["python3", "serve_model.py"]
+    """
+    with open("Dockerfile", "w") as file:
+        file.write(docker_file_content)
 
