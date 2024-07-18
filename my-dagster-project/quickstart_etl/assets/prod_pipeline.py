@@ -685,6 +685,28 @@ def monitoringAndReporting(context) -> None:
 
 ##-----------------serving ----------------------------------------------------
 
+def install(package):
+    subprocess.run([sys.executable, "-m", "pip", "install", package], check=True)
+
+def create_and_write_serve_model_script():
+    content = """cd ${MODEL_NAME}
+    ludwig serve"""
+    with open("serve_model.sh", "w") as file:
+        file.write(content)
+
+def create_and_write_dockerfile():
+    docker_file_content = """FROM ludwigai/ludwig
+    ARG model_name
+    ENV model_name $model_name
+    WORKDIR /src
+    COPY ./ /src
+    EXPOSE 8000
+    RUN chmod +x serve_model.sh
+    ENTRYPOINT ["python3", "serve_model.py"]
+    """
+    with open("Dockerfile", "w") as file:
+        file.write(docker_file_content)
+        
 @asset(deps=[], group_name="ServingPhase", compute_kind="Serving")
 def serviceScript(context) -> None:
     
@@ -704,31 +726,8 @@ def serviceScript(context) -> None:
 
     # This was originally executed in a script after calling the part top of this
     imagename = model_name.lower()
-    context.log.info(f"iamgename is {imagename}")
-    subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."])
+    create_and_write_serve_model_script()
+    create_and_write_dockerfile()
+    context.log.info(f"imagename is {imagename}")
     context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
-    subprocess.run(["docker", "run", "-d", "-it", "-p", f"{port}:8000", f"{imagename}"])
     context.log.info(subprocess.run(["docker" "run" "-d" "-it" "-p" f"{port}:8000" f"{imagename}"]))
-    
-def install(package):
-    subprocess.run([sys.executable, "-m", "pip", "install", package], check=True)
-
-def serve_model():
-    directory = os.environ.get('MODEL_NAME')
-    print(f'changing directory to {directory}')
-    os.system(f'cd {directory}')
-    os.system(f'ludwig serve -m {directory}')
-
-def create_and_write_dockerfile():
-    docker_file_content = """FROM ludwigai/ludwig
-    ARG model_name
-    ENV model_name $model_name
-    WORKDIR /src
-    COPY ./ /src
-    EXPOSE 8000
-    RUN chmod +x serve_model.sh
-    ENTRYPOINT ["python3", "serve_model.py"]
-    """
-    with open("Dockerfile", "w") as file:
-        file.write(docker_file_content)
-
