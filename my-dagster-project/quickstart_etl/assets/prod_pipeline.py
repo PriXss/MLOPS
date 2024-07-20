@@ -30,12 +30,12 @@ data = os.getenv("STOCK_NAME")
 timestamp_string= str(timestamp)
 timestampTraining_string = str(timestampTraining)
 
-predictionGlobal
+predictionGlobal = ''
 
 def modify_global_variable(x):
     global predictionGlobal
     # Overwrite the global variable
-    predictionGlobal = x
+    predictionGlobal = str(x)
 
 
 
