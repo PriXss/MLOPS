@@ -591,7 +591,7 @@ def requestToModel(context) -> None:
     
     predictionVariable = response.json()
     prediction_value = predictionVariable['Schluss_predictions']
-    os.environ['PREDICTION'] = prediction_value
+    os.environ['PREDICTION'] = str(prediction_value)
     context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
     
     
