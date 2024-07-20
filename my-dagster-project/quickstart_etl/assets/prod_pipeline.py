@@ -204,8 +204,8 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     Key= timestampTraining+"/"
     )
     
-    subprocess.run(["git", "config", "--global", "user.name", "GlennVerhaag"])
-    subprocess.run(["git", "config", "--global", "user.email", "74454853+GlennVerhaag@users.noreply.github.com"])
+    subprocess.run(["git", "config", "--global", "user.name", "PriXss"])
+    subprocess.run(["git", "config", "--global", "user.email", "73349327+PriXss@users.noreply.github.com"])
     
     subprocess.call(["git", "pull"])
     print("repo is up to date")
