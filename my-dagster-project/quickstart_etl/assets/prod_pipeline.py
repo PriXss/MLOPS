@@ -30,14 +30,6 @@ data = os.getenv("STOCK_NAME")
 timestamp_string= str(timestamp)
 timestampTraining_string = str(timestampTraining)
 
-predictionGlobal = ''
-
-def modify_global_variable(x):
-    global predictionGlobal
-    # Overwrite the global variable
-    predictionGlobal = str(x)
-
-
 
 session = boto3.session.Session()
 s3_client = session.client(
@@ -575,7 +567,7 @@ def fetchStockDataFromSource(context) -> None:
 
 
 @asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI")
-def requestToModel(context) -> None:
+def requestToModel(context):
      
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
@@ -601,8 +593,6 @@ def requestToModel(context) -> None:
     
     predictionVariable = response.json()
     prediction_value = predictionVariable['Schluss_predictions']
-    modify_global_variable(prediction_value)
-    
     context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
     
     
@@ -640,12 +630,14 @@ def requestToModel(context) -> None:
     subprocess.call(["git", "add", f"{dvcpath}"])
     subprocess.call(["git", "add", "predictions/.gitignore"])
     print("added prediction files to git ")
+    
+    return prediction_value
 
 
 @asset(deps=[requestToModel], group_name="StockTrading", compute_kind="Alpacca")
-def simulateStockMarket(context) -> None:
+def simulateStockMarket(context, requestToModel) -> None:
     modelname = os.getenv("MODEL_NAME") 
-    prediction = predictionGlobal
+    prediction = {requestToModel}
     context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
     context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
     context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
