@@ -204,7 +204,7 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     Key= timestampTraining+"/"
     )
     
-    subprocess.run(["git", "config", "--global", "user.name", "PriXss"])
+    subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
     subprocess.run(["git", "config", "--global", "user.email", "73349327+PriXss@users.noreply.github.com"])
     
     subprocess.call(["git", "pull"])
