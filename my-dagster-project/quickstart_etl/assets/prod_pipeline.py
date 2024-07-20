@@ -567,7 +567,7 @@ def fetchStockDataFromSource(context) -> None:
 
 
 @asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI")
-def requestToModel(context):
+def requestToModel(context) -> None:
      
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
