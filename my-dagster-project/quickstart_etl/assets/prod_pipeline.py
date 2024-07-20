@@ -567,7 +567,7 @@ def fetchStockDataFromSource(context) -> None:
 
 
 @asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI")
-def requestToModel(context) -> None:
+def requestToModel(context) -> float:
      
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
@@ -635,9 +635,9 @@ def requestToModel(context) -> None:
 
 
 @asset(deps=[requestToModel], group_name="StockTrading", compute_kind="Alpacca")
-def simulateStockMarket(context, requestToModel) -> None:
+def simulateStockMarket(context, prediction_value: float) -> None:
     modelname = os.getenv("MODEL_NAME") 
-    prediction = {requestToModel}
+    prediction = prediction_value
     context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
     context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
     context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
