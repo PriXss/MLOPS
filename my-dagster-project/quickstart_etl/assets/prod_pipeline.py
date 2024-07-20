@@ -633,10 +633,10 @@ def requestToModel(context) -> None:
 
 @asset(deps=[requestToModel], group_name="StockTrading", compute_kind="Alpacca")
 def simulateStockMarket(context) -> None:
-    print(os.getenv("MODEL_NAME"))
-    print(os.getenv("PREDICTION"))
-    context.log.info(f"!!!Modell für Alpacca ist!!!: {os.getenv("MODEL_NAME")}")
-    context.log.info(f"!!!Prediction für Alpacca!!!: {os.getenv("PREDICTION")}")
+    modelname = os.getenv("MODEL_NAME") 
+    prediction = os.getenv("PREDICTION")
+    context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
+    context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
     context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
     
     
