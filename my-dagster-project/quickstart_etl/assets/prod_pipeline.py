@@ -30,6 +30,14 @@ data = os.getenv("STOCK_NAME")
 timestamp_string= str(timestamp)
 timestampTraining_string = str(timestampTraining)
 
+predictionGlobal = 0.0
+
+def modify_global_variable(prediction):
+    global predictionGlobal
+    # Overwrite the global variable
+    predictionGlobal = prediction
+
+
 
 session = boto3.session.Session()
 s3_client = session.client(
@@ -591,10 +599,10 @@ def requestToModel(context) -> None:
     
     predictionVariable = response.json()
     prediction_value = predictionVariable['Schluss_predictions']
-    stringpredictionvalue = str(prediction_value)
-
-    with open("../../.env", "a") as env_file:
-        env_file.write(f"PREDICTION={stringpredictionvalue}\n")
+    modify_global_variable(prediction_value)
+    
+    
+    
     context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
     
     
@@ -639,7 +647,7 @@ def simulateStockMarket(context) -> None:
     modelname = os.getenv("MODEL_NAME") 
     prediction = os.getenv("PREDICTION")
     context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
-    context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
+    context.log.info(f"!!!Prediction für Alpacca!!!: {predictionGlobal}")
     context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
     
     
