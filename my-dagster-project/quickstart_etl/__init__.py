@@ -13,7 +13,7 @@ training_job = define_asset_job(
     )
 
 prod_job = define_asset_job(
-    "prod_job", AssetSelection.groups("VersioningPhase", "DataCollectionPhase", "ModelPhase", "MonitoringPhase" )
+    "prod_job", AssetSelection.groups("VersioningPhase", "DataCollectionPhase", "ModelPhase", "MonitoringPhase", "StockTrading" )
     )
 
 
