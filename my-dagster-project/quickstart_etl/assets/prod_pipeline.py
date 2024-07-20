@@ -597,11 +597,11 @@ def requestToModel(context) -> None:
     os.makedirs("predictions", exist_ok=True)
     resultJson = {**payload, **response.json()}
     
+    
+    
     predictionVariable = response.json()
     prediction_value = predictionVariable['Schluss_predictions']
     modify_global_variable(prediction_value)
-    
-    
     
     context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
     
@@ -645,9 +645,9 @@ def requestToModel(context) -> None:
 @asset(deps=[requestToModel], group_name="StockTrading", compute_kind="Alpacca")
 def simulateStockMarket(context) -> None:
     modelname = os.getenv("MODEL_NAME") 
-    prediction = os.getenv("PREDICTION")
+    prediction = predictionGlobal
     context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
-    context.log.info(f"!!!Prediction für Alpacca!!!: {predictionGlobal}")
+    context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
     context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
     
     
