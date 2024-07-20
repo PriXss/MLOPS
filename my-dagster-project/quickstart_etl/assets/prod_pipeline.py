@@ -590,7 +590,10 @@ def requestToModel(context) -> None:
     resultJson = {**payload, **response.json()}
     
     predictionVariable = response.json()
-    context.log.info(f"!!!Prediction ist!!!: {predictionVariable}")
+    prediction_value = predictionVariable['Schluss_predictions']
+    os.environ['PREDICTION'] = prediction_value
+    context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
+    
     
     df_result = pd.DataFrame(resultJson, index=[0])
 
@@ -626,6 +629,14 @@ def requestToModel(context) -> None:
     subprocess.call(["git", "add", f"{dvcpath}"])
     subprocess.call(["git", "add", "predictions/.gitignore"])
     print("added prediction files to git ")
+
+
+@asset(deps=[requestToModel], group_name="StockTrading", compute_kind="Alpacca")
+def simulateStockMarket(context) -> None:
+    print(os.getenv("MODEL_NAME"))
+    print(os.getenv("PREDICTION"))
+    print('Hello Alpacca Market')
+     
 
 
 @asset(deps=[requestToModel], group_name="MonitoringPhase", compute_kind="Reporting")
