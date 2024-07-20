@@ -591,7 +591,10 @@ def requestToModel(context) -> None:
     
     predictionVariable = response.json()
     prediction_value = predictionVariable['Schluss_predictions']
-    os.environ['PREDICTION'] = str(prediction_value)
+    stringpredictionvalue = str(prediction_value)
+
+    with open("../../.env", "a") as env_file:
+        env_file.write(f"PREDICTION={stringpredictionvalue}\n")
     context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
     
     
