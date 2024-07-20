@@ -207,7 +207,7 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
     subprocess.run(["git", "config", "--global", "user.email", "73349327+PriXss@users.noreply.github.com"])
     
-    subprocess.call(["git", "pull"])
+    subprocess.run(["git", "pull"])
     print("repo is up to date")
         
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_TRAINING_BUCKET") + "/" +timestampTraining])
@@ -683,6 +683,7 @@ def monitoringAndReporting(context) -> None:
         
         
     subprocess.run(["git", "commit", "-m", "Pipeline run from "+ date.today().strftime("%d/%m/%Y") +" | Stock: "+ data +" | Model: "+ model ])
-    context.log.info(subprocess.run(["git", "status"]) )  
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
+    context.log.info(subprocess.run(["git", "status"]) )  
+
     context.log.info(subprocess.run(["git", "log", "--oneline"]) ) 
