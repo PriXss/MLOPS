@@ -634,7 +634,7 @@ def requestToModel(context) -> float:
     return prediction_value
 
 
-@asset(deps=[requestToModel], group_name="StockTrading", compute_kind="Alpacca")
+@asset(group_name="StockTrading", compute_kind="Alpacca")
 def simulateStockMarket(context, prediction_value: float) -> None:
     modelname = os.getenv("MODEL_NAME") 
     prediction = prediction_value
