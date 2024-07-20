@@ -3,7 +3,7 @@ import subprocess
 import pandas as pd
 import boto3
 import botocore
-from dagster import asset
+from dagster import asset, AssetOut, AssetIn
 from ludwig.api import LudwigModel
 import shutil
 import tempfile
@@ -566,7 +566,7 @@ def fetchStockDataFromSource(context) -> None:
     print("Prozess abgeschlossen.")
 
 
-@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI")
+@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI", output_defs=[AssetOut(name="prediction_value")])
 def requestToModel(context) -> float:
      
     stock_name = os.getenv("STOCK_NAME")
@@ -634,7 +634,7 @@ def requestToModel(context) -> float:
     return prediction_value
 
 
-@asset(group_name="StockTrading", compute_kind="Alpacca")
+@asset(deps=[AssetIn("prediction_value")] ,group_name="StockTrading", compute_kind="Alpacca")
 def simulateStockMarket(context, prediction_value: float) -> None:
     modelname = os.getenv("MODEL_NAME") 
     prediction = prediction_value
