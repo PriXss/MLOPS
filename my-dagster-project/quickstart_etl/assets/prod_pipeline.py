@@ -635,9 +635,11 @@ def requestToModel(context) -> None:
 def simulateStockMarket(context) -> None:
     print(os.getenv("MODEL_NAME"))
     print(os.getenv("PREDICTION"))
-    print('Hello Alpacca Market')
-     
-
+    context.log.info(f"!!!Modell für Alpacca ist!!!: {os.getenv("MODEL_NAME")}")
+    context.log.info(f"!!!Prediction für Alpacca!!!: {os.getenv("PREDICTION")}")
+    context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
+    
+    
 
 @asset(deps=[requestToModel], group_name="MonitoringPhase", compute_kind="Reporting")
 def monitoringAndReporting(context) -> None:
