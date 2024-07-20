@@ -588,6 +588,10 @@ def requestToModel(context) -> None:
     context.log.info(f"Response: {response.json()}")
     os.makedirs("predictions", exist_ok=True)
     resultJson = {**payload, **response.json()}
+    
+    predictionVariable = response.json()
+    context.log.info(f"!!!Prediction ist!!!: {predictionVariable}")
+    
     df_result = pd.DataFrame(resultJson, index=[0])
 
     ##### Upload prediction to S3 bucket #####
