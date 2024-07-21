@@ -566,7 +566,7 @@ def fetchStockDataFromSource(context) -> None:
     print("Prozess abgeschlossen.")
 
 
-@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI", output_defs=[AssetOut(name="prediction_value")])
+@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI", output_defs=[AssetOut(key="prediction_value")])
 def requestToModel(context) -> str:
      
     stock_name = os.getenv("STOCK_NAME")
