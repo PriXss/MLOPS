@@ -635,7 +635,7 @@ def requestToModel(context):
     
 
 @asset(deps=[requestToModel] ,group_name="StockTrading", compute_kind="Alpacca")
-def simulateStockMarket(context, requestToModel) -> None:
+def simulateStockMarket(context, requestToModel):
     ##hier möchte ich sie benutzen
     modelname = os.getenv("MODEL_NAME") 
     prediction = requestToModel
