@@ -590,7 +590,6 @@ def requestToModel(context):
     resultJson = {**payload, **response.json()}
     
     
-    #####hier speichere ich die variable ab
     os.makedirs("predictionValue", exist_ok=True)
     predictionVariable = response.json()
     prediction_value = predictionVariable['Schluss_predictions']
@@ -700,10 +699,15 @@ def monitoringAndReporting(context) -> None:
 
 @asset(deps=[monitoringAndReporting] ,group_name="StockTrading", compute_kind="Alpacca")
 def simulateStockMarket(context, requestToModel):
-    ##hier möchte ich sie benutzen
     modelname = os.getenv("MODEL_NAME") 
     prediction = requestToModel
+    stockShortform = os.getenv("STOCK_INPUT") 
+    stockName = os.getenv("STOCK_NAME") 
+    
     context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
     context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
+    context.log.info(f"!!!StockShortform für Alpacca!!!: {stockShortform}")
+    context.log.info(f"!!!Stockname für Alpacca!!!: {stockName}")
+
     context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
     
