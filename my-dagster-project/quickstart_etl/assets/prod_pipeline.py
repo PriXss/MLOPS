@@ -3,7 +3,7 @@ import subprocess
 import pandas as pd
 import boto3
 import botocore
-from dagster import asset
+from dagster import asset, Out, In
 from ludwig.api import LudwigModel
 import shutil
 import tempfile
@@ -566,7 +566,7 @@ def fetchStockDataFromSource(context) -> None:
     print("Prozess abgeschlossen.")
 
 
-@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI")
+@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI", out={"prediction_value": Out(str)})
 def requestToModel(context) -> None:
      
     stock_name = os.getenv("STOCK_NAME")
@@ -591,10 +591,10 @@ def requestToModel(context) -> None:
     
     
     #####hier speichere ich die variable ab
+    os.makedirs("predictionValue", exist_ok=True)
     predictionVariable = response.json()
     prediction_value = predictionVariable['Schluss_predictions']
     context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
-    
     
     df_result = pd.DataFrame(resultJson, index=[0])
 
@@ -631,12 +631,14 @@ def requestToModel(context) -> None:
     subprocess.call(["git", "add", "predictions/.gitignore"])
     print("added prediction files to git ")
     
+    return prediction_value
+    
 
-@asset(deps=[requestToModel] ,group_name="StockTrading", compute_kind="Alpacca")
-def simulateStockMarket(context) -> None:
+@asset(deps=[requestToModel] ,group_name="StockTrading", compute_kind="Alpacca", ins={"input_from_Modelrequest": In(str)})
+def simulateStockMarket(context, input_from_Modelrequest) -> None:
     ##hier möchte ich sie benutzen
     modelname = os.getenv("MODEL_NAME") 
-    prediction = 'muss importiert werden'
+    prediction = input_from_Modelrequest
     context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
     context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
     context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
