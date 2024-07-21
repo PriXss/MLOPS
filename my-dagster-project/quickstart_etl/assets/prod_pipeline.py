@@ -3,7 +3,7 @@ import subprocess
 import pandas as pd
 import boto3
 import botocore
-from dagster import asset, AssetOut, 
+from dagster import asset, AssetOut
 from ludwig.api import LudwigModel
 import shutil
 import tempfile
