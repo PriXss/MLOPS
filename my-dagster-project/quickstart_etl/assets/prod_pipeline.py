@@ -3,7 +3,7 @@ import subprocess
 import pandas as pd
 import boto3
 import botocore
-from dagster import asset, AssetOut
+from dagster import asset, Out
 from ludwig.api import LudwigModel
 import shutil
 import tempfile
@@ -566,7 +566,7 @@ def fetchStockDataFromSource(context) -> None:
     print("Prozess abgeschlossen.")
 
 
-@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI", output_defs=[AssetOut(key="prediction_value")])
+@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI", output=Out(str))
 def requestToModel(context) -> str:
      
     stock_name = os.getenv("STOCK_NAME")
