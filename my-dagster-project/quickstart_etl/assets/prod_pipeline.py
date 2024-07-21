@@ -3,7 +3,7 @@ import subprocess
 import pandas as pd
 import boto3
 import botocore
-from dagster import asset, Out, In
+from dagster import asset
 from ludwig.api import LudwigModel
 import shutil
 import tempfile
@@ -566,8 +566,8 @@ def fetchStockDataFromSource(context) -> None:
     print("Prozess abgeschlossen.")
 
 
-@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI", out={"prediction_value": Out(str)})
-def requestToModel(context) -> None:
+@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI")
+def requestToModel(context):
      
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
@@ -634,11 +634,11 @@ def requestToModel(context) -> None:
     return prediction_value
     
 
-@asset(deps=[requestToModel] ,group_name="StockTrading", compute_kind="Alpacca", ins={"input_from_Modelrequest": In(str)})
-def simulateStockMarket(context, input_from_Modelrequest) -> None:
+@asset(deps=[requestToModel] ,group_name="StockTrading", compute_kind="Alpacca")
+def simulateStockMarket(context, requestToModel) -> None:
     ##hier möchte ich sie benutzen
     modelname = os.getenv("MODEL_NAME") 
-    prediction = input_from_Modelrequest
+    prediction = requestToModel
     context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
     context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
     context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
