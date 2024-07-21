@@ -3,7 +3,7 @@ import subprocess
 import pandas as pd
 import boto3
 import botocore
-from dagster import asset, Out
+from dagster import asset, AssetIn, AssetOut, Output, Out
 from ludwig.api import LudwigModel
 import shutil
 import tempfile
@@ -566,8 +566,8 @@ def fetchStockDataFromSource(context) -> None:
     print("Prozess abgeschlossen.")
 
 
-@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI", output=Out(str))
-def requestToModel(context) -> str:
+@asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI", out={"prediction_value": Out(str)})
+def requestToModel(context) -> Output[str]:
      
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
@@ -631,8 +631,7 @@ def requestToModel(context) -> str:
     subprocess.call(["git", "add", "predictions/.gitignore"])
     print("added prediction files to git ")
     
-    return prediction_value
-    
+    return Output(prediction_value, "prediction_value")    
 
 @asset(deps=[requestToModel] ,group_name="StockTrading", compute_kind="Alpacca")
 def simulateStockMarket(context, prediction_value: str) -> None:
