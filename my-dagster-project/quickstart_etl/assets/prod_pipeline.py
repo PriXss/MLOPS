@@ -632,22 +632,13 @@ def requestToModel(context):
     print("added prediction files to git ")
     
     return prediction_value
-    
 
-@asset(deps=[requestToModel] ,group_name="StockTrading", compute_kind="Alpacca")
-def simulateStockMarket(context, requestToModel):
-    ##hier möchte ich sie benutzen
-    modelname = os.getenv("MODEL_NAME") 
-    prediction = requestToModel
-    context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
-    context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
-    context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
-    
     
 
 @asset(deps=[requestToModel], group_name="MonitoringPhase", compute_kind="Reporting")
 def monitoringAndReporting(context) -> None:
     
+
     ##### Ignore warnings #####
     warnings.filterwarnings('ignore')
     warnings.simplefilter('ignore')
@@ -704,3 +695,15 @@ def monitoringAndReporting(context) -> None:
     context.log.info(subprocess.run(["git", "status"]) )  
 
     context.log.info(subprocess.run(["git", "log", "--oneline"]) ) 
+    
+    
+
+@asset(deps=[monitoringAndReporting] ,group_name="StockTrading", compute_kind="Alpacca")
+def simulateStockMarket(context, requestToModel):
+    ##hier möchte ich sie benutzen
+    modelname = os.getenv("MODEL_NAME") 
+    prediction = requestToModel
+    context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
+    context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
+    context.log.info("Hier die Logik für Kaufen/nicht Kaufen / halten implementieren")
+    
