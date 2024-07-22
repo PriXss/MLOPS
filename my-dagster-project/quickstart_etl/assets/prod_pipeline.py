@@ -833,7 +833,7 @@ def serviceScript(context) -> None:
     print("##########################")
     ##### Set file/bucket vars #####
     bucket_name = os.environ.get("BUCKET_NAME")
-    model_name = os.environ.get("MODEL_NAME")
+    model_name = os.environ.get("SERVE_MODEL_NAME")
     port = os.environ.get("PORT")
     print(f"bucket_name is {bucket_name}")
     context.log.info(f"bucket_name is {bucket_name}")
