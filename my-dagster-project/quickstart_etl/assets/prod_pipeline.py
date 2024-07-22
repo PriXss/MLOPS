@@ -1,4 +1,5 @@
 import os
+import alpaca_trade_api as tradeapi
 import subprocess
 import pandas as pd
 import boto3
@@ -205,10 +206,10 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     Key= timestampTraining+"/"
     )
     
-    subprocess.run(["git", "config", "--global", "user.name", "GlennVerhaag"])
-    subprocess.run(["git", "config", "--global", "user.email", "74454853+GlennVerhaag@users.noreply.github.com"])
+    subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
+    subprocess.run(["git", "config", "--global", "user.email", "73349327+PriXss@users.noreply.github.com"])
     
-    subprocess.call(["git", "pull"])
+    subprocess.run(["git", "pull"])
     print("repo is up to date")
         
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_TRAINING_BUCKET") + "/" +timestampTraining])
@@ -568,7 +569,7 @@ def fetchStockDataFromSource(context) -> None:
 
 
 @asset(deps=[fetchStockDataFromSource], group_name="ModelPhase", compute_kind="ModelAPI")
-def requestToModel(context) -> None:
+def requestToModel(context):
      
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
@@ -589,6 +590,13 @@ def requestToModel(context) -> None:
     context.log.info(f"Response: {response.json()}")
     os.makedirs("predictions", exist_ok=True)
     resultJson = {**payload, **response.json()}
+    
+    
+    os.makedirs("predictionValue", exist_ok=True)
+    predictionVariable = response.json()
+    prediction_value = predictionVariable['Schluss_predictions']
+    context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
+    
     df_result = pd.DataFrame(resultJson, index=[0])
 
     ##### Upload prediction to S3 bucket #####
@@ -623,11 +631,15 @@ def requestToModel(context) -> None:
     subprocess.call(["git", "add", f"{dvcpath}"])
     subprocess.call(["git", "add", "predictions/.gitignore"])
     print("added prediction files to git ")
+    
+    return prediction_value
 
+    
 
 @asset(deps=[requestToModel], group_name="MonitoringPhase", compute_kind="Reporting")
 def monitoringAndReporting(context) -> None:
     
+
     ##### Ignore warnings #####
     warnings.filterwarnings('ignore')
     warnings.simplefilter('ignore')
@@ -679,7 +691,6 @@ def monitoringAndReporting(context) -> None:
         print("added reporting files to git ")
 
     subprocess.run(["git", "commit", "-m", "Pipeline run from "+ date.today().strftime("%d/%m/%Y") +" | Stock: "+ data +" | Model: "+ model ])
-    context.log.info(subprocess.run(["git", "status"]) )  
     subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
     context.log.info(subprocess.run(["git", "log", "--oneline"]) ) 
 
@@ -720,8 +731,6 @@ def create_and_write_dockerfile():
         
 @asset(deps=[], group_name="ServingPhase", compute_kind="Serving")
 def serviceScript(context) -> None:
-    context.log.info("+++++++++++++++++++++++")
-    print("##########################")
     ##### Set file/bucket vars #####
     bucket_name = os.environ.get("BUCKET_NAME")
     model_name = os.environ.get("MODEL_NAME")
@@ -741,3 +750,108 @@ def serviceScript(context) -> None:
     context.log.info(f"imagename is {imagename}")
     context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
     context.log.info(subprocess.run(["docker", "run", "-d", "-p", f"{port}:8000", f"{imagename}"]))
+    
+    
+
+@asset(deps=[monitoringAndReporting] ,group_name="StockTrading", compute_kind="Alpacca")
+def simulateStockMarket(context, requestToModel):
+    modelname = os.getenv("MODEL_NAME") 
+    prediction = requestToModel
+    stockShortform = os.getenv("STOCK_INPUT") 
+    stockName = os.getenv("STOCK_NAME")
+    
+    context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
+    context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
+    context.log.info(f"!!!StockShortform für Alpacca!!!: {stockShortform}")
+    context.log.info(f"!!!Stockname für Alpacca!!!: {stockName}")
+
+
+class AlpacaTrader:
+    def __init__(self, api_key, api_secret, base_url, threshold):
+        self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
+        self.threshold = threshold
+
+    def get_account_info(self):
+        account = self.api.get_account()
+        return {
+            "cash": float(account.cash),
+            "buying_power": float(account.buying_power),
+            "equity": float(account.equity),
+            "last_equity": float(account.last_equity)
+        }
+
+    def get_latest_close(self, ticker):
+        barset = self.api.get_barset(ticker, 'day', limit=1)
+        bars = barset[ticker]
+        return bars[0].c if bars else None
+
+    def get_prediction(self, prediction):
+        return float(prediction)
+
+    def place_buy_order(self, ticker, qty):
+        buy_order = self.api.submit_order(
+            symbol=ticker,
+            qty=qty,
+            side='buy',
+            type='market',
+            time_in_force='gtc'
+        )
+        return buy_order
+
+    def place_sell_order(self, ticker, qty):
+        sell_order = self.api.submit_order(
+            symbol=ticker,
+            qty=qty,
+            side='sell',
+            type='market',
+            time_in_force='gtc'
+        )
+        return sell_order
+
+    def check_position(self, ticker):
+        positions = self.api.list_positions()
+        for position in positions:
+            if position.symbol == ticker:
+                return float(position.qty)
+        return 0
+
+    def execute_trade(self, ticker, prediction):
+        account_info = self.get_account_info()
+        latest_close = self.get_latest_close(ticker)
+        predicted_close = self.get_prediction(prediction)
+
+        if latest_close is None or predicted_close is None:
+            print("Error: Could not retrieve necessary price information.")
+            return
+
+        price_difference = (predicted_close - latest_close) / latest_close
+
+        if price_difference > self.threshold:
+            max_shares = int(account_info['cash'] // latest_close)
+            if max_shares > 0:
+                buy_order = self.place_buy_order(ticker, max_shares)
+                print("Buy Order:", buy_order)
+            else:
+                print("Not enough cash to buy shares.")
+        elif price_difference < -self.threshold:
+            position_qty = self.check_position(ticker)
+            if position_qty > 0:
+                sell_order = self.place_sell_order(ticker, position_qty)
+                print("Sell Order:", sell_order)
+            else:
+                print(f"No shares of {ticker} to sell.")
+        else:
+            print("Price change within threshold, no action taken.")
+
+if __name__ == "__main__":
+    # Alpaca API Keys
+    API_KEY = os.getenv("API_KEY")
+    API_SECRET = os.getenv("API_SECRET")
+    BASE_URL = os.getenv("BASE_URL")
+    threshold = os.getenv("TRADING_THRESHOLD")
+
+    prediction = requestToModel
+    stockShortform = os.getenv("STOCK_INPUT")
+
+    trader = AlpacaTrader(API_KEY, API_SECRET, BASE_URL, threshold)
+    trader.execute_trade(stockShortform, prediction)
