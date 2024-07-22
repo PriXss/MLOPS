@@ -3,5 +3,6 @@ alpha_vantage
 mlflow
 requests
 jupyterlab
+ray
 
 
