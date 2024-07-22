@@ -709,11 +709,8 @@ def create_and_write_dockerfile():
         
 @asset(deps=[], group_name="ServingPhase", compute_kind="Serving")
 def serviceScript(context) -> None:
-    
-    ##### Ignore warnings #####
-    warnings.filterwarnings('ignore')
-    warnings.simplefilter('ignore')
-
+    context.log.info("+++++++++++++++++++++++")
+    print("##########################")
     ##### Set file/bucket vars #####
     bucket_name = os.environ.get("BUCKET_NAME")
     model_name = os.environ.get("MODEL_NAME")
