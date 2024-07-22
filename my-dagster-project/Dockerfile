@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 ENV DAGSTER_HOME=/usr/src/app/my-dagster-project
 
 RUN pip install dvc_s3
+RUN pip install alpaca_trade_api
 
 ARG TOKEN=invalidtoken
 

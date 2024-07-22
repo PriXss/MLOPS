@@ -10,6 +10,7 @@ setup(
         "pandas",
         "dvc",
         "dvc-s3",
+        "alpaca_trade_api"
     ],
     extras_require={"dev": ["dagster-webserver", "pytest"]},
 )
