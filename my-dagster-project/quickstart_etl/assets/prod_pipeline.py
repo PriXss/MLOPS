@@ -529,8 +529,8 @@ class AlpacaTrader:
         }
 
     def get_latest_close(self, ticker):
-        barset = self.api.get_barset(ticker, 'day', limit=1)
-        bars = barset[ticker]
+        bars = self.api.get_bars(ticker, 'day', limit=1)
+        bars = bars[ticker]
         return bars[0].c if bars else None
 
     def get_prediction(self, prediction):
