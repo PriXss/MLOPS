@@ -718,6 +718,7 @@ def serviceScript(context) -> None:
     bucket_name = os.environ.get("BUCKET_NAME")
     model_name = os.environ.get("MODEL_NAME")
     port = os.environ.get("PORT")
+    print(f"bucket_name is {bucket_name}")
     context.log.info(f"bucket_name is {bucket_name}")
     context.log.info(f"model_name is {model_name}")
     s3_client.download_file(bucket_name, f"{model_name}.zip", f"{model_name}.zip")
