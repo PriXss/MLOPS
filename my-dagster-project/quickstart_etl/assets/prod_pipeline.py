@@ -513,6 +513,85 @@ class MLFlowTrainer:
                     mlflow.log_metric(f"{phase}_{metric_name}", value)
 
 
+class AlpacaTrader:
+    def __init__(self, api_key, api_secret, base_url, threshold):
+        self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
+        self.threshold = threshold
+
+    def get_account_info(self):
+        account = self.api.get_account()
+        return {
+            "cash": float(account.cash),
+            "buying_power": float(account.buying_power),
+            "equity": float(account.equity),
+            "last_equity": float(account.last_equity)
+        }
+
+    def get_latest_close(self, ticker):
+        barset = self.api.get_barset(ticker, 'day', limit=1)
+        bars = barset[ticker]
+        return bars[0].c if bars else None
+
+    def get_prediction(self, prediction):
+        return float(prediction)
+
+    def place_buy_order(self, ticker, qty):
+        buy_order = self.api.submit_order(
+            symbol=ticker,
+            qty=qty,
+            side='buy',
+            type='market',
+            time_in_force='gtc'
+        )
+        return buy_order
+
+    def place_sell_order(self, ticker, qty):
+        sell_order = self.api.submit_order(
+            symbol=ticker,
+            qty=qty,
+            side='sell',
+            type='market',
+            time_in_force='gtc'
+        )
+        return sell_order
+
+    def check_position(self, ticker):
+        positions = self.api.list_positions()
+        for position in positions:
+            if position.symbol == ticker:
+                return float(position.qty)
+        return 0
+
+    def execute_trade(self, ticker, prediction):
+        account_info = self.get_account_info()
+        latest_close = self.get_latest_close(ticker)
+        predicted_close = self.get_prediction(prediction)
+
+        if latest_close is None or predicted_close is None:
+            print("Error: Could not retrieve necessary price information.")
+            return
+
+        price_difference = (predicted_close - latest_close) / latest_close
+
+        if price_difference > self.threshold:
+            max_shares = int(account_info['cash'] // latest_close)
+            if max_shares > 0:
+                buy_order = self.place_buy_order(ticker, max_shares)
+                print("Buy Order:", buy_order)
+            else:
+                print("Not enough cash to buy shares.")
+        elif price_difference < -self.threshold:
+            position_qty = self.check_position(ticker)
+            if position_qty > 0:
+                sell_order = self.place_sell_order(ticker, position_qty)
+                print("Sell Order:", sell_order)
+            else:
+                print(f"No shares of {ticker} to sell.")
+        else:
+            print("Price change within threshold, no action taken.")
+
+
+
 @asset(deps=[setupDVCandVersioningBucketForTraining], group_name="TrainingPhase", compute_kind="LudwigModel")
 def trainLudwigModelRegression(context) -> None:
     context.log.info('Trainin Running')
@@ -707,7 +786,7 @@ def monitoringAndReporting(context) -> None:
         os.makedirs("reportings", exist_ok=True)
         reportName=os.getenv("REPORT_NAME")
         reportPath= f"reportings/{reportName}"
-        report.run(reference_data=None, current_data=df)
+        report.run(reference_data=None, current_data=df)cd 
         report.save_html(reportPath)    
 
         reportsBucket= os.getenv("REPORT_BUCKET")
@@ -732,85 +811,6 @@ def monitoringAndReporting(context) -> None:
     
 
 @asset(deps=[monitoringAndReporting] ,group_name="StockTrading", compute_kind="Alpacca")
-
-class AlpacaTrader:
-    def __init__(self, api_key, api_secret, base_url, threshold):
-        self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
-        self.threshold = threshold
-
-    def get_account_info(self):
-        account = self.api.get_account()
-        return {
-            "cash": float(account.cash),
-            "buying_power": float(account.buying_power),
-            "equity": float(account.equity),
-            "last_equity": float(account.last_equity)
-        }
-
-    def get_latest_close(self, ticker):
-        barset = self.api.get_barset(ticker, 'day', limit=1)
-        bars = barset[ticker]
-        return bars[0].c if bars else None
-
-    def get_prediction(self, prediction):
-        return float(prediction)
-
-    def place_buy_order(self, ticker, qty):
-        buy_order = self.api.submit_order(
-            symbol=ticker,
-            qty=qty,
-            side='buy',
-            type='market',
-            time_in_force='gtc'
-        )
-        return buy_order
-
-    def place_sell_order(self, ticker, qty):
-        sell_order = self.api.submit_order(
-            symbol=ticker,
-            qty=qty,
-            side='sell',
-            type='market',
-            time_in_force='gtc'
-        )
-        return sell_order
-
-    def check_position(self, ticker):
-        positions = self.api.list_positions()
-        for position in positions:
-            if position.symbol == ticker:
-                return float(position.qty)
-        return 0
-
-    def execute_trade(self, ticker, prediction):
-        account_info = self.get_account_info()
-        latest_close = self.get_latest_close(ticker)
-        predicted_close = self.get_prediction(prediction)
-
-        if latest_close is None or predicted_close is None:
-            print("Error: Could not retrieve necessary price information.")
-            return
-
-        price_difference = (predicted_close - latest_close) / latest_close
-
-        if price_difference > self.threshold:
-            max_shares = int(account_info['cash'] // latest_close)
-            if max_shares > 0:
-                buy_order = self.place_buy_order(ticker, max_shares)
-                print("Buy Order:", buy_order)
-            else:
-                print("Not enough cash to buy shares.")
-        elif price_difference < -self.threshold:
-            position_qty = self.check_position(ticker)
-            if position_qty > 0:
-                sell_order = self.place_sell_order(ticker, position_qty)
-                print("Sell Order:", sell_order)
-            else:
-                print(f"No shares of {ticker} to sell.")
-        else:
-            print("Price change within threshold, no action taken.")
-
-
 def simulateStockMarket(context, requestToModel):
     # Alpaca API Keys
     API_KEY = os.getenv("API_KEY")
