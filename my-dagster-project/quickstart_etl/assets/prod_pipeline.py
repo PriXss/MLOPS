@@ -694,6 +694,17 @@ def create_and_write_serve_model_script():
     with open("serve_model.sh", "w") as file:
         file.write(content)
 
+def create_and_write_serve_model_pyscript():
+    content = """import os
+
+    directory = os.environ.get('model_name')
+    print(f'changing directory to {directory}')
+    os.system(f'cd {directory}')
+    os.system(f'ludwig serve -m {directory}')
+    """
+    with open("serve_model.py", "w") as file:
+        file.write(content)
+
 def create_and_write_dockerfile():
     docker_file_content = """FROM ludwigai/ludwig
     ARG model_name
@@ -725,7 +736,8 @@ def serviceScript(context) -> None:
     # This was originally executed in a script after calling the part top of this
     imagename = model_name.lower()
     create_and_write_serve_model_script()
+    create_and_write_serve_model_pyscript()
     create_and_write_dockerfile()
     context.log.info(f"imagename is {imagename}")
     context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
-    context.log.info(subprocess.run(["docker", "run", "-d", "-it", "-p", f"{port}:8000", f"{imagename}"]))
+    context.log.info(subprocess.run(["docker", "run", "-d", "-p", f"{port}:8000", f"{imagename}"]))
