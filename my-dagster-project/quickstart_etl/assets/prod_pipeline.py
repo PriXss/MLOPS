@@ -518,7 +518,7 @@ class MLFlowTrainer:
 class AlpacaTrader:
     def __init__(self, api_key, api_secret, base_url, threshold):
         self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
-        self.threshold = threshold
+        self.threshold = float(threshold)
 
     def get_account_info(self):
         account = self.api.get_account()
