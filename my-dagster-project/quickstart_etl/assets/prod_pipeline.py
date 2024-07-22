@@ -786,7 +786,7 @@ def monitoringAndReporting(context) -> None:
         os.makedirs("reportings", exist_ok=True)
         reportName=os.getenv("REPORT_NAME")
         reportPath= f"reportings/{reportName}"
-        report.run(reference_data=None, current_data=df)cd 
+        report.run(reference_data=None, current_data=df)
         report.save_html(reportPath)    
 
         reportsBucket= os.getenv("REPORT_BUCKET")
