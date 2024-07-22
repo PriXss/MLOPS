@@ -220,6 +220,7 @@ def create_and_write_dockerfile():
     COPY ./ /src
     EXPOSE 8000
     RUN chmod +x serve_model.sh
+    RUN chmod +x docker
     ENTRYPOINT ["python3", "serve_model.py"]
     """
     with open("Dockerfile", "w") as file:
