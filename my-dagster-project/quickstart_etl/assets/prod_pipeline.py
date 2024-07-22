@@ -1,5 +1,6 @@
 import os
 import alpaca_trade_api as tradeapi
+from alpaca_trade_api.rest import TimeFrame
 import subprocess
 import pandas as pd
 import boto3
@@ -529,8 +530,7 @@ class AlpacaTrader:
         }
 
     def get_latest_close(self, ticker):
-        bars = self.api.get_bars(ticker, 'day', limit=1)
-        bars = bars[ticker]
+        bars = self.api.get_bars(ticker, TimeFrame.Day, limit=1)
         return bars[0].c if bars else None
 
     def get_prediction(self, prediction):
