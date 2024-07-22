@@ -697,11 +697,11 @@ def create_and_write_serve_model_script():
 def create_and_write_serve_model_pyscript():
     content = """import os
 
-    directory = os.environ.get('model_name')
-    print(f'changing directory to {directory}')
-    os.system(f'cd {directory}')
-    os.system(f'ludwig serve -m {directory}')
-    """
+directory = os.environ.get('model_name')
+print(f'changing directory to {directory}')
+os.system(f'cd {directory}')
+os.system(f'ludwig serve -m {directory}')
+"""
     with open("serve_model.py", "w") as file:
         file.write(content)
 
