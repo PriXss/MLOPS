@@ -820,9 +820,10 @@ def simulateStockMarket(context, requestToModel):
     threshold = os.getenv("TRADING_THRESHOLD")
     stockShortform = os.getenv("STOCK_INPUT")
     prediction = requestToModel
+    prediction1 = 50.1
 
     trader = AlpacaTrader(API_KEY, API_SECRET, BASE_URL, threshold)
-    trader.execute_trade(stockShortform, prediction)
+    trader.execute_trade(stockShortform, prediction1)
 
 
 ##-----------------serving ----------------------------------------------------
