@@ -4,5 +4,4 @@ mlflow
 requests
 jupyterlab
 ray
-
-
+alpaca-trade-api
