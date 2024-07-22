@@ -17,6 +17,9 @@ services:
     environment:
       - PGPASS=demopass
       - PGUID=postgres
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker:/bin/docker
 
   dagster-postgres:
     image: postgres:13.3
