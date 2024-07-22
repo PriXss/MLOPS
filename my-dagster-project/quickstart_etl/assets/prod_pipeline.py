@@ -1,5 +1,6 @@
 import os
 import alpaca_trade_api as tradeapi
+from alpaca_trade_api.rest import TimeFrame
 import subprocess
 import pandas as pd
 import boto3
@@ -517,7 +518,7 @@ class MLFlowTrainer:
 class AlpacaTrader:
     def __init__(self, api_key, api_secret, base_url, threshold):
         self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
-        self.threshold = threshold
+        self.threshold = float(threshold)
 
     def get_account_info(self):
         account = self.api.get_account()
@@ -529,8 +530,7 @@ class AlpacaTrader:
         }
 
     def get_latest_close(self, ticker):
-        bars = self.api.get_bars(ticker, 'day', limit=1)
-        bars = bars[ticker]
+        bars = self.api.get_bars(ticker, TimeFrame.Day, limit=1)
         return bars[0].c if bars else None
 
     def get_prediction(self, prediction):
@@ -820,9 +820,10 @@ def simulateStockMarket(context, requestToModel):
     threshold = os.getenv("TRADING_THRESHOLD")
     stockShortform = os.getenv("STOCK_INPUT")
     prediction = requestToModel
+    prediction1 = 50.1
 
     trader = AlpacaTrader(API_KEY, API_SECRET, BASE_URL, threshold)
-    trader.execute_trade(stockShortform, prediction)
+    trader.execute_trade(stockShortform, prediction1)
 
 
 ##-----------------serving ----------------------------------------------------
