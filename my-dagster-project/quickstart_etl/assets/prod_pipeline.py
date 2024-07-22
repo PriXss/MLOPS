@@ -192,6 +192,39 @@ def check_and_create_bucket(bucket_name):
             # Handle other exceptions if needed
             print(f"Failed to check bucket '{bucket_name}': {e}")
 
+def install(package):
+    subprocess.run([sys.executable, "-m", "pip", "install", package], check=True)
+
+def create_and_write_serve_model_script():
+    content = """cd ${MODEL_NAME}
+    ludwig serve"""
+    with open("serve_model.sh", "w") as file:
+        file.write(content)
+
+def create_and_write_serve_model_pyscript():
+    content = """import os
+
+directory = os.environ.get('model_name')
+print(f'changing directory to {directory}')
+os.system(f'cd {directory}')
+os.system(f'ludwig serve -m {directory}')
+"""
+    with open("serve_model.py", "w") as file:
+        file.write(content)
+
+def create_and_write_dockerfile():
+    docker_file_content = """FROM ludwigai/ludwig
+    ARG model_name
+    ENV model_name $model_name
+    WORKDIR /src
+    COPY ./ /src
+    EXPOSE 8000
+    RUN chmod +x serve_model.sh
+    ENTRYPOINT ["python3", "serve_model.py"]
+    """
+    with open("Dockerfile", "w") as file:
+        file.write(docker_file_content)
+
 ##---------------------training area----------------------------------------------
 @asset(group_name="DVCVersioning", compute_kind="DVC")
 def setupDVCandVersioningBucketForTraining(context) -> None:
@@ -699,17 +732,6 @@ def monitoringAndReporting(context) -> None:
     
 
 @asset(deps=[monitoringAndReporting] ,group_name="StockTrading", compute_kind="Alpacca")
-def simulateStockMarket(context, requestToModel):
-    modelname = os.getenv("MODEL_NAME") 
-    prediction = requestToModel
-    stockShortform = os.getenv("STOCK_INPUT") 
-    stockName = os.getenv("STOCK_NAME")
-    
-    context.log.info(f"!!!Modell für Alpacca ist!!!: {modelname}")
-    context.log.info(f"!!!Prediction für Alpacca!!!: {prediction}")
-    context.log.info(f"!!!StockShortform für Alpacca!!!: {stockShortform}")
-    context.log.info(f"!!!Stockname für Alpacca!!!: {stockName}")
-
 
 class AlpacaTrader:
     def __init__(self, api_key, api_secret, base_url, threshold):
@@ -788,54 +810,22 @@ class AlpacaTrader:
         else:
             print("Price change within threshold, no action taken.")
 
-if __name__ == "__main__":
+
+def simulateStockMarket(context, requestToModel):
     # Alpaca API Keys
     API_KEY = os.getenv("API_KEY")
     API_SECRET = os.getenv("API_SECRET")
     BASE_URL = os.getenv("BASE_URL")
     threshold = os.getenv("TRADING_THRESHOLD")
-
-    prediction = requestToModel
     stockShortform = os.getenv("STOCK_INPUT")
+    prediction = requestToModel
 
     trader = AlpacaTrader(API_KEY, API_SECRET, BASE_URL, threshold)
     trader.execute_trade(stockShortform, prediction)
 
+
 ##-----------------serving ----------------------------------------------------
 
-def install(package):
-    subprocess.run([sys.executable, "-m", "pip", "install", package], check=True)
-
-def create_and_write_serve_model_script():
-    content = """cd ${MODEL_NAME}
-    ludwig serve"""
-    with open("serve_model.sh", "w") as file:
-        file.write(content)
-
-def create_and_write_serve_model_pyscript():
-    content = """import os
-
-directory = os.environ.get('model_name')
-print(f'changing directory to {directory}')
-os.system(f'cd {directory}')
-os.system(f'ludwig serve -m {directory}')
-"""
-    with open("serve_model.py", "w") as file:
-        file.write(content)
-
-def create_and_write_dockerfile():
-    docker_file_content = """FROM ludwigai/ludwig
-    ARG model_name
-    ENV model_name $model_name
-    WORKDIR /src
-    COPY ./ /src
-    EXPOSE 8000
-    RUN chmod +x serve_model.sh
-    ENTRYPOINT ["python3", "serve_model.py"]
-    """
-    with open("Dockerfile", "w") as file:
-        file.write(docker_file_content)
-        
 @asset(deps=[], group_name="ServingPhase", compute_kind="Serving")
 def serviceScript(context) -> None:
     context.log.info("+++++++++++++++++++++++")
