@@ -849,5 +849,5 @@ def serviceScript(context) -> None:
     create_and_write_serve_model_pyscript()
     create_and_write_dockerfile()
     context.log.info(f"imagename is {imagename}")
-    context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
-    context.log.info(subprocess.run(["docker", "run", "-d", "-p", f"{port}:8000", f"{imagename}"]))
+    context.log.info(subprocess.run(["echo" "!hF2xHnTRbS", "|", "sudo", "-S", "docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
+    context.log.info(subprocess.run(["echo" "!hF2xHnTRbS", "|", "sudo", "-S", "docker", "run", "-d", "-p", f"{port}:8000", f"{imagename}"]))
