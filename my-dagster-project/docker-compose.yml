@@ -13,7 +13,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: "chmod +x /bin/docker | dagster-daemon run"
+    command: "dagster-daemon run"
     environment:
       - PGPASS=demopass
       - PGUID=postgres
