@@ -20,6 +20,10 @@ serve_job = define_asset_job(
     "serve_job", AssetSelection.groups("ServingPhase")
 )
 
+trade_job = define_asset_job(
+    "trade_job", AssetSelection.groups("TradingPhase")
+)
+
 
 train_schedule = ScheduleDefinition(
     job=training_job, cron_schedule="0 8 * * *"
@@ -34,7 +38,11 @@ serve_schedule = ScheduleDefinition(
     job=serve_job, cron_schedule="0 19 * * 1-5"
 )
 
+trade_schedule = ScheduleDefinition(
+    job=trade_job, cron_schedule="0 19 * * 1-5"
+)
+
 
 defs = Definitions(
-    assets=load_assets_from_package_module(assets), schedules=[train_schedule, prod_schedule, serve_schedule ]
+    assets=load_assets_from_package_module(assets), schedules=[train_schedule, prod_schedule, serve_schedule, trade_schedule ]
 )

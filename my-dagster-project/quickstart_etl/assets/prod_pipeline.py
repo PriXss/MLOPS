@@ -851,3 +851,12 @@ def serviceScript(context) -> None:
     context.log.info(f"imagename is {imagename}")
     context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
     context.log.info(subprocess.run(["docker", "run", "-d", "-p", f"{port}:8000", f"{imagename}"]))
+
+##----------------- trading ----------------------------------------------------
+
+@asset(deps=[], group_name="TradingPhase", compute_kind="Trading")
+def serviceScript(context) -> None:
+    context.log.info("+++++++++++++++++++++++")
+    print("##########################")
+    ##### Set file/bucket vars #####
+    
