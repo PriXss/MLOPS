@@ -861,7 +861,7 @@ class AlpacaTrader:
         """
         Initialisiert den AlpacaTrader mit API-Schlüsseln, Basis-URL, Schwellenwert und Aktieninformationen.
         """
-        self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v1')
+        self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
         self.threshold = threshold
         self.stocks = stocks  # Dictionary mit Aktienkürzeln und deren Vorhersagen
         self.context = context
