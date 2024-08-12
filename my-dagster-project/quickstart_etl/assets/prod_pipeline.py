@@ -854,9 +854,27 @@ def serviceScript(context) -> None:
 
 ##----------------- trading ----------------------------------------------------
 
+import trading
+
 @asset(deps=[], group_name="TradingPhase", compute_kind="Trading")
-def serviceScript(context) -> None:
-    context.log.info("+++++++++++++++++++++++")
-    print("##########################")
+def tradeScript(context) -> None:
+
     ##### Set file/bucket vars #####
-    
+    # Alpaca API-Schlüssel
+    API_KEY = 'your_api_key'
+    API_SECRET = 'your_api_secret'
+    BASE_URL = 'https://paper-api.alpaca.markets'
+    threshold = 0.005  # 0.5% Schwellenwert
+
+    # Dictionary von Aktienkürzeln und deren Vorhersagen (sowohl für Regression als auch Klassifikation)
+    stocks = {
+        'AAPL': 150.0,  # Bei Regression: Vorhergesagter Schlusskurs
+        'GOOG': 'buy',  # Bei Klassifikation: Empfehlung ("buy", "sell", "hold")
+        'AMZN': 'hold', # Weitere Aktien und deren Vorhersagen hinzufügen
+    }
+
+    # Bestimmen des Vorhersagetypen (kann entweder 'regression' oder 'classification' sein)
+    prediction_type = 'classification'  # Ändern je nach verwendetem Modell
+
+    trader = trading.AlpacaTrader(API_KEY, API_SECRET, BASE_URL, threshold, stocks, context, prediction_type)
+    trader.execute_trade()
