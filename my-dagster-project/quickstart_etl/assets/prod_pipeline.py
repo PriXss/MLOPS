@@ -887,7 +887,7 @@ class AlpacaTrader:
         """
         Ruft den letzten Schlusskurs der angegebenen Aktie ab.
         """
-        barset = self.api.get_bars(ticker, '1Day', limit=1)
+        barset = self.api.get_bars(ticker, '1Day', limit=1).df
         bars = barset[ticker]
         latest_close = bars[0].c if bars else None
         self.logger.info(f"Latest close for {ticker}: {latest_close}")
