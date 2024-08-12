@@ -887,7 +887,7 @@ class AlpacaTrader:
         """
         Ruft den letzten Schlusskurs der angegebenen Aktie ab.
         """
-        barset = self.api.get_barset(ticker, 'day', limit=1)
+        barset = self.api.get_bars(ticker, 'day', limit=1)
         bars = barset[ticker]
         latest_close = bars[0].c if bars else None
         self.logger.info(f"Latest close for {ticker}: {latest_close}")
@@ -1079,8 +1079,8 @@ def tradeScript(context) -> None:
     # Dictionary von Aktienkürzeln und deren Vorhersagen (sowohl für Regression als auch Klassifikation)
     stocks = {
         'AAPL': 150.0,  # Bei Regression: Vorhergesagter Schlusskurs
-        'GOOG': 'buy',  # Bei Klassifikation: Empfehlung ("buy", "sell", "hold")
-        'AMZN': 'hold', # Weitere Aktien und deren Vorhersagen hinzufügen
+        'GOOG': 140.0,  # Bei Klassifikation: Empfehlung ("buy", "sell", "hold")
+        'AMZN': 300.0, # Weitere Aktien und deren Vorhersagen hinzufügen
     }
 
     # Bestimmen des Vorhersagetypen (kann entweder 'regression' oder 'classification' sein)
