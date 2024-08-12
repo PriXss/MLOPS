@@ -854,7 +854,7 @@ def serviceScript(context) -> None:
 
 ##----------------- trading ----------------------------------------------------
 
-import trading
+from trading import AlpacaTrader
 
 @asset(deps=[], group_name="TradingPhase", compute_kind="Trading")
 def tradeScript(context) -> None:
@@ -876,5 +876,5 @@ def tradeScript(context) -> None:
     # Bestimmen des Vorhersagetypen (kann entweder 'regression' oder 'classification' sein)
     prediction_type = os.getenv("PREDICTION_TYPE", "unset_prediction_type")  # Ändern je nach verwendetem Modell
 
-    trader = trading.AlpacaTrader(API_KEY, API_SECRET, BASE_URL, threshold, stocks, context, prediction_type)
+    trader = AlpacaTrader(API_KEY, API_SECRET, BASE_URL, threshold, stocks, context, prediction_type)
     trader.execute_trade()
