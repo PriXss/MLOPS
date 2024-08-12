@@ -861,7 +861,7 @@ class AlpacaTrader:
         """
         Initialisiert den AlpacaTrader mit API-Schlüsseln, Basis-URL, Schwellenwert und Aktieninformationen.
         """
-        self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
+        self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v1')
         self.threshold = threshold
         self.stocks = stocks  # Dictionary mit Aktienkürzeln und deren Vorhersagen
         self.context = context
@@ -887,7 +887,7 @@ class AlpacaTrader:
         """
         Ruft den letzten Schlusskurs der angegebenen Aktie ab.
         """
-        barset = self.api.get_bars(ticker, 'day', limit=1)
+        barset = self.api.get_barset(ticker, 'day', limit=1)
         bars = barset[ticker]
         latest_close = bars[0].c if bars else None
         self.logger.info(f"Latest close for {ticker}: {latest_close}")
