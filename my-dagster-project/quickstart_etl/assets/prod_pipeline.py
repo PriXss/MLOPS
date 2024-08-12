@@ -885,13 +885,38 @@ class AlpacaTrader:
 
     def get_latest_close(self, ticker):
         """
-        Ruft den letzten Schlusskurs der angegebenen Aktie ab.
+        Ruft den letzten verfügbaren Schlusskurs der angegebenen Aktie ab.
+        Falls der Schlusskurs für den aktuellen Tag nicht verfügbar ist, wird der Schlusskurs vom vorherigen Tag verwendet.
         """
-        barset = self.api.get_bars(ticker, '1Day', limit=1)
-        bars = barset[ticker]
-        latest_close = bars[0].c if bars else None
-        self.logger.info(f"Latest close for {ticker}: {latest_close}")
-        return latest_close
+        try:
+            self.logger.info(f"Attempting to retrieve latest close for {ticker}")
+
+            # Hole die letzten 5 Tage an Bars, um sicherzustellen, dass wir den letzten verfügbaren Schlusskurs bekommen
+            bars = self.api.get_bars(ticker, TimeFrame.Day, limit=5)
+            
+            if not bars:
+                self.logger.warning(f"No bars returned for {ticker}")
+                return None
+
+            # Suche den letzten verfügbaren Schlusskurs
+            latest_close = None
+            for bar in bars:
+                if bar.c is not None:
+                    latest_close = bar.c
+                    break
+            
+            if latest_close is None:
+                self.logger.warning(f"No close price found in the returned bars for {ticker}")
+                return None
+
+            self.logger.info(f"Latest close for {ticker}: {latest_close}")
+            return latest_close
+        
+        except tradeapi.RestError as e:
+            self.logger.error(f"API error retrieving latest close for {ticker}: {e}")
+        except Exception as e:
+            self.logger.error(f"Error retrieving latest close for {ticker}: {e}")        
+        return None
 
     def get_prediction(self, ticker):
         """
