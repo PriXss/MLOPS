@@ -861,10 +861,10 @@ def tradeScript(context) -> None:
 
     ##### Set file/bucket vars #####
     # Alpaca API-Schlüssel
-    API_KEY = 'your_api_key'
-    API_SECRET = 'your_api_secret'
-    BASE_URL = 'https://paper-api.alpaca.markets'
-    threshold = 0.005  # 0.5% Schwellenwert
+    API_KEY = os.getenv("API_KEY", "unset_api_key")
+    API_SECRET = os.getenv("API_SECRET", "unset_api_secret")
+    BASE_URL = os.getenv("BASE_URL", "unset_base_url")
+    threshold = os.getenv("TRADING_THRESHOLD", 0.005)
 
     # Dictionary von Aktienkürzeln und deren Vorhersagen (sowohl für Regression als auch Klassifikation)
     stocks = {
@@ -874,7 +874,7 @@ def tradeScript(context) -> None:
     }
 
     # Bestimmen des Vorhersagetypen (kann entweder 'regression' oder 'classification' sein)
-    prediction_type = 'classification'  # Ändern je nach verwendetem Modell
+    prediction_type = os.getenv("PREDICTION_TYPE", "unset_prediction_type")  # Ändern je nach verwendetem Modell
 
     trader = trading.AlpacaTrader(API_KEY, API_SECRET, BASE_URL, threshold, stocks, context, prediction_type)
     trader.execute_trade()
