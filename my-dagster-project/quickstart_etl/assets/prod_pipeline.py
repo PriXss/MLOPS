@@ -1078,9 +1078,7 @@ def tradeScript(context) -> None:
 
     # Dictionary von Aktienkürzeln und deren Vorhersagen (sowohl für Regression als auch Klassifikation)
     stocks = {
-        'AAPL': 150.0,  # Bei Regression: Vorhergesagter Schlusskurs
-        'GOOG': 140.0,  # Bei Klassifikation: Empfehlung ("buy", "sell", "hold")
-        'AMZN': 300.0, # Weitere Aktien und deren Vorhersagen hinzufügen
+        'AAPL': 150.0
     }
 
     # Bestimmen des Vorhersagetypen (kann entweder 'regression' oder 'classification' sein)
