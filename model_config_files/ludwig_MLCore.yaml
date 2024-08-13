@@ -37,27 +37,19 @@
     ],
     "training": {
         "batch_size": 32,
-        "epochs": 100,
+        "epochs": 50,
         "learning_rate": 0.001,
         "optimizer": {
             "type": "adam"
         }
     },
     "model": {
-        "type": "sequence",
-        "architecture": "transformer",
+        "type": "deep_lstm",
         "num_layers": 2,
-        "hidden_size": 64,
-        "num_attention_heads": 8,
+        "num_hidden_units": 64,
         "dropout": 0.1,
-        "activation": "gelu"
-    },
-    "preprocessing": {
-        "date": {
-            "datetime_format": "%Y-%m-%d"
-        },
-        "numerical": {
-            "normalization": "zscore"
-        }
+        "recurrent_dropout": 0.1,
+        "output_activation": "linear"
     }
+
 }

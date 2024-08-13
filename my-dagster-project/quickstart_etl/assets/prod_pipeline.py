@@ -25,7 +25,6 @@ import mlflow
 from botocore.exceptions import NoCredentialsError, ClientError
 from dvc.repo import Repo
 import sys
-import redis
 import time
 
 timestamp=""
@@ -771,10 +770,6 @@ def requestToModel(context):
     subprocess.call(["git", "add", f"{dvcpath}"])
     subprocess.call(["git", "add", "predictions/.gitignore"])
     print("added prediction files to git ")
-
-    r = redis.Redis(host='redis', port=6379, decode_responses=True)
-
-    r.set(f"{os.getenv("TEAM")}_{os.getenv("STOCK_NAME")}", prediction_value)
     
     return prediction_value
 
@@ -881,7 +876,8 @@ def serviceScript(context) -> None:
     create_and_write_dockerfile()
     context.log.info(f"imagename is {imagename}")
     context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
-    context.log.info(subprocess.run(["docker", "run", "--name", f"{os.getenv("TEAM")}_{os.getenv("STOCK_NAME")}", "-d", "-p", f"{port}:8000", f"{imagename}"]))
+    container_name: str = ("% s_% s" % (os.getenv("TEAM"), os.getenv("STOCK_NAME")))
+    context.log.info(subprocess.run(["docker", "run", "--name", container_name, "-d", "-p", f"{port}:8000", f"{imagename}"]))
 
 
 
