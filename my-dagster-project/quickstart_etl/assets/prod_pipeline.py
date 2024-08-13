@@ -25,7 +25,6 @@ import mlflow
 from botocore.exceptions import NoCredentialsError, ClientError
 from dvc.repo import Repo
 import sys
-import redis
 import time
 
 timestamp=""
@@ -913,11 +912,6 @@ def requestToModel(context):
     subprocess.call(["git", "add", f"{dvcpath}"])
     subprocess.call(["git", "add", "predictions/.gitignore"])
     print("added prediction files to git ")
-
-    r = redis.Redis(host='redis', port=6379, decode_responses=True)
-
-    model_name: str = ("% s_% s" % (os.getenv("TEAM"), os.getenv("STOCK_NAME")))    
-    r.set(model_name, prediction_value)
     
     return prediction_value
 
