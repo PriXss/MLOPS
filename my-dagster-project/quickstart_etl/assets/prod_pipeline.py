@@ -1024,7 +1024,8 @@ def serviceScript(context) -> None:
     create_and_write_dockerfile()
     context.log.info(f"imagename is {imagename}")
     context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
-    context.log.info(subprocess.run(["docker", "run", "--name", f"{os.getenv("TEAM")}_{os.getenv("STOCK_NAME")}", "-d", "-p", f"{port}:8000", f"{imagename}"]))
+    container_name: str = f"{os.getenv("TEAM")}_{os.getenv("STOCK_NAME")}"
+    context.log.info(subprocess.run(["docker", "run", "--name", container_name, "-d", "-p", f"{port}:8000", f"{imagename}"]))
 
 
 
