@@ -26,6 +26,7 @@ from botocore.exceptions import NoCredentialsError, ClientError
 from dvc.repo import Repo
 import sys
 import redis
+import time
 
 timestamp=""
 timestampTraining=""
@@ -1059,11 +1060,16 @@ class AlpacaTrader:
 
             # Verkauf der Aktie mit dem höchsten Verlust
             if self.sell_worst_loss_stock(worst_loss_ticker, positions):
+                time.sleep(3)
+                account_info = self.get_account_info()
                 # Kauf der Aktie mit dem höchsten Gewinn, wenn sie genug Cash haben
                 self.buy_best_gain_stock(best_gain_ticker, account_info)
+
             else:
                 # Wenn keine Aktien verkauft wurden und es eine beste Gewinnaktie gibt
                 if best_gain_ticker and best_gain_ticker not in positions:
+                    time.sleep(3)
+                    account_info = self.get_account_info()
                     self.buy_best_gain_stock(best_gain_ticker, account_info)
 
         elif self.prediction_type == 'classification':
@@ -1081,8 +1087,10 @@ class AlpacaTrader:
                             self.logger.info(f"Maximum shares to buy for {ticker}: {max_shares}")
                             if max_shares > 0:
                                 self.place_buy_order(ticker, max_shares)
-                            else:
-                                self.logger.warning(f"Not enough cash to buy shares of {ticker}.")
+                                time.sleep(3)
+                                account_info = self.get_account_info()  # Aktualisierte Kontoinformationen nach dem Kauf
+                        else:
+                            self.logger.warning(f"Not enough cash to buy shares of {ticker}.")
                     else:
                         self.logger.info(f"Already holding {ticker}, no action needed.")
 
@@ -1091,6 +1099,8 @@ class AlpacaTrader:
                     if ticker in positions:
                         qty = positions[ticker]
                         self.place_sell_order(ticker, qty)
+                        time.sleep(3)
+                        account_info = self.get_account_info()  # Aktualisierte Kontoinformationen nach dem Verkauf
 
                 elif prediction == 'hold':
                     # Wenn das Modell empfiehlt, die Aktie zu halten
