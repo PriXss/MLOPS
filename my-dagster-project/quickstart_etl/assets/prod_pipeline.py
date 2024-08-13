@@ -615,7 +615,7 @@ def trainLudwigModelRegression(context) -> None:
     
     
     subprocess.run(["git", "commit", "-m", "Trainings run from: "+timestampTraining_string+" with data from: "+data+" and the model: "+model+"." ])
-    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
+    subprocess.run(["git", "push", "-u", "origin", "dev/blue_google_regression"])
 
 
 ##-----------------training area ----------------------------------------------------
@@ -850,7 +850,7 @@ def serviceScript(context) -> None:
     create_and_write_dockerfile()
     context.log.info(f"imagename is {imagename}")
     context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
-    context.log.info(subprocess.run(["docker", "run", "-d", "-p", f"{port}:8000", f"{imagename}"]))
+    context.log.info(subprocess.run(["docker", "run", "--name", f"{os.getenv("TEAM")}_{os.getenv("STOCK_NAME")}", "-d", "-p", f"{port}:8000", f"{imagename}"]))
 
 ##----------------- trading ----------------------------------------------------
 
