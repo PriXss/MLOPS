@@ -916,7 +916,7 @@ def requestToModel(context):
 
     r = redis.Redis(host='redis', port=6379, decode_responses=True)
 
-    model_name: str = f"{os.getenv("TEAM")}_{os.getenv("STOCK_NAME")}"
+    model_name: str = ("% s_% s" % (os.getenv("TEAM"), os.getenv("STOCK_NAME")))    
     r.set(model_name, prediction_value)
     
     return prediction_value
