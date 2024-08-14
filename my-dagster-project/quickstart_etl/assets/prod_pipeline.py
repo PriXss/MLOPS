@@ -708,6 +708,7 @@ def fetchStockDataFromSource(context) -> None:
         if symbol not in processed_symbols:  # Überprüfen, ob das Symbol bereits verarbeitet wurde
             print(f"Verarbeite Symbol: {symbol}")
             process_and_upload_symbol_data(
+                    context,
                     api_key='69SMJJ4C2JIW86LI',
                     symbol=symbol,
                     output_directory='data'
