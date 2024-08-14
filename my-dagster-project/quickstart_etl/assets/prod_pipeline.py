@@ -285,7 +285,7 @@ class MLFlowTrainer:
         self.data_bucket_url = data_bucket_url
         self.model_configs_bucket_url = model_configs_bucket_url
 
-        # Setzen der Zugriffsparameter für S3 via Umgebungsvariablen
+        # Setzten der Zugriffsparameter für S3 via Umgebungsvariablen
         self.access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
         self.secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
         self.endpoint_url = os.getenv("ENDPOINT_URL")
@@ -300,10 +300,11 @@ class MLFlowTrainer:
 
     def train_model(self):
 
-        # Zuweisen der gewünschten Daten
-        data_file = f"data_{self.data_file_name}.csv"
+        # Zuweisen der gewünschten Aktien_Daten
+        data_naming = self.data_file_name
+        data_file = f"data_{data_naming}.csv"
 
-        # Laden der Daten aus dem S3-Bucket
+        # Laden der Aktien-Daten aus dem Bucket
         s3 = boto3.client('s3')
         obj = s3.get_object(Bucket=self.data_bucket_url, Key=data_file)
         data = pd.read_csv(obj['Body'])
@@ -313,80 +314,218 @@ class MLFlowTrainer:
             self.run_id = run.info.run_id  # Run-ID speichern
 
             try:
-                # Konfigurationsdatei laden
+                # Den Config-Ablage Pfad bestimmen
                 config_file_path = os.path.join(self.path_to_ludwig_config_file, self.ludwig_config_file_name)
 
-                # Kurzer Check ob die Datei existiert
+                # Kurzer Check ob die Datei da ist
                 if os.path.isfile(config_file_path):
-                    # Dateiinhalt anzeigen (optional für Debugging)
+                    # Datei öffnen und weiterverarbeiten
                     with open(config_file_path, 'r') as file:
                         ludwig_file_content = file.read()
                         print("Dateiinhalt:", ludwig_file_content)
 
-                    # Konfigurationsdatei versionieren
+                        # versionieren
+
                     temp_path = os.path.join(os.getcwd(), 'config_versioned', self.ludwig_config_file_name)
                     shutil.copyfile(config_file_path, temp_path)
-                    self.version_control(temp_path)
 
-                    # Ludwig-Modell trainieren
-                    ludwig_model = LudwigModel(config=config_file_path)
-                    train_stats, _, _ = ludwig_model.train(dataset=data, skip_save_processed_input=True)
+                    subprocess.run(["dvc", "add", "config_versioned/ludwig_MLCore.yaml"])
+                    print('DVC add successfully')
+                    subprocess.run(["dvc", "commit"])
+                    subprocess.run(["dvc", "push"])
+                    print('DVC push successfully')
 
-                    # Speichern und Hochladen des trainierten Modells
-                    self.save_model_to_s3(ludwig_model, self.model_name, self.data_file_name)
+                    subprocess.call(["git", "add", "config_versioned/ludwig_MLCore.yaml.dvc"])
+                    subprocess.call(["git", "add", "config_versioned/.gitignore"])
+                    print("added mlruns files to git ")
+
+                    training_config_name = os.getenv("TRAINING_CONFIG_NAME")
+                    s3_client = boto3.client('s3')
+                    s3_client.upload_file(config_file_path, self.model_configs_bucket_url, training_config_name)
+
 
                 else:
                     print("Die Datei existiert nicht:", config_file_path)
 
-            finally:
-                # Den MLflow-Lauf beenden und das Zip-Archiv in S3 hochladen
-                self.upload_mlflow_run()
+                # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
+                model_name = self.extract_model_name(config_file_path)
 
-    def save_model_to_s3(self, model, model_name, data_name):
+                # Namensgebung ML Run
+                mlflow.set_tag('mlflow.runName', f'{data_naming}_{model_name}_{self.global_timestamp}')
+
+                # Ludwig-Modell trainieren
+                ludwig_model = LudwigModel(config=config_file_path)
+                train_stats, _, _ = ludwig_model.train(dataset=data, split=[0.8, 0.1, 0.1],
+                                                       skip_save_processed_input=True)
+
+                # Loggen der Parameter
+                self.log_params(data_naming, data_file, model_name)
+
+                # Loggen der Metriken
+                self.log_metrics(train_stats)
+
+                # Speichern von Artefakten
+                with tempfile.TemporaryDirectory() as temp_dir_model:
+                    # Modell speichern
+                    model_path = os.path.join(temp_dir_model, model_name)
+                    ludwig_model.save(model_path)
+                    mlflow.log_artifact(model_path, artifact_path='')
+
+                # Ab hier müssten wir Mit DVC Versionieren
+                # und zwar den MLRun Ordner?
+
+                # Frage: safe_model_to_S3 wird eher das Versionierte Model sein
+
+                # Speichern von Artefakten
+                self.save_model_to_s3(ludwig_model, model_name, data_naming, os.getenv("MLCORE_OUTPUT_RUN"))
+
+                # Die Meta yaml muss auch versioniert und dann erst hochgeladen werden
+                # Pfadfestlegung der meta.yaml-Datei
+                local_path = os.path.join(os.getcwd(), 'mlruns', '0', self.run_id)
+                # Uploade in den S3-Bucket modelconfigs
+                self.upload_meta_yaml_to_s3(local_path)
+
+            finally:
+                # MLflow-Lauf beenden
+                mlflow.end_run()
+                # Hier wird der Zip folder in den S3 hochgeladen für den Tracking Server, das sollte man auch noch
+                # versionieren
+                # Den Ordner des aktuellen MLflow-Laufs komprimieren und als Zip-Datei hochladen
+                zip_file_name = f"{self.run_id}.zip"
+                zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
+                shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
+                # --> Ab hier kann das mlrun ZIP File versioniert werden
+                s3.upload_file(zip_file_path, os.getenv("MLFLOW_BUCKET"), zip_file_name)
+
+                # Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
+
+                # Lokale Runs nach dem Upload löschen
+                subprocess.run(["dvc", "add", "mlruns"])
+                print('DVC add successfully')
+                subprocess.run(["dvc", "commit"])
+                subprocess.run(["dvc", "push"])
+                print('DVC push successfully')
+
+                subprocess.call(["git", "add", "mlruns.dvc"])
+                subprocess.call(["git", "add", ".gitignore"])
+                print("added mlruns files to git ")
+
+            # shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+
+    def upload_directory_to_s3(self, local_path, bucket, s3_path):
+        s3_client = boto3.client('s3')
+        for root, dirs, files in os.walk(local_path):
+            for file in files:
+                local_file = os.path.join(root, file)
+                relative_path = os.path.relpath(local_file, local_path)
+                s3_file = os.path.join(s3_path, relative_path)
+                s3_client.upload_file(local_file, bucket, s3_file)
+
+    def upload_meta_yaml_to_s3(self, local_path):
+        meta_yaml_path = os.path.join(local_path, "..", "meta.yaml")
+        if os.path.exists(meta_yaml_path):
+            # Lese den Inhalt der meta.yaml-Datei
+            with open(meta_yaml_path, 'r') as file:
+                meta_yaml_content = yaml.safe_load(file)
+
+            # Passe den artifact_location-Pfad relativ zum aktuellen Verzeichnis an
+            meta_yaml_content['artifact_location'] = './mlruns/0'
+
+            # Speichere den angepassten Inhalt zurück in die meta.yaml-Datei
+            with open(meta_yaml_path, 'w') as file:
+                yaml.dump(meta_yaml_content, file)
+
+            temp_path = os.path.join(os.getcwd(), 'config_versioned', 'meta.yaml')
+            shutil.copyfile(meta_yaml_path, temp_path)
+
+            subprocess.run(["dvc", "add", "config_versioned/meta.yaml"])
+            print('DVC add successfully')
+            subprocess.run(["dvc", "commit"])
+            subprocess.run(["dvc", "push"])
+            print('DVC push successfully')
+
+            subprocess.call(["git", "add", "config_versioned/meta.yaml.dvc"])
+            subprocess.call(["git", "add", "config_versioned/.gitignore"])
+            print("added mlruns files to git ")
+            # meta yaml versionieren
+
+            # Lade die angepasste meta.yaml-Datei in den S3-Bucket hoch
+            s3_client = boto3.client('s3')
+            s3_client.upload_file(meta_yaml_path, self.model_configs_bucket_url, "meta.yaml")
+
+    def extract_model_name(self, yaml_file_path):
+        with open(yaml_file_path, 'r') as file:
+            yaml_content = yaml.safe_load(file)
+            model_name = None
+            if 'model' in yaml_content and 'type' in yaml_content['model']:
+                model_name = yaml_content['model']['type']
+            return model_name
+
+    def save_model_to_s3(self, model, model_name, data_name, bucket):
         s3 = boto3.client('s3')
 
-        # Temporäres Verzeichnis für das Modell erstellen
-        with tempfile.TemporaryDirectory() as temp_dir_model:
+        # Temporäre Verzeichnisse erstellen
+        with tempfile.TemporaryDirectory() as temp_dir_model, tempfile.TemporaryDirectory() as temp_dir_api:
+            # Modell speichern
             model_path = os.path.join(temp_dir_model, 'model')
             model.save(model_path)
 
-            # Modell-Verzeichnis komprimieren
+            # Kopiere den Inhalt von 'api_experiment_run' in das temporäre Verzeichnis
+            api_experiment_run_src = os.path.join(os.getcwd(), 'results', 'api_experiment_run')
+            if os.path.exists(api_experiment_run_src):
+                api_experiment_run_dst = os.path.join(temp_dir_api, 'api_experiment_run')
+                shutil.copytree(api_experiment_run_src, api_experiment_run_dst)
+
+            # Model Verzeichnis in Zip-Dateien komprimieren
             model_zip_file_name = f"trained_model_{data_name}_{model_name}_{self.global_timestamp}.zip"
+            # Experiment Run Verzeichnis in Zip-Dateien komprimieren
+            api_zip_file_name = f"api_experiment_run_{data_name}_{model_name}_{self.global_timestamp}.zip"
+
+            # Model Zip Datei Verzeichnis definieren
             model_zip_file_path = os.path.join(temp_dir_model, model_zip_file_name)
+            # Experiment Run Zip Datei Verzeichnis definieren
+            api_zip_file_path = os.path.join(temp_dir_api, api_zip_file_name)
 
-            with zipfile.ZipFile(model_zip_file_path, 'w') as zipf:
-                for root, dirs, files in os.walk(model_path):
-                    for file in files:
-                        zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), model_path))
+            for folder, zip_file_path in [(model_path, model_zip_file_path),
+                                          (api_experiment_run_dst, api_zip_file_path)]:
+                if folder:
+                    with zipfile.ZipFile(zip_file_path, 'w') as zipf:
+                        for root, dirs, files in os.walk(folder):
+                            for file in files:
+                                zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder))
 
-            # Zip-Datei in den S3-Bucket hochladen
+            # Zip-Dateien in die S3-Buckets hochladen --> Ab hier können die ZIP Files versioniert werden
             s3.upload_file(model_zip_file_path, self.model_bucket_url, model_zip_file_name)
+            if api_experiment_run_dst:
+                s3.upload_file(api_zip_file_path, bucket, api_zip_file_name)
 
-        # Versionieren der hochgeladenen Artefakte
-        self.version_control(os.path.join(os.getcwd(), 'results'))
+        # Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
 
-    def upload_mlflow_run(self):
-        # Pfad zum MLflow Run-Ordner
-        local_path = os.path.join(os.getcwd(), 'mlruns', '0', self.run_id)
-
-        # Komprimieren des MLflow-Laufordners
-        zip_file_name = f"{self.run_id}.zip"
-        zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
-        shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
-
-        # Hochladen des Zip-Archivs in S3
-        s3 = boto3.client('s3')
-        s3.upload_file(zip_file_path, os.getenv("MLFLOW_BUCKET"), zip_file_name)
-
-        # Versionieren des MLflow Run-Ordners
-        self.version_control(os.path.join(os.getcwd(), 'mlruns'))
-
-    def version_control(self, path):
-        subprocess.run(["dvc", "add", path])
+        subprocess.run(["dvc", "add", "results"])
+        print('DVC add successfully')
         subprocess.run(["dvc", "commit"])
         subprocess.run(["dvc", "push"])
-        subprocess.call(["git", "add", f"{path}.dvc"])
+        print('DVC push successfully')
+
+        subprocess.call(["git", "add", "results.dvc"])
         subprocess.call(["git", "add", ".gitignore"])
+        print("added mlruns files to git ")
+        ############Versionieren
+        # shutil.rmtree(os.path.join(os.getcwd(), 'results'))
+
+    def log_params(self, data_name, data_file, model_name):
+        mlflow.log_param("Stock", data_name)
+        mlflow.log_param("ludwig_config_file_name", self.ludwig_config_file_name)
+        mlflow.log_param("data_file_name", data_file)
+        mlflow.log_param("Model", model_name)
+
+    def log_metrics(self, train_stats):
+        phases = ['test', 'training', 'validation']
+        for phase in phases:
+            section = train_stats[phase]["Schluss"]
+            for metric_name, values in section.items():
+                for idx, value in enumerate(values):
+                    mlflow.log_metric(f"{phase}_{metric_name}", value)
 
 
 class AlpacaTrader:
