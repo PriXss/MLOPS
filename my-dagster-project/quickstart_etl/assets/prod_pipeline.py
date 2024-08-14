@@ -117,7 +117,9 @@ def process_and_upload_symbol_data(
 
         # Display the first few rows of the filtered dataframe
         context.log.info(data_2023.head())
+        print(data_2023.head())
 
+        ##!!!!!!!!!2023 Data Split
 
 
         # Quality Checks vor dem Sortieren und Speichern
