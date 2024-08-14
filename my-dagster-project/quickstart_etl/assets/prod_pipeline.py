@@ -51,6 +51,7 @@ def pruefe_extreme_werte(reihe, grenzwerte):
         return True  # Alle Werte liegen innerhalb der Grenzen
 
 def process_and_upload_symbol_data(
+        context,
         symbol,
         api_key=os.getenv("API_KEY"),
         output_directory=os.getenv("OUTPUT_DIRECTORY"),
@@ -115,7 +116,7 @@ def process_and_upload_symbol_data(
         data_2023 = merged_data_sorted[merged_data_sorted['Datum'] <= '2023-12-31']
 
         # Display the first few rows of the filtered dataframe
-        data_2023.head()
+        context.log.info(data_2023.head())
 
 
 
