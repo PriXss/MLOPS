@@ -108,6 +108,17 @@ def process_and_upload_symbol_data(
         merged_data_sorted = merged_data.sort_values(by='Datum', ascending=True)
 
 
+        # Convert the 'Datum' column to datetime format
+        merged_data_sorted['Datum'] = pd.to_datetime(merged_data_sorted['Datum'])
+
+        # Filter the data for dates before or equal to 31.12.2023
+        data_2023 = merged_data_sorted[merged_data_sorted['Datum'] <= '2023-12-31']
+
+        # Display the first few rows of the filtered dataframe
+        data_2023.head()
+
+
+
         # Quality Checks vor dem Sortieren und Speichern
 
 
