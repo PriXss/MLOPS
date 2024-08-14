@@ -1,55 +1,40 @@
-{
-    "input_features": [
-        {
-            "name": "Datum",
-            "type": "date"
-        },
-        {
-            "name": "Eroeffnung",
-            "type": "numerical"
-        },
-        {
-            "name": "Tageshoch",
-            "type": "numerical"
-        },
-        {
-            "name": "Tagestief",
-            "type": "numerical"
-        },
-        {
-            "name": "Umsatz",
-            "type": "numerical"
-        },
-        {
-            "name": "RSI",
-            "type": "numerical"
-        },
-        {
-            "name": "EMA",
-            "type": "numerical"
-        }
-    ],
-    "output_features": [
-        {
-            "name": "Schluss",
-            "type": "numerical"
-        }
-    ],
-    "training": {
-        "batch_size": 32,
-        "epochs": 50,
-        "learning_rate": 0.001,
-        "optimizer": {
-            "type": "adam"
-        }
-    },
-    "model": {
-        "type": "deep_lstm",
-        "num_layers": 2,
-        "num_hidden_units": 64,
-        "dropout": 0.1,
-        "recurrent_dropout": 0.1,
-        "output_activation": "linear"
-    }
+input_features:
+  - name: Datum
+    type: date
+    preprocessing:
+      datetime_format: "%Y-%m-%d"
+      extract_weekday: false
+      extract_year: true
+      extract_month: true
+      extract_day: true
+      extract_quarter: false
+  - name: Eroeffnung
+    type: numerical
+  - name: Tageshoch
+    type: numerical
+  - name: Tagestief
+    type: numerical
+  - name: Umsatz
+    type: numerical
+  - name: RSI
+    type: numerical
+  - name: EMA
+    type: numerical
 
-}
+output_features:
+  - name: Schluss
+    type: numerical
+
+training:
+  batch_size: 32
+  epochs: 50
+  learning_rate: 0.001
+  optimizer:
+    type: adam
+
+model:
+  type: deep_lstm
+  num_layers: 2
+  num_hidden_units: 64
+  dropout: 0.1
+  recurrent_dropout: 0.5
