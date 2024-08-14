@@ -25,6 +25,7 @@ import mlflow
 from botocore.exceptions import NoCredentialsError, ClientError
 from dvc.repo import Repo
 import sys
+import time
 
 timestamp=""
 timestampTraining=""
@@ -50,6 +51,7 @@ def pruefe_extreme_werte(reihe, grenzwerte):
         return True  # Alle Werte liegen innerhalb der Grenzen
 
 def process_and_upload_symbol_data(
+        context,
         symbol,
         api_key=os.getenv("API_KEY"),
         output_directory=os.getenv("OUTPUT_DIRECTORY"),
@@ -107,6 +109,19 @@ def process_and_upload_symbol_data(
         merged_data_sorted = merged_data.sort_values(by='Datum', ascending=True)
 
 
+        # Convert the 'Datum' column to datetime format
+        merged_data_sorted['Datum'] = pd.to_datetime(merged_data_sorted['Datum'])
+
+        # Filter the data for dates before or equal to 31.12.2023
+        data_2023 = merged_data_sorted[merged_data_sorted['Datum'] <= '2023-12-31']
+
+        # Display the first few rows of the filtered dataframe
+        context.log.info(data_2023.head())
+        print(data_2023.head())
+
+        ##!!!!!!!!!2023 Data Split
+
+
         # Quality Checks vor dem Sortieren und Speichern
 
 
@@ -152,7 +167,8 @@ def process_and_upload_symbol_data(
 
         # Sortierten DataFrame als CSV exportieren
         csv_filepath = os.path.join(output_directory, csv_filename)
-        merged_data_sorted.to_csv(csv_filepath, index=False)
+        #merged_data_sorted.to_csv(csv_filepath, index=False)!!!!!!!!!!!!!!!
+        data_2023.to_csv(csv_filepath, index=False)
 
 
         if not upload_abgelehnt:
@@ -269,7 +285,7 @@ class MLFlowTrainer:
         self.data_bucket_url = data_bucket_url
         self.model_configs_bucket_url = model_configs_bucket_url
 
-        # Setzten der Zugriffsparameter für S3 via Umgebungsvariablen
+        # Setzen der Zugriffsparameter für S3 via Umgebungsvariablen
         self.access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
         self.secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
         self.endpoint_url = os.getenv("ENDPOINT_URL")
@@ -284,11 +300,10 @@ class MLFlowTrainer:
 
     def train_model(self):
 
-        # Zuweisen der gewünschten Aktien_Daten
-        data_naming = self.data_file_name
-        data_file = f"data_{data_naming}.csv"
+        # Zuweisen der gewünschten Daten
+        data_file = f"data_{self.data_file_name}.csv"
 
-        # Laden der Aktien-Daten aus dem Bucket
+        # Laden der Daten aus dem S3-Bucket
         s3 = boto3.client('s3')
         obj = s3.get_object(Bucket=self.data_bucket_url, Key=data_file)
         data = pd.read_csv(obj['Body'])
@@ -298,242 +313,158 @@ class MLFlowTrainer:
             self.run_id = run.info.run_id  # Run-ID speichern
 
             try:
-                # Den Config-Ablage Pfad bestimmen
+                # Konfigurationsdatei laden
                 config_file_path = os.path.join(self.path_to_ludwig_config_file, self.ludwig_config_file_name)
 
-                # Kurzer Check ob die Datei da ist
+                # Kurzer Check ob die Datei existiert
                 if os.path.isfile(config_file_path):
-                    # Datei öffnen und weiterverarbeiten
+                    # Dateiinhalt anzeigen (optional für Debugging)
                     with open(config_file_path, 'r') as file:
                         ludwig_file_content = file.read()
                         print("Dateiinhalt:", ludwig_file_content)
 
-                        # versionieren
-
+                    # Konfigurationsdatei versionieren
                     temp_path = os.path.join(os.getcwd(), 'config_versioned', self.ludwig_config_file_name)
                     shutil.copyfile(config_file_path, temp_path)
+                    self.version_control(temp_path)
 
-                    subprocess.run(["dvc", "add", "config_versioned/ludwig_MLCore.yaml"])
-                    print('DVC add successfully')
-                    subprocess.run(["dvc", "commit"])
-                    subprocess.run(["dvc", "push"])
-                    print('DVC push successfully')
+                    # Ludwig-Modell trainieren
+                    ludwig_model = LudwigModel(config=config_file_path)
+                    train_stats, _, _ = ludwig_model.train(dataset=data, skip_save_processed_input=True)
 
-                    subprocess.call(["git", "add", "config_versioned/ludwig_MLCore.yaml.dvc"])
-                    subprocess.call(["git", "add", "config_versioned/.gitignore"])
-                    print("added mlruns files to git ")
-
-                    training_config_name = os.getenv("TRAINING_CONFIG_NAME")
-                    s3_client = boto3.client('s3')
-                    s3_client.upload_file(config_file_path, self.model_configs_bucket_url, training_config_name)
-
+                    # Speichern und Hochladen des trainierten Modells
+                    self.save_model_to_s3(ludwig_model, self.model_name, self.data_file_name)
 
                 else:
                     print("Die Datei existiert nicht:", config_file_path)
 
-                # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
-                model_name = self.extract_model_name(config_file_path)
-
-                # Namensgebung ML Run
-                mlflow.set_tag('mlflow.runName', f'{data_naming}_{model_name}_{self.global_timestamp}')
-
-                # Ludwig-Modell trainieren
-                ludwig_model = LudwigModel(config=config_file_path)
-                train_stats, _, _ = ludwig_model.train(dataset=data, split=[0.8, 0.1, 0.1],
-                                                       skip_save_processed_input=True)
-
-                # Loggen der Parameter
-                self.log_params(data_naming, data_file, model_name)
-
-                # Loggen der Metriken
-                self.log_metrics(train_stats)
-
-                # Speichern von Artefakten
-                with tempfile.TemporaryDirectory() as temp_dir_model:
-                    # Modell speichern
-                    model_path = os.path.join(temp_dir_model, model_name)
-                    ludwig_model.save(model_path)
-                    mlflow.log_artifact(model_path, artifact_path='')
-
-                # Ab hier müssten wir Mit DVC Versionieren
-                # und zwar den MLRun Ordner?
-
-                # Frage: safe_model_to_S3 wird eher das Versionierte Model sein
-
-                # Speichern von Artefakten
-                self.save_model_to_s3(ludwig_model, model_name, data_naming, os.getenv("MLCORE_OUTPUT_RUN"))
-
-                # Die Meta yaml muss auch versioniert und dann erst hochgeladen werden
-                # Pfadfestlegung der meta.yaml-Datei
-                local_path = os.path.join(os.getcwd(), 'mlruns', '0', self.run_id)
-                # Uploade in den S3-Bucket modelconfigs
-                self.upload_meta_yaml_to_s3(local_path)
-
             finally:
-                # MLflow-Lauf beenden
-                mlflow.end_run()
-                # Hier wird der Zip folder in den S3 hochgeladen für den Tracking Server, das sollte man auch noch
-                # versionieren
-                # Den Ordner des aktuellen MLflow-Laufs komprimieren und als Zip-Datei hochladen
-                zip_file_name = f"{self.run_id}.zip"
-                zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
-                shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
-                # --> Ab hier kann das mlrun ZIP File versioniert werden
-                s3.upload_file(zip_file_path, os.getenv("MLFLOW_BUCKET"), zip_file_name)
+                # Den MLflow-Lauf beenden und das Zip-Archiv in S3 hochladen
+                self.upload_mlflow_run()
 
-                # Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
-
-                # Lokale Runs nach dem Upload löschen
-                subprocess.run(["dvc", "add", "mlruns"])
-                print('DVC add successfully')
-                subprocess.run(["dvc", "commit"])
-                subprocess.run(["dvc", "push"])
-                print('DVC push successfully')
-
-                subprocess.call(["git", "add", "mlruns.dvc"])
-                subprocess.call(["git", "add", ".gitignore"])
-                print("added mlruns files to git ")
-
-            # shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
-
-    def upload_directory_to_s3(self, local_path, bucket, s3_path):
-        s3_client = boto3.client('s3')
-        for root, dirs, files in os.walk(local_path):
-            for file in files:
-                local_file = os.path.join(root, file)
-                relative_path = os.path.relpath(local_file, local_path)
-                s3_file = os.path.join(s3_path, relative_path)
-                s3_client.upload_file(local_file, bucket, s3_file)
-
-    def upload_meta_yaml_to_s3(self, local_path):
-        meta_yaml_path = os.path.join(local_path, "..", "meta.yaml")
-        if os.path.exists(meta_yaml_path):
-            # Lese den Inhalt der meta.yaml-Datei
-            with open(meta_yaml_path, 'r') as file:
-                meta_yaml_content = yaml.safe_load(file)
-
-            # Passe den artifact_location-Pfad relativ zum aktuellen Verzeichnis an
-            meta_yaml_content['artifact_location'] = './mlruns/0'
-
-            # Speichere den angepassten Inhalt zurück in die meta.yaml-Datei
-            with open(meta_yaml_path, 'w') as file:
-                yaml.dump(meta_yaml_content, file)
-
-            temp_path = os.path.join(os.getcwd(), 'config_versioned', 'meta.yaml')
-            shutil.copyfile(meta_yaml_path, temp_path)
-
-            subprocess.run(["dvc", "add", "config_versioned/meta.yaml"])
-            print('DVC add successfully')
-            subprocess.run(["dvc", "commit"])
-            subprocess.run(["dvc", "push"])
-            print('DVC push successfully')
-
-            subprocess.call(["git", "add", "config_versioned/meta.yaml.dvc"])
-            subprocess.call(["git", "add", "config_versioned/.gitignore"])
-            print("added mlruns files to git ")
-            # meta yaml versionieren
-
-            # Lade die angepasste meta.yaml-Datei in den S3-Bucket hoch
-            s3_client = boto3.client('s3')
-            s3_client.upload_file(meta_yaml_path, self.model_configs_bucket_url, "meta.yaml")
-
-    def extract_model_name(self, yaml_file_path):
-        with open(yaml_file_path, 'r') as file:
-            yaml_content = yaml.safe_load(file)
-            model_name = None
-            if 'model' in yaml_content and 'type' in yaml_content['model']:
-                model_name = yaml_content['model']['type']
-            return model_name
-
-    def save_model_to_s3(self, model, model_name, data_name, bucket):
+    def save_model_to_s3(self, model, model_name, data_name):
         s3 = boto3.client('s3')
 
-        # Temporäre Verzeichnisse erstellen
-        with tempfile.TemporaryDirectory() as temp_dir_model, tempfile.TemporaryDirectory() as temp_dir_api:
-            # Modell speichern
+        # Temporäres Verzeichnis für das Modell erstellen
+        with tempfile.TemporaryDirectory() as temp_dir_model:
             model_path = os.path.join(temp_dir_model, 'model')
             model.save(model_path)
 
-            # Kopiere den Inhalt von 'api_experiment_run' in das temporäre Verzeichnis
-            api_experiment_run_src = os.path.join(os.getcwd(), 'results', 'api_experiment_run')
-            if os.path.exists(api_experiment_run_src):
-                api_experiment_run_dst = os.path.join(temp_dir_api, 'api_experiment_run')
-                shutil.copytree(api_experiment_run_src, api_experiment_run_dst)
-
-            # Model Verzeichnis in Zip-Dateien komprimieren
+            # Modell-Verzeichnis komprimieren
             model_zip_file_name = f"trained_model_{data_name}_{model_name}_{self.global_timestamp}.zip"
-            # Experiment Run Verzeichnis in Zip-Dateien komprimieren
-            api_zip_file_name = f"api_experiment_run_{data_name}_{model_name}_{self.global_timestamp}.zip"
-
-            # Model Zip Datei Verzeichnis definieren
             model_zip_file_path = os.path.join(temp_dir_model, model_zip_file_name)
-            # Experiment Run Zip Datei Verzeichnis definieren
-            api_zip_file_path = os.path.join(temp_dir_api, api_zip_file_name)
 
-            for folder, zip_file_path in [(model_path, model_zip_file_path),
-                                          (api_experiment_run_dst, api_zip_file_path)]:
-                if folder:
-                    with zipfile.ZipFile(zip_file_path, 'w') as zipf:
-                        for root, dirs, files in os.walk(folder):
-                            for file in files:
-                                zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder))
+            with zipfile.ZipFile(model_zip_file_path, 'w') as zipf:
+                for root, dirs, files in os.walk(model_path):
+                    for file in files:
+                        zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), model_path))
 
-            # Zip-Dateien in die S3-Buckets hochladen --> Ab hier können die ZIP Files versioniert werden
+            # Zip-Datei in den S3-Bucket hochladen
             s3.upload_file(model_zip_file_path, self.model_bucket_url, model_zip_file_name)
-            if api_experiment_run_dst:
-                s3.upload_file(api_zip_file_path, bucket, api_zip_file_name)
 
-        # Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
+        # Versionieren der hochgeladenen Artefakte
+        self.version_control(os.path.join(os.getcwd(), 'results'))
 
-        subprocess.run(["dvc", "add", "results"])
-        print('DVC add successfully')
+    def upload_mlflow_run(self):
+        # Pfad zum MLflow Run-Ordner
+        local_path = os.path.join(os.getcwd(), 'mlruns', '0', self.run_id)
+
+        # Komprimieren des MLflow-Laufordners
+        zip_file_name = f"{self.run_id}.zip"
+        zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
+        shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
+
+        # Hochladen des Zip-Archivs in S3
+        s3 = boto3.client('s3')
+        s3.upload_file(zip_file_path, os.getenv("MLFLOW_BUCKET"), zip_file_name)
+
+        # Versionieren des MLflow Run-Ordners
+        self.version_control(os.path.join(os.getcwd(), 'mlruns'))
+
+    def version_control(self, path):
+        subprocess.run(["dvc", "add", path])
         subprocess.run(["dvc", "commit"])
         subprocess.run(["dvc", "push"])
-        print('DVC push successfully')
-
-        subprocess.call(["git", "add", "results.dvc"])
+        subprocess.call(["git", "add", f"{path}.dvc"])
         subprocess.call(["git", "add", ".gitignore"])
-        print("added mlruns files to git ")
-        ############Versionieren
-        # shutil.rmtree(os.path.join(os.getcwd(), 'results'))
-
-    def log_params(self, data_name, data_file, model_name):
-        mlflow.log_param("Stock", data_name)
-        mlflow.log_param("ludwig_config_file_name", self.ludwig_config_file_name)
-        mlflow.log_param("data_file_name", data_file)
-        mlflow.log_param("Model", model_name)
-
-    def log_metrics(self, train_stats):
-        phases = ['test', 'training', 'validation']
-        for phase in phases:
-            section = train_stats[phase]["Schluss"]
-            for metric_name, values in section.items():
-                for idx, value in enumerate(values):
-                    mlflow.log_metric(f"{phase}_{metric_name}", value)
 
 
 class AlpacaTrader:
-    def __init__(self, api_key, api_secret, base_url, threshold):
+    def __init__(self, api_key, api_secret, base_url, threshold, stocks, context, prediction_type='regression'):
+        """
+        Initialisiert den AlpacaTrader mit API-Schlüsseln, Basis-URL, Schwellenwert und Aktieninformationen.
+        """
         self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
-        self.threshold = float(threshold)
+        self.threshold = threshold
+        self.stocks = stocks  # Dictionary mit Aktienkürzeln und deren Vorhersagen
+        self.context = context
+        self.logger = context.log
+        self.prediction_type = prediction_type  # 'regression' oder 'classification'
+        self.logger.info("AlpacaTrader initialized")
 
     def get_account_info(self):
+        """
+        Ruft Kontoinformationen vom Alpaca-API ab und gibt diese zurück.
+        """
         account = self.api.get_account()
-        return {
+        info = {
             "cash": float(account.cash),
             "buying_power": float(account.buying_power),
             "equity": float(account.equity),
             "last_equity": float(account.last_equity)
         }
+        self.logger.info(f"Account Info: {info}")
+        return info
 
     def get_latest_close(self, ticker):
-        bars = self.api.get_bars(ticker, TimeFrame.Day, limit=1)
-        return bars[0].c if bars else None
+        """
+        Ruft den letzten verfügbaren Schlusskurs der angegebenen Aktie ab.
+        Falls der Schlusskurs für den aktuellen Tag nicht verfügbar ist, wird der Schlusskurs vom vorherigen Tag verwendet.
+        """
+        try:
+            self.logger.info(f"Attempting to retrieve latest close for {ticker}")
 
-    def get_prediction(self, prediction):
-        return float(prediction)
+            # Hole die letzten 5 Tage an Bars, um sicherzustellen, dass wir den letzten verfügbaren Schlusskurs bekommen
+            bars = self.api.get_bars(ticker, TimeFrame.Day, limit=5)
+
+            if not bars:
+                self.logger.warning(f"No bars returned for {ticker}")
+                return None
+
+            # Suche den letzten verfügbaren Schlusskurs
+            latest_close = None
+            for bar in bars:
+                if bar.c is not None:
+                    latest_close = bar.c
+                    break
+
+            if latest_close is None:
+                self.logger.warning(f"No close price found in the returned bars for {ticker}")
+                return None
+
+            self.logger.info(f"Latest close for {ticker}: {latest_close}")
+            return latest_close
+
+        except tradeapi.RestError as e:
+            self.logger.error(f"API error retrieving latest close for {ticker}: {e}")
+        except Exception as e:
+            self.logger.error(f"Error retrieving latest close for {ticker}: {e}")
+        return None
+
+    def get_prediction(self, ticker):
+        """
+        Ruft die Vorhersage für die angegebene Aktie ab.
+        Die Vorhersage hängt vom Modelltyp ab (Regression oder Klassifikation).
+        """
+        prediction = self.stocks.get(ticker)
+        self.logger.info(f"Prediction for {ticker}: {prediction}")
+        return prediction
 
     def place_buy_order(self, ticker, qty):
+        """
+        Platziert eine Kauforder für die angegebene Aktie.
+        """
+        self.logger.info(f"Placing buy order for {ticker}: {qty} shares")
         buy_order = self.api.submit_order(
             symbol=ticker,
             qty=qty,
@@ -541,9 +472,14 @@ class AlpacaTrader:
             type='market',
             time_in_force='gtc'
         )
+        self.logger.info(f"Buy order placed for {ticker}: {buy_order}")
         return buy_order
 
     def place_sell_order(self, ticker, qty):
+        """
+        Platziert eine Verkaufsorder für die angegebene Aktie.
+        """
+        self.logger.info(f"Placing sell order for {ticker}: {qty} shares")
         sell_order = self.api.submit_order(
             symbol=ticker,
             qty=qty,
@@ -551,43 +487,151 @@ class AlpacaTrader:
             type='market',
             time_in_force='gtc'
         )
+        self.logger.info(f"Sell order placed for {ticker}: {sell_order}")
         return sell_order
 
     def check_position(self, ticker):
+        """
+        Überprüft die Position der angegebenen Aktie im Portfolio.
+        """
         positions = self.api.list_positions()
         for position in positions:
             if position.symbol == ticker:
-                return float(position.qty)
+                qty = float(position.qty)
+                self.logger.info(f"Position for {ticker}: {qty} shares")
+                return qty
+        self.logger.info(f"No position found for {ticker}")
         return 0
 
-    def execute_trade(self, ticker, prediction):
+    def calculate_potential_gains_and_losses(self):
+        """
+        Berechnet die potenziellen Gewinne und Verluste für die Aktien, wenn das Modell Regressionsvorhersagen liefert.
+        """
+        potential_gains = {}
+        potential_losses = {}
+
+        for ticker in self.stocks:
+            latest_close = self.get_latest_close(ticker)
+            predicted_close = self.get_prediction(ticker)
+
+            if latest_close is None or predicted_close is None:
+                self.logger.error(f"Error: Could not retrieve necessary price information for {ticker}.")
+                continue
+
+            price_difference = (predicted_close - latest_close) / latest_close
+            self.logger.info(f"Price difference for {ticker}: {price_difference}")
+
+            if price_difference > 0:
+                potential_gains[ticker] = price_difference
+            else:
+                potential_losses[ticker] = price_difference
+
+        self.logger.info(f"Potential gains: {potential_gains}")
+        self.logger.info(f"Potential losses: {potential_losses}")
+
+        return potential_gains, potential_losses
+
+    def determine_best_and_worst(self, potential_gains, potential_losses):
+        """
+        Bestimmt die Aktie mit dem höchsten vorhergesagten Gewinn und die Aktie im Portfolio mit dem höchsten Verlust.
+        """
+        best_gain_ticker = max(potential_gains, key=potential_gains.get, default=None)
+        worst_loss_ticker = min(potential_losses, key=potential_losses.get, default=None)
+
+        self.logger.info(f"Best gain ticker: {best_gain_ticker}")
+        self.logger.info(f"Worst loss ticker: {worst_loss_ticker}")
+
+        return best_gain_ticker, worst_loss_ticker
+
+    def sell_worst_loss_stock(self, worst_loss_ticker, positions):
+        """
+        Verkauft die Aktie im Portfolio mit dem höchsten Verlust.
+        """
+        if worst_loss_ticker and worst_loss_ticker in positions:
+            qty = positions[worst_loss_ticker]
+            sell_order = self.place_sell_order(worst_loss_ticker, qty)
+            self.logger.info(f"Sell order executed for {worst_loss_ticker}: {sell_order}")
+            return True
+        return False
+
+    def buy_best_gain_stock(self, best_gain_ticker, account_info):
+        """
+        Kauft die Aktie mit dem höchsten vorhergesagten Gewinn.
+        """
+        if best_gain_ticker:
+            latest_close_best_gain = self.get_latest_close(best_gain_ticker)
+            if latest_close_best_gain:
+                max_shares = int(account_info['cash'] // latest_close_best_gain)
+                self.logger.info(f"Maximum shares to buy for {best_gain_ticker}: {max_shares}")
+                if max_shares > 0:
+                    buy_order = self.place_buy_order(best_gain_ticker, max_shares)
+                    self.logger.info(f"Buy order executed for {best_gain_ticker}: {buy_order}")
+                else:
+                    self.logger.warning(f"Not enough cash to buy shares of {best_gain_ticker}.")
+
+    def execute_trade(self):
+        """
+        Führt die Handelslogik basierend auf Vorhersagen durch, die entweder durch Regression oder Klassifikation erstellt wurden.
+        """
+        self.logger.info("Executing trade")
         account_info = self.get_account_info()
-        latest_close = self.get_latest_close(ticker)
-        predicted_close = self.get_prediction(prediction)
 
-        if latest_close is None or predicted_close is None:
-            print("Error: Could not retrieve necessary price information.")
-            return
+        # Holen der aktuellen Positionen
+        positions = {pos.symbol: float(pos.qty) for pos in self.api.list_positions()}
+        self.logger.info(f"Current positions: {positions}")
 
-        price_difference = (predicted_close - latest_close) / latest_close
+        if self.prediction_type == 'regression':
+            # Berechnung der potenziellen Gewinne und Verluste für Regression
+            potential_gains, potential_losses = self.calculate_potential_gains_and_losses()
+            best_gain_ticker, worst_loss_ticker = self.determine_best_and_worst(potential_gains, potential_losses)
 
-        if price_difference > self.threshold:
-            max_shares = int(account_info['cash'] // latest_close)
-            if max_shares > 0:
-                buy_order = self.place_buy_order(ticker, max_shares)
-                print("Buy Order:", buy_order)
+            # Verkauf der Aktie mit dem höchsten Verlust
+            if self.sell_worst_loss_stock(worst_loss_ticker, positions):
+                time.sleep(3)
+                account_info = self.get_account_info()
+                # Kauf der Aktie mit dem höchsten Gewinn, wenn sie genug Cash haben
+                self.buy_best_gain_stock(best_gain_ticker, account_info)
+
             else:
-                print("Not enough cash to buy shares.")
-        elif price_difference < -self.threshold:
-            position_qty = self.check_position(ticker)
-            if position_qty > 0:
-                sell_order = self.place_sell_order(ticker, position_qty)
-                print("Sell Order:", sell_order)
-            else:
-                print(f"No shares of {ticker} to sell.")
-        else:
-            print("Price change within threshold, no action taken.")
+                # Wenn keine Aktien verkauft wurden und es eine beste Gewinnaktie gibt
+                if best_gain_ticker and best_gain_ticker not in positions:
+                    time.sleep(3)
+                    account_info = self.get_account_info()
+                    self.buy_best_gain_stock(best_gain_ticker, account_info)
 
+        elif self.prediction_type == 'classification':
+            self.logger.info("Processing classification predictions")
+            for ticker in self.stocks:
+                prediction = self.get_prediction(ticker)
+
+                if prediction == 'buy':
+                    # Wenn das Modell empfiehlt, die Aktie zu kaufen
+                    if ticker not in positions:
+                        # Wenn die Aktie nicht im Portfolio ist
+                        latest_close = self.get_latest_close(ticker)
+                        if latest_close:
+                            max_shares = int(account_info['cash'] // latest_close)
+                            self.logger.info(f"Maximum shares to buy for {ticker}: {max_shares}")
+                            if max_shares > 0:
+                                self.place_buy_order(ticker, max_shares)
+                                time.sleep(3)
+                                account_info = self.get_account_info()  # Aktualisierte Kontoinformationen nach dem Kauf
+                        else:
+                            self.logger.warning(f"Not enough cash to buy shares of {ticker}.")
+                    else:
+                        self.logger.info(f"Already holding {ticker}, no action needed.")
+
+                elif prediction == 'sell':
+                    # Wenn das Modell empfiehlt, die Aktie zu verkaufen
+                    if ticker in positions:
+                        qty = positions[ticker]
+                        self.place_sell_order(ticker, qty)
+                        time.sleep(3)
+                        account_info = self.get_account_info()  # Aktualisierte Kontoinformationen nach dem Verkauf
+
+                elif prediction == 'hold':
+                    # Wenn das Modell empfiehlt, die Aktie zu halten
+                    self.logger.info(f"Holding recommendation for {ticker}, no action needed.")
 
 
 @asset(deps=[setupDVCandVersioningBucketForTraining], group_name="TrainingPhase", compute_kind="LudwigModel")
@@ -612,7 +656,7 @@ def trainLudwigModelRegression(context) -> None:
     
     
     subprocess.run(["git", "commit", "-m", "Trainings run from: "+timestampTraining_string+" with data from: "+data+" and the model: "+model+"." ])
-    subprocess.run(["git", "push", "-u", "origin", "DagsterPipelineProdRun"])
+    subprocess.run(["git", "push", "-u", "origin", "dev/blue_google_regression"])
 
 
 ##-----------------training area ----------------------------------------------------
@@ -667,6 +711,7 @@ def fetchStockDataFromSource(context) -> None:
         if symbol not in processed_symbols:  # Überprüfen, ob das Symbol bereits verarbeitet wurde
             print(f"Verarbeite Symbol: {symbol}")
             process_and_upload_symbol_data(
+                    context,
                     api_key='69SMJJ4C2JIW86LI',
                     symbol=symbol,
                     output_directory='data'
@@ -847,4 +892,31 @@ def serviceScript(context) -> None:
     create_and_write_dockerfile()
     context.log.info(f"imagename is {imagename}")
     context.log.info(subprocess.run(["docker", "build", "--build-arg", f"model_name={imagename}", "-t", f"{imagename}", "."]))
-    context.log.info(subprocess.run(["docker", "run", "-d", "-p", f"{port}:8000", f"{imagename}"]))
+    container_name: str = ("% s_% s" % (os.getenv("TEAM"), os.getenv("STOCK_NAME")))
+    context.log.info(subprocess.run(["docker", "run", "--name", container_name, "-d", "-p", f"{port}:8000", f"{imagename}"]))
+
+
+
+##----------------- trading ----------------------------------------------------
+
+@asset(deps=[], group_name="TradingPhase", compute_kind="Trading")
+def tradeScript(context) -> None:
+    ##### Set file/bucket vars #####
+    # Alpaca API-Schlüssel
+    API_KEY = os.getenv("API_KEY", "unset_api_key")
+    API_SECRET = os.getenv("API_SECRET", "unset_api_secret")
+    BASE_URL = os.getenv("BASE_URL", "unset_base_url")
+    threshold = os.getenv("TRADING_THRESHOLD", 0.005)
+
+    # Dictionary von Aktienkürzeln und deren Vorhersagen (sowohl für Regression als auch Klassifikation)
+    stocks = {
+        'AAPL': 150.0,  # Bei Regression: Vorhergesagter Schlusskurs
+        'GOOG': 140.0,  # Bei Klassifikation: Empfehlung ("buy", "sell", "hold")
+        'AMZN': 300.0, # Weitere Aktien und deren Vorhersagen hinzufügen
+    }
+
+    # Bestimmen des Vorhersagetypen (kann entweder 'regression' oder 'classification' sein)
+    prediction_type = os.getenv("PREDICTION_TYPE", "unset_prediction_type")  # Ändern je nach verwendetem Modell
+
+    trader = AlpacaTrader(API_KEY, API_SECRET, BASE_URL, threshold, stocks, context, prediction_type)
+    trader.execute_trade()
