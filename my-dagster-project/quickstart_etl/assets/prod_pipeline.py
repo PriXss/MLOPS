@@ -167,7 +167,8 @@ def process_and_upload_symbol_data(
 
         # Sortierten DataFrame als CSV exportieren
         csv_filepath = os.path.join(output_directory, csv_filename)
-        merged_data_sorted.to_csv(csv_filepath, index=False)
+        #merged_data_sorted.to_csv(csv_filepath, index=False)!!!!!!!!!!!!!!!
+        data_2023.to_csv(csv_filepath, index=False)
 
 
         if not upload_abgelehnt:
