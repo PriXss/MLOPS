@@ -268,7 +268,7 @@ class MLFlowTrainer:
         self.mlflow_bucket_url = mlflow_bucket_url
         self.data_bucket_url = data_bucket_url
         self.model_configs_bucket_url = model_configs_bucket_url
-        
+
         # Setzten der Zugriffsparameter für S3 via Umgebungsvariablen
         self.access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
         self.secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -281,7 +281,6 @@ class MLFlowTrainer:
 
         # Initialisierung des globalen Timestamps
         self.global_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
 
     def train_model(self):
 
@@ -308,32 +307,30 @@ class MLFlowTrainer:
                     with open(config_file_path, 'r') as file:
                         ludwig_file_content = file.read()
                         print("Dateiinhalt:", ludwig_file_content)
-                        
-                        
-                        
-                        #versionieren
-                        
-                    temp_path= os.path.join(os.getcwd(), 'config_versioned', self.ludwig_config_file_name)
+
+                        # versionieren
+
+                    temp_path = os.path.join(os.getcwd(), 'config_versioned', self.ludwig_config_file_name)
                     shutil.copyfile(config_file_path, temp_path)
-                        
+
                     subprocess.run(["dvc", "add", "config_versioned/ludwig_MLCore.yaml"])
                     print('DVC add successfully')
                     subprocess.run(["dvc", "commit"])
                     subprocess.run(["dvc", "push"])
-                    print('DVC push successfully')   
-                            
+                    print('DVC push successfully')
+
                     subprocess.call(["git", "add", "config_versioned/ludwig_MLCore.yaml.dvc"])
                     subprocess.call(["git", "add", "config_versioned/.gitignore"])
                     print("added mlruns files to git ")
-                        
+
                     training_config_name = os.getenv("TRAINING_CONFIG_NAME")
                     s3_client = boto3.client('s3')
                     s3_client.upload_file(config_file_path, self.model_configs_bucket_url, training_config_name)
-                        
-                         
+
+
                 else:
                     print("Die Datei existiert nicht:", config_file_path)
-                    
+
                 # Extrahiere den Modellnamen aus der Ludwig-Konfigurationsdatei
                 model_name = self.extract_model_name(config_file_path)
 
@@ -360,7 +357,7 @@ class MLFlowTrainer:
 
                 # Ab hier müssten wir Mit DVC Versionieren
                 # und zwar den MLRun Ordner?
-                
+
                 # Frage: safe_model_to_S3 wird eher das Versionierte Model sein
 
                 # Speichern von Artefakten
@@ -375,29 +372,29 @@ class MLFlowTrainer:
             finally:
                 # MLflow-Lauf beenden
                 mlflow.end_run()
-                #Hier wird der Zip folder in den S3 hochgeladen für den Tracking Server, das sollte man auch noch
-                #versionieren
+                # Hier wird der Zip folder in den S3 hochgeladen für den Tracking Server, das sollte man auch noch
+                # versionieren
                 # Den Ordner des aktuellen MLflow-Laufs komprimieren und als Zip-Datei hochladen
                 zip_file_name = f"{self.run_id}.zip"
                 zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
                 shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
-                 #--> Ab hier kann das mlrun ZIP File versioniert werden
+                # --> Ab hier kann das mlrun ZIP File versioniert werden
                 s3.upload_file(zip_file_path, os.getenv("MLFLOW_BUCKET"), zip_file_name)
 
-                #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
+                # Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
 
                 # Lokale Runs nach dem Upload löschen
                 subprocess.run(["dvc", "add", "mlruns"])
                 print('DVC add successfully')
                 subprocess.run(["dvc", "commit"])
                 subprocess.run(["dvc", "push"])
-                print('DVC push successfully')   
-            
+                print('DVC push successfully')
+
                 subprocess.call(["git", "add", "mlruns.dvc"])
                 subprocess.call(["git", "add", ".gitignore"])
                 print("added mlruns files to git ")
-                
-            #shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
+
+            # shutil.rmtree(os.path.join(os.getcwd(), 'mlruns'))
 
     def upload_directory_to_s3(self, local_path, bucket, s3_path):
         s3_client = boto3.client('s3')
@@ -421,21 +418,21 @@ class MLFlowTrainer:
             # Speichere den angepassten Inhalt zurück in die meta.yaml-Datei
             with open(meta_yaml_path, 'w') as file:
                 yaml.dump(meta_yaml_content, file)
-            
-            temp_path= os.path.join(os.getcwd(), 'config_versioned', 'meta.yaml')
+
+            temp_path = os.path.join(os.getcwd(), 'config_versioned', 'meta.yaml')
             shutil.copyfile(meta_yaml_path, temp_path)
-            
+
             subprocess.run(["dvc", "add", "config_versioned/meta.yaml"])
             print('DVC add successfully')
             subprocess.run(["dvc", "commit"])
             subprocess.run(["dvc", "push"])
-            print('DVC push successfully')   
-                
+            print('DVC push successfully')
+
             subprocess.call(["git", "add", "config_versioned/meta.yaml.dvc"])
             subprocess.call(["git", "add", "config_versioned/.gitignore"])
             print("added mlruns files to git ")
-            #meta yaml versionieren
-            
+            # meta yaml versionieren
+
             # Lade die angepasste meta.yaml-Datei in den S3-Bucket hoch
             s3_client = boto3.client('s3')
             s3_client.upload_file(meta_yaml_path, self.model_configs_bucket_url, "meta.yaml")
@@ -486,19 +483,19 @@ class MLFlowTrainer:
             if api_experiment_run_dst:
                 s3.upload_file(api_zip_file_path, bucket, api_zip_file_name)
 
-        #Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
-        
+        # Hier werden die lokalen Dateien wieder gelöscht... Sollen wir das weiterhin machen?
+
         subprocess.run(["dvc", "add", "results"])
         print('DVC add successfully')
         subprocess.run(["dvc", "commit"])
         subprocess.run(["dvc", "push"])
-        print('DVC push successfully')   
-                            
+        print('DVC push successfully')
+
         subprocess.call(["git", "add", "results.dvc"])
         subprocess.call(["git", "add", ".gitignore"])
         print("added mlruns files to git ")
         ############Versionieren
-        #shutil.rmtree(os.path.join(os.getcwd(), 'results'))
+        # shutil.rmtree(os.path.join(os.getcwd(), 'results'))
 
     def log_params(self, data_name, data_file, model_name):
         mlflow.log_param("Stock", data_name)
