@@ -108,6 +108,12 @@ def process_and_upload_symbol_data(
         # Sortieren des zusammengeführten DataFrame nach dem Datum in aufsteigender Reihenfolge
         merged_data_sorted = merged_data.sort_values(by='Datum', ascending=True)
 
+        # Berechnung der Differenz und Hinzufügen der neuen Spalten
+        merged_data['Differenz'] = merged_data['Schluss'] - merged_data['Eroeffnung']
+        merged_data['Status'] = merged_data['Differenz'].apply(lambda x: 'gestiegen' if x > 0 else 'gefallen')
+        merged_data['Empfehlung'] = merged_data['Status'].apply(lambda x: 'kaufen' if x == 'gestiegen' else 'verkaufen')
+        merged_data['Schlusskurs nächster Tag'] = merged_data['Schluss'].shift(-1)
+
 
         # Convert the 'Datum' column to datetime format
         merged_data_sorted['Datum'] = pd.to_datetime(merged_data_sorted['Datum'])
@@ -1049,7 +1055,7 @@ def tradeScript(context) -> None:
 
     # Dictionary von Aktienkürzeln und deren Vorhersagen (sowohl für Regression als auch Klassifikation)
     stocks = {
-        'AAPL': 150.0,  # Bei Regression: Vorhergesagter Schlusskurs
+        'AAPL': buy,  # Bei Regression: Vorhergesagter Schlusskurs
         'GOOG': 140.0,  # Bei Klassifikation: Empfehlung ("buy", "sell", "hold")
         'AMZN': 300.0, # Weitere Aktien und deren Vorhersagen hinzufügen
     }
