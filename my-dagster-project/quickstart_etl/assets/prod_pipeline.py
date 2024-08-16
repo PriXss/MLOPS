@@ -105,15 +105,18 @@ def process_and_upload_symbol_data(
             '2. high': 'Tageshoch', '3. low': 'Tagestief', '5. volume': 'Umsatz',
         }, inplace=True)
 
+        # Berechnung der Differenz und Hinzufügen der neuen Spalten
+        print("Füge Differenz hinzu")
+        merged_data['Differenz'] = merged_data['Schluss'] - merged_data['Eroeffnung']
+        print("Füge Status hinzu")
+        merged_data['Status'] = merged_data['Differenz'].apply(lambda x: 'gestiegen' if x > 0 else 'gefallen')
+
+        merged_data['Empfehlung'] = merged_data['Status'].apply(lambda x: 'kaufen' if x == 'gestiegen' else 'verkaufen')
+        print("Füge nächster Schlusskurs hinzu")
+        merged_data['Schlusskurs nächster Tag'] = merged_data['Schluss'].shift(+1)
+
         # Sortieren des zusammengeführten DataFrame nach dem Datum in aufsteigender Reihenfolge
         merged_data_sorted = merged_data.sort_values(by='Datum', ascending=True)
-
-        # Berechnung der Differenz und Hinzufügen der neuen Spalten
-        merged_data['Differenz'] = merged_data['Schluss'] - merged_data['Eroeffnung']
-        merged_data['Status'] = merged_data['Differenz'].apply(lambda x: 'gestiegen' if x > 0 else 'gefallen')
-        merged_data['Empfehlung'] = merged_data['Status'].apply(lambda x: 'kaufen' if x == 'gestiegen' else 'verkaufen')
-        merged_data['Schlusskurs nächster Tag'] = merged_data['Schluss'].shift(-1)
-
 
         # Convert the 'Datum' column to datetime format
         merged_data_sorted['Datum'] = pd.to_datetime(merged_data_sorted['Datum'])
@@ -122,7 +125,6 @@ def process_and_upload_symbol_data(
         data_2023 = merged_data_sorted[merged_data_sorted['Datum'] <= '2023-12-31']
 
         # Display the first few rows of the filtered dataframe
-        context.log.info(data_2023.head())
         print(data_2023.head())
 
         ##!!!!!!!!!2023 Data Split
