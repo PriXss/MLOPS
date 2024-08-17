@@ -118,16 +118,6 @@ def process_and_upload_symbol_data(
         # Sortieren des zusammengeführten DataFrame nach dem Datum in aufsteigender Reihenfolge
         merged_data_sorted = merged_data.sort_values(by='Datum', ascending=True)
 
-        # Convert the 'Datum' column to datetime format
-        merged_data_sorted['Datum'] = pd.to_datetime(merged_data_sorted['Datum'])
-
-        # Filter the data for dates before or equal to 31.12.2023
-        data_2023 = merged_data_sorted[merged_data_sorted['Datum'] <= '2023-12-31']
-
-        # Display the first few rows of the filtered dataframe
-        print(data_2023.head())
-
-        ##!!!!!!!!!2023 Data Split
 
 
         # Quality Checks vor dem Sortieren und Speichern
@@ -316,6 +306,27 @@ class MLFlowTrainer:
         s3 = boto3.client('s3')
         obj = s3.get_object(Bucket=self.data_bucket_url, Key=data_file)
         data = pd.read_csv(obj['Body'])
+        
+        # Convert the 'Datum' column to datetime format
+        data['Datum'] = pd.to_datetime(data['Datum'])
+
+        # Filter the data for dates before or equal to 31.12.2023
+        data_2023 = data[data['Datum'] <= '2023-12-31']
+
+        # Display the first few rows of the filtered dataframe
+        print(data_2023.head())
+        
+        
+         # Filter the data for dates before or equal to 31.12.2023
+        data_2024 = data[data['Datum'] >= '2023-12-31']
+        print(data_2024.head())
+        
+        
+        #we have following datas to work with, training needs to be adapted properly
+        #data23 defining all the data before the year 24 that can be used for training
+        #data24 defining all the data only for the year 24, can be used for testing the model
+        #data contains all the data from 2023 and ealryer and 2024
+        
 
         # Starten des MLflow-Laufs
         with mlflow.start_run() as run:
@@ -363,7 +374,7 @@ class MLFlowTrainer:
 
                 # Ludwig-Modell trainieren
                 ludwig_model = LudwigModel(config=config_file_path)
-                train_stats, _, _ = ludwig_model.train(dataset=data, split=[0.8, 0.1, 0.1],
+                train_stats, _, _ = ludwig_model.train(dataset=data_2023, split=[0.8, 0.1, 0.1],
                                                        skip_save_processed_input=True)
 
                 # Loggen der Parameter
@@ -875,7 +886,20 @@ def requestToModel(context):
      
     stock_name = os.getenv("STOCK_NAME")
     file_name = "data_"+stock_name+".csv"
+    
     df = pd.read_csv(f"data/{file_name}")
+    
+    # Convert the 'Datum' column to datetime format
+    #df['Datum'] = pd.to_datetime(df['Datum'])
+
+    #data_2024 = df[df['Datum'] >= '2023-12-31']
+    #print(data_2024.head())
+
+    #context.log.info(data_2024.head())
+    
+    #df = data_2024.tail(1)
+        
+
     context.log.info(df.head())
     
     ##### Prepare the payload and headers #####  
