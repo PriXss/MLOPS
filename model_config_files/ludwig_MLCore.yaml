@@ -1,6 +1,11 @@
 input_features:
   - name: Datum
     type: date
+    preprocessing:
+      missing_value_strategy: fill_with_const
+      fill_value: ''
+      datetime_format: "YYYY-MM-DD"
+
   - name: Eroeffnung
     type: numerical
     preprocessing:
@@ -39,7 +44,7 @@ input_features:
       normalization: zscore
 
 output_features:
-  - name: "Schlusskurs nächster Tag"
+  - name: "Schlusskurs naechster Tag"
     type: numerical
 
 training:
@@ -51,7 +56,8 @@ training:
 
 preprocessing:
   split:
-    type: stratify
+    type: datetime
+    column: Datum
     probabilities: [0.7, 0.15, 0.15]
 
 model:

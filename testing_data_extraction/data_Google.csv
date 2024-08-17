@@ -1,4 +1,4 @@
-Datum,Eroeffnung,Tageshoch,Tagestief,Schluss,Umsatz,RSI,SMA,EMA,DEMA,Differenz,Status,Empfehlung,Schlusskurs nächster Tag
+Datum,Eroeffnung,Tageshoch,Tagestief,Schluss,Umsatz,RSI,SMA,EMA,DEMA,Differenz,Status,Empfehlung,Schlusskurs naechster Tag
 2004-08-19,100.01,104.06,95.96,100.335,44659000.0,0.0,0.0,0.0,0.0,0.32499999999998863,gestiegen,kaufen,108.31
 2004-08-20,101.01,109.08,100.5,108.31,22834300.0,0.0,0.0,0.0,0.0,7.299999999999997,gestiegen,kaufen,109.4
 2004-08-23,110.76,113.48,109.05,109.4,18256100.0,0.0,0.0,0.0,0.0,-1.3599999999999994,gefallen,verkaufen,104.87

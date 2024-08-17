@@ -115,6 +115,8 @@ def process_and_upload_symbol_data(
         print("Füge nächster Schlusskurs hinzu")
         merged_data['Schlusskurs naechster Tag'] = merged_data['Schluss'].shift(+1)
 
+        #Ändern vom Datenformat der Spalte Datum
+        merged_data['Datum'] = pd.to_datetime(merged_data['Datum'], format='%Y-%m-%d', errors='raise')
         # Sortieren des zusammengeführten DataFrame nach dem Datum in aufsteigender Reihenfolge
         merged_data_sorted = merged_data.sort_values(by='Datum', ascending=True)
 
