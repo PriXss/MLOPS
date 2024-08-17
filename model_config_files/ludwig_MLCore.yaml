@@ -1,28 +1,45 @@
 input_features:
   - name: Datum
     type: date
-    preprocessing:
-      datetime_format: "%Y-%m-%d"
-      extract_weekday: false
-      extract_year: true
-      extract_month: true
-      extract_day: true
-      extract_quarter: false
   - name: Eroeffnung
     type: numerical
+    preprocessing:
+      normalization: zscore
   - name: Tageshoch
     type: numerical
+    preprocessing:
+      normalization: zscore
   - name: Tagestief
     type: numerical
+    preprocessing:
+      normalization: zscore
   - name: Umsatz
     type: numerical
+    preprocessing:
+      normalization: zscore
   - name: RSI
     type: numerical
+    preprocessing:
+      normalization: zscore
+  - name: SMA
+    type: numerical
+    preprocessing:
+      normalization: zscore
   - name: EMA
     type: numerical
+    preprocessing:
+      normalization: zscore
+  - name: DEMA
+    type: numerical
+    preprocessing:
+      normalization: zscore
+  - name: Schluss
+    type: numerical
+    preprocessing:
+      normalization: zscore
 
 output_features:
-  - name: Schluss
+  - name: "Schlusskurs nächster Tag"
     type: numerical
 
 training:
@@ -32,9 +49,14 @@ training:
   optimizer:
     type: adam
 
+preprocessing:
+  split:
+    type: stratify
+    probabilities: [0.7, 0.15, 0.15]
+
 model:
   type: deep_lstm
   num_layers: 2
-  num_hidden_units: 64
-  dropout: 0.1
-  recurrent_dropout: 0.5
+  num_hidden_units: 128
+  dropout: 0.2
+  recurrent_dropout: 0.2

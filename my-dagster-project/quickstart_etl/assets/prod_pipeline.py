@@ -374,8 +374,7 @@ class MLFlowTrainer:
 
                 # Ludwig-Modell trainieren
                 ludwig_model = LudwigModel(config=config_file_path)
-                train_stats, _, _ = ludwig_model.train(dataset=data_2023, split=[0.8, 0.1, 0.1],
-                                                       skip_save_processed_input=True)
+                train_stats, _, _ = ludwig_model.train(dataset=data_2023, skip_save_processed_input=True)
 
                 # Loggen der Parameter
                 self.log_params(data_naming, data_file, model_name)
