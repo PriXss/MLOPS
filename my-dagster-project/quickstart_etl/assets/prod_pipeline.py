@@ -113,7 +113,7 @@ def process_and_upload_symbol_data(
 
         merged_data['Empfehlung'] = merged_data['Status'].apply(lambda x: 'kaufen' if x == 'gestiegen' else 'verkaufen')
         print("Füge nächster Schlusskurs hinzu")
-        merged_data['Schlusskurs nächster Tag'] = merged_data['Schluss'].shift(+1)
+        merged_data['Schlusskurs naechster Tag'] = merged_data['Schluss'].shift(+1)
 
         # Sortieren des zusammengeführten DataFrame nach dem Datum in aufsteigender Reihenfolge
         merged_data_sorted = merged_data.sort_values(by='Datum', ascending=True)
