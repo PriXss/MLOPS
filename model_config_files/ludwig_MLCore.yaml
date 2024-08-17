@@ -42,15 +42,19 @@ input_features:
     type: numerical
     preprocessing:
       normalization: zscore
+  - name: Differenz
+    type: numerical
+    preprocessing:
+      normalization: zscore
 
 output_features:
-  - name: "Schlusskurs naechster Tag"
+  - name: "Schluss naechster Tag"
     type: numerical
 
 training:
-  batch_size: 32
-  epochs: 50
-  learning_rate: 0.001
+  batch_size: 64  # Erhöht für stabileres Training
+  epochs: 100  # Mehr Epochen für längeres Training
+  learning_rate: 0.0005  # Anpassung der Lernrate
   optimizer:
     type: adam
 
@@ -62,7 +66,7 @@ preprocessing:
 
 model:
   type: deep_lstm
-  num_layers: 2
-  num_hidden_units: 128
-  dropout: 0.2
-  recurrent_dropout: 0.2
+  num_layers: 4  # Erhöht für eine tiefere Modellarchitektur
+  num_hidden_units: 256  # Erhöht für größere Kapazität
+  dropout: 0.3  # Erhöht, um Overfitting zu reduzieren
+  recurrent_dropout: 0.3  # Erhöht, um Overfitting zu reduzieren
