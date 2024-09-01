@@ -274,12 +274,14 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
 
 class MLFlowTrainer:
     def __init__(self, model_name="", ludwig_config_file_name="", data_name="", ludwig_config_path="",
-                 model_bucket_url="", mlflow_bucket_url="", data_bucket_url="", model_configs_bucket_url=""):
+                 model_bucket_url="", mlflow_bucket_url="", data_bucket_url="", model_configs_bucket_url="",
+                 team_name=""):
         self.run_id = None
         self.model_name = model_name
         self.ludwig_config_file_name = ludwig_config_file_name
         self.data_file_name = data_name
         self.path_to_ludwig_config_file = ludwig_config_path
+        self.team_name = team_name
 
         # Setzen der Bucket-URLs
         self.model_bucket_url = model_bucket_url
@@ -374,7 +376,7 @@ class MLFlowTrainer:
                 model_name = self.extract_model_name(config_file_path)
 
                 # Namensgebung ML Run
-                mlflow.set_tag('mlflow.runName', f'{data_naming}_{model_name}_{self.global_timestamp}')
+                mlflow.set_tag('mlflow.runName', f'{data_naming}_{model_name}_{self.team_name}_{self.global_timestamp}')
 
                 # Ludwig-Modell trainieren
                 ludwig_model = LudwigModel(config=config_file_path)
@@ -483,7 +485,7 @@ class MLFlowTrainer:
                 model_name = yaml_content['model']['type']
             return model_name
 
-    def save_model_to_s3(self, model, model_name, data_name, bucket):
+    def save_model_to_s3(self, model, model_name, data_name, bucket, team_name):
         s3 = boto3.client('s3')
 
         # Temporäre Verzeichnisse erstellen
@@ -499,9 +501,9 @@ class MLFlowTrainer:
                 shutil.copytree(api_experiment_run_src, api_experiment_run_dst)
 
             # Model Verzeichnis in Zip-Dateien komprimieren
-            model_zip_file_name = f"trained_model_{data_name}_{model_name}_{self.global_timestamp}.zip"
+            model_zip_file_name = f"trained_model_{data_name}_{model_name}_{team_name}_{self.global_timestamp}.zip"
             # Experiment Run Verzeichnis in Zip-Dateien komprimieren
-            api_zip_file_name = f"api_experiment_run_{data_name}_{model_name}_{self.global_timestamp}.zip"
+            api_zip_file_name = f"api_experiment_run_{data_name}_{model_name}_{team_name}_{self.global_timestamp}.zip"
 
             # Model Zip Datei Verzeichnis definieren
             model_zip_file_path = os.path.join(temp_dir_model, model_zip_file_name)
@@ -551,8 +553,9 @@ class MLFlowTrainer:
 
 
 class CSVProcessor:
-    def __init__(self, bucket_name, local_download_path, stock_symbol_mapping):
+    def __init__(self, bucket_name, local_download_path, stock_symbol_mapping, team_name):
         self.bucket_name = bucket_name
+        self.team_name = team_name
         self.local_download_path = local_download_path
         self.minio_client = boto3.client(
             's3',
@@ -569,9 +572,13 @@ class CSVProcessor:
 
         for obj in response.get('Contents', []):
             file_name = os.path.basename(obj['Key'])
-            local_file_path = os.path.join(self.local_download_path, file_name)
-            self.minio_client.download_file(self.bucket_name, obj['Key'], local_file_path)
-            downloaded_files.append(local_file_path)
+
+            # Überprüfen, ob der Dateiname den Team-Namen enthält
+            if self.team_name.lower() in file_name.lower():
+                local_file_path = os.path.join(self.local_download_path, file_name)
+                self.minio_client.download_file(self.bucket_name, obj['Key'], local_file_path)
+                downloaded_files.append(local_file_path)
+                print(f'Datei {file_name} wurde heruntergeladen.')
 
         return downloaded_files
 
@@ -904,12 +911,14 @@ def trainLudwigModelRegression(context) -> None:
     mlflow_bucket_url = os.getenv("MLFLOW_BUCKET")
     data_bucket_url = os.getenv("OUTPUT_DIRECTORY")
     model_configs_bucket_url = os.getenv("MODEL_CONFIG_BUCKET")
+    team_name = os.getenv("TEAM")
     
     # Instanz der Klasse erstellen und das Modell trainieren  
     trainer = MLFlowTrainer(ludwig_config_file_name=ludwig_config_file_name, data_name=data_name,
                             ludwig_config_path=path_ludwig_config, model_bucket_url = model_bucket_url,
                             mlflow_bucket_url=mlflow_bucket_url, data_bucket_url=data_bucket_url,
-                            model_configs_bucket_url=model_configs_bucket_url)
+                            model_configs_bucket_url=model_configs_bucket_url,
+                            team_name=team_name)
     trainer.train_model()  
     
     
@@ -985,6 +994,7 @@ def fetchStockDataFromSource(context) -> None:
 def requestToModel(context):
      
     stock_name = os.getenv("STOCK_NAME")
+    team_name = os.getenv("TEAM")
     file_name = "data_"+stock_name+".csv"
     
     df = pd.read_csv(f"data/{file_name}")
@@ -1009,7 +1019,7 @@ def requestToModel(context):
     
     ##### API call #####
     model_name= os.getenv("MODEL_NAME")
-    result_file_name = "Predictions_"+stock_name+"_"+model_name+".csv"
+    result_file_name = "Predictions_"+stock_name+"_"+model_name+"_"+team_name+".csv"
     sessionRequest = requests.Session()
     requestUrl= os.getenv("MODEL_REQUEST_URL")
     response= sessionRequest.post(requestUrl,headers=headers,data=payload)
@@ -1074,9 +1084,10 @@ def monitoringAndReporting(context) -> None:
     data_bucket_url = os.getenv("PREDICTIONS_BUCKET")
     data_stock = os.getenv("STOCK_NAME")
     data_model_version = os.getenv("MODEL_NAME")
+    team_name = os.getenv("TEAM")
 
     ##### Load data from the bucket #####
-    obj = s3_client.get_object(Bucket=data_bucket_url, Key= "Predictions_"+data_stock+"_"+data_model_version+".csv" )
+    obj = s3_client.get_object(Bucket=data_bucket_url, Key= "Predictions_"+data_stock+"_"+data_model_version+"_"+team_name+".csv" )
     df = pd.read_csv(obj['Body'])
     
     if (len(df.index) > 1): 
