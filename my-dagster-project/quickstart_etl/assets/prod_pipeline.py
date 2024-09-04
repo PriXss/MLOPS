@@ -1223,7 +1223,7 @@ def tradeScript(context) -> None:
 
 
     # CSVProcessor-Instanz erstellen
-    processor = CSVProcessor(bucket_name, local_download_path, stock_symbol_mapping)
+    processor = CSVProcessor(bucket_name, local_download_path, stock_symbol_mapping, os.getenv("TEAM"))
 
     # Dateien herunterladen
     downloaded_files = processor.download_files()
