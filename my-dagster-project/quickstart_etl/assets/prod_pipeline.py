@@ -818,6 +818,18 @@ class AlpacaTrader:
             self.logger.info(f"Sell order executed for {worst_loss_ticker}: {sell_order}")
             return True
         return False
+    
+    def sell_loss_stock(self, potential_losses: dict, positions: dict):
+        '''
+        Überprüft, ob wir eine Aktie halten, die laut Prediction Verlust machen wird. Falls ja, wird diese verkauft.
+        '''
+        for key in positions:
+            if key in potential_losses:
+                qty = positions[key]
+                sell_order = self.place_sell_order(key, qty)
+                self.logger.info(f"Sell order executed for {key}: {sell_order}")
+                return True
+        return False
 
     def buy_best_gain_stock(self, best_gain_ticker, account_info):
         """
@@ -851,7 +863,7 @@ class AlpacaTrader:
             best_gain_ticker, worst_loss_ticker = self.determine_best_and_worst(potential_gains, potential_losses)
 
             # Verkauf der Aktie mit dem höchsten Verlust
-            if self.sell_worst_loss_stock(worst_loss_ticker, positions):
+            if self.sell_loss_stock(potential_losses, positions):
                 time.sleep(3)
                 account_info = self.get_account_info()
                 # Kauf der Aktie mit dem höchsten Gewinn, wenn sie genug Cash haben
