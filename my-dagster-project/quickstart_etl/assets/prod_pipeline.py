@@ -377,7 +377,6 @@ class MLFlowTrainer:
                 model_name = self.extract_model_name(config_file_path)
 
                 # Namensgebung ML Run
-                self.team_name = os.getenv("TEAM")
                 mlflow.set_tag('mlflow.runName', f'{data_naming}_{model_name}_{self.team_name}_{self.global_timestamp}')
 
                 # Ludwig-Modell trainieren
@@ -403,7 +402,7 @@ class MLFlowTrainer:
                 # Frage: safe_model_to_S3 wird eher das Versionierte Model sein
 
                 # Speichern von Artefakten
-                self.save_model_to_s3(ludwig_model, model_name, data_naming, os.getenv("MLCORE_OUTPUT_RUN"))
+                self.save_model_to_s3(ludwig_model, model_name, data_naming, os.getenv("MLCORE_OUTPUT_RUN"), self.team_name)
 
                 # Die Meta yaml muss auch versioniert und dann erst hochgeladen werden
                 # Pfadfestlegung der meta.yaml-Datei
