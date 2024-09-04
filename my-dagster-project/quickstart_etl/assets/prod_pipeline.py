@@ -377,6 +377,7 @@ class MLFlowTrainer:
                 model_name = self.extract_model_name(config_file_path)
 
                 # Namensgebung ML Run
+                self.team_name = os.getenv("TEAM")
                 mlflow.set_tag('mlflow.runName', f'{data_naming}_{model_name}_{self.team_name}_{self.global_timestamp}')
 
                 # Ludwig-Modell trainieren
