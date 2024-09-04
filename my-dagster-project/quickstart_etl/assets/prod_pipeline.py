@@ -417,6 +417,7 @@ class MLFlowTrainer:
                 # Den Ordner des aktuellen MLflow-Laufs komprimieren und als Zip-Datei hochladen
                 zip_file_name = f"{self.run_id}.zip"
                 zip_file_path = os.path.join(os.getcwd(), 'mlruns', '0', zip_file_name)
+                local_path = os.path.join(os.getcwd(), 'mlruns', '0', self.run_id)
                 shutil.make_archive(os.path.join(os.getcwd(), 'mlruns', '0', self.run_id), 'zip', local_path)
                 # --> Ab hier kann das mlrun ZIP File versioniert werden
                 s3.upload_file(zip_file_path, os.getenv("MLFLOW_BUCKET"), zip_file_name)
