@@ -70,7 +70,7 @@ def process_and_upload_symbol_data(
 
         company_names = {
                 'AAPL': 'Apple', 'IBM': 'IBM', 'TSLA': 'Tesla', 'NKE': 'Nike',
-                'AMZN': 'Amazon', 'MSFT': 'Microsoft', 'GOOGL': 'Google'}
+                'AMZN': 'Amazon', 'MSFT': 'Microsoft', 'GOOGL': 'Google', 'SAPGF': 'SAP'}
 
         company_name = company_names.get(symbol, 'Company')
         csv_filename = f'data_{company_name}.csv'
@@ -1209,7 +1209,7 @@ def tradeScript(context) -> None:
         'Google': 'GOOGL',
         'Apple': 'AAPL',
         'IBM': 'IBM',
-        'SAP': 'SAP',
+        'SAP': 'SAPGF',
         'Tesla': 'TSLA',
         'Amazon': 'AMZN'
         # Weitere Zuordnungen hier hinzufügen
