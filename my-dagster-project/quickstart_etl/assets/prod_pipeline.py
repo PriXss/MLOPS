@@ -1211,7 +1211,9 @@ def tradeScript(context) -> None:
         'IBM': 'IBM',
         'SAP': 'SAPGF',
         'Tesla': 'TSLA',
-        'Amazon': 'AMZN'
+        'Amazon': 'AMZN',
+        'Nike': 'NKE',
+        'Microsoft': 'MSFT'
         # Weitere Zuordnungen hier hinzufügen
     }
 
