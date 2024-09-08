@@ -48,7 +48,7 @@ input_features:
       normalization: zscore
 
 output_features:
-  - name: "Schluss"
+  - name: "Schluss naechster Tag"
     type: numerical
 
 training:
