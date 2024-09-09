@@ -28,5 +28,5 @@ prod_schedule = ScheduleDefinition(
     )
 
 defs = Definitions(
-    assets=load_assets_from_package_module(assets), schedules=[train_schedule, prod_schedule, serve_schedule, trade_schedule ]
+    assets=load_assets_from_package_module(assets), schedules=[prod_schedule ]
 )
