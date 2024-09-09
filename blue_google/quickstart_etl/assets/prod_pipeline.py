@@ -259,7 +259,7 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     Bucket= os.getenv("VERSIONING_TRAINING_BUCKET"),
     Key= timestampTraining+"/"
     )
-    context.log.info(os.getenv("TOKEN"))
+    
     # Get the PAT from environment variables
     token = os.getenv("TOKEN")
     repo_url = f"https://{token}@github.com/PriXss/MLOPS.git"
