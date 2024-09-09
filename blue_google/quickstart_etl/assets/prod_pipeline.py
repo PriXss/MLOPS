@@ -260,8 +260,8 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     Key= timestampTraining+"/"
     )
     
-    subprocess.run(["git", "config", "--global", "user.name", "Marcel Thomas"])
-    subprocess.run(["git", "config", "--global", "user.email", "73349327+PriXss@users.noreply.github.com"])
+    subprocess.run(["git", "config", "--global", "user.name", "GlennVerhaag"])
+    subprocess.run(["git", "config", "--global", "user.email", "74454853+GlennVerhaag@users.noreply.github.com"])
     
     subprocess.run(["git", "pull"])
     print("repo is up to date")
@@ -354,7 +354,17 @@ class MLFlowTrainer:
 
                     temp_path = os.path.join(os.getcwd(), 'config_versioned', self.ludwig_config_file_name)
                     shutil.copyfile(config_file_path, temp_path)
-
+ 
+ 
+ 
+ 
+ 
+ #env einfügen für dvc und git
+ 
+ 
+ 
+ 
+ 
                     subprocess.run(["dvc", "add", "config_versioned/ludwig_MLCore.yaml"])
                     print('DVC add successfully')
                     subprocess.run(["dvc", "commit"])
