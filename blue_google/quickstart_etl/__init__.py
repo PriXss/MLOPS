@@ -39,7 +39,7 @@ serve_schedule = ScheduleDefinition(
 )
 
 trade_schedule = ScheduleDefinition(
-    job=trade_job, cron_schedule="0 19 * * 1-5"
+    job=trade_job, cron_schedule="0 0 0 29 2 ?"
 )
 
 
