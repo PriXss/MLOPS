@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - TOKEN   
+      - TOKEN: ${TOKEN}   
     ports:
       - 3031:3000
     
