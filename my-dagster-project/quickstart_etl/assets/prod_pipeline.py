@@ -788,9 +788,10 @@ class AlpacaTrader:
             price_difference = (predicted_close - latest_close) / latest_close
             self.logger.info(f"Price difference for {ticker}: {price_difference}")
 
-            if price_difference > 0:
+            # Apply the threshold filter
+            if price_difference > self.threshold:
                 potential_gains[ticker] = price_difference
-            else:
+            elif price_difference < -self.threshold:
                 potential_losses[ticker] = price_difference
 
         self.logger.info(f"Potential gains: {potential_gains}")
