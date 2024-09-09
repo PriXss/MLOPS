@@ -834,20 +834,66 @@ class AlpacaTrader:
                 return True
         return False
 
-    def buy_best_gain_stock(self, best_gain_ticker, account_info):
+    def buy_best_gain_stock(self, best_gain_ticker):
         """
-        Kauft die Aktie mit dem höchsten vorhergesagten Gewinn.
+        Kauft die Aktie mit dem höchsten vorhergesagten Gewinn und verkauft gegebenenfalls
+        alle Aktien, deren vorhergesagter Gewinn niedriger ist als die beste Gewinn-Aktie.
         """
+        # Abrufen der aktuellen Kontoinformationen
+        account_info = self.get_account_info()
+        cash = account_info['cash']
+
         if best_gain_ticker:
             latest_close_best_gain = self.get_latest_close(best_gain_ticker)
             if latest_close_best_gain:
-                max_shares = int(account_info['cash'] // latest_close_best_gain)
+                max_shares = int(cash // latest_close_best_gain)
                 self.logger.info(f"Maximum shares to buy for {best_gain_ticker}: {max_shares}")
-                if max_shares > 0:
-                    buy_order = self.place_buy_order(best_gain_ticker, max_shares)
-                    self.logger.info(f"Buy order executed for {best_gain_ticker}: {buy_order}")
-                else:
-                    self.logger.warning(f"Not enough cash to buy shares of {best_gain_ticker}.")
+
+                # Abrufen der aktuellen Positionen
+                positions = {pos.symbol: float(pos.qty) for pos in self.api.list_positions()}
+                self.logger.info(f"Current positions: {positions}")
+
+                # Überprüfen der Vorhersage für aktuelle Positionen
+                for ticker in positions:
+                    predicted_price = self.get_prediction(ticker)
+                    if predicted_price is not None:
+                        latest_close = self.get_latest_close(ticker)
+                        if latest_close:
+                            price_difference = (predicted_price - latest_close) / latest_close
+                            self.logger.info(f"Price difference for {ticker}: {price_difference}")
+
+                            # Vergleich mit der besten Gewinn-Aktie
+                            best_gain_predicted_price = self.get_prediction(best_gain_ticker)
+                            best_gain_price_difference = (
+                                                                 best_gain_predicted_price - latest_close_best_gain) / latest_close_best_gain
+
+                            if price_difference < best_gain_price_difference:
+                                # Alle Anteile der aktuellen Position verkaufen
+                                qty = positions[ticker]
+                                self.logger.info(f"Selling all shares of {ticker}: {qty} shares")
+                                try:
+                                    self.place_sell_order(ticker, qty)
+                                    time.sleep(3)  # Warten, um den Verkaufsauftrag zu verarbeiten
+                                except Exception as e:
+                                    self.logger.error(f"Error selling {ticker}: {e}")
+
+                # Nochmals Kontoinformationen abrufen, falls es Änderungen gab
+                account_info = self.get_account_info()
+                cash = account_info['cash']
+                latest_close_best_gain = self.get_latest_close(best_gain_ticker)  # Neueste Schließung abrufen
+                if latest_close_best_gain:
+                    max_shares = int(cash // latest_close_best_gain)
+                    self.logger.info(f"Updated maximum shares to buy for {best_gain_ticker}: {max_shares}")
+
+                    # Kauf der besten Gewinn-Aktie, falls genügend Bargeld vorhanden ist
+                    if max_shares > 0:
+                        try:
+                            buy_order = self.place_buy_order(best_gain_ticker, max_shares)
+                            self.logger.info(f"Buy order executed for {best_gain_ticker}: {buy_order}")
+                        except Exception as e:
+                            self.logger.error(f"Error buying {best_gain_ticker}: {e}")
+                    else:
+                        self.logger.warning(f"Not enough cash to buy shares of {best_gain_ticker}.")
 
     def execute_trade(self):
         """
@@ -869,15 +915,15 @@ class AlpacaTrader:
             if self.sell_loss_stock(potential_losses, positions):
                 time.sleep(3)
                 account_info = self.get_account_info()
-                # Kauf der Aktie mit dem höchsten Gewinn, wenn sie genug Cash haben
-                self.buy_best_gain_stock(best_gain_ticker, account_info)
+                # Kauf der Aktie mit dem höchsten Gewinn
+                self.buy_best_gain_stock(best_gain_ticker)
 
             else:
                 # Wenn keine Aktien verkauft wurden und es eine beste Gewinnaktie gibt
                 if best_gain_ticker and best_gain_ticker not in positions:
                     time.sleep(3)
                     account_info = self.get_account_info()
-                    self.buy_best_gain_stock(best_gain_ticker, account_info)
+                    self.buy_best_gain_stock(best_gain_ticker)
 
         elif self.prediction_type == 'classification':
             self.logger.info("Processing classification predictions")
