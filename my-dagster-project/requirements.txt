@@ -1,9 +1,0 @@
-evidently
-alpha_vantage
-mlflow
-requests
-jupyterlab
-ray
-alpaca_trade_api
-os
-redis
