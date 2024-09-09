@@ -789,7 +789,7 @@ class AlpacaTrader:
             self.logger.info(f"Price difference for {ticker}: {price_difference}")
 
             # Apply the threshold filter
-            if price_difference > self.threshold:
+            if price_difference >= self.threshold:
                 potential_gains[ticker] = price_difference
             elif price_difference < -self.threshold:
                 potential_losses[ticker] = price_difference
