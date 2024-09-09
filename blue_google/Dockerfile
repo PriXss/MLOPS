@@ -17,4 +17,3 @@ WORKDIR /usr/src/app/my-dagster-project
 EXPOSE 3000
 
 CMD ["dagster-webserver" , "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000"]
-
