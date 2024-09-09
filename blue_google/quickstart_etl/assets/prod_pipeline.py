@@ -260,11 +260,16 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     Key= timestampTraining+"/"
     )
     
+    # Get the PAT from environment variables
+    token = os.getenv("TOKEN")
+    repo_url = f"https://{token}@github.com/PriXss/MLOPS.git"
+    branch = os.getenv("BRANCH_NAME")
+    
     subprocess.run(["git", "config", "--global", "user.name", "PriXss"])
     subprocess.run(["git", "config", "--global", "user.email", "73349327+PriXss@users.noreply.github.com"])
-    
-    subprocess.run(["git", "checkout", os.getenv("BRANCH_NAME")]) #harcoded for now
-    subprocess.run(["git", "pull"])
+
+    context.log.info('Pulling changes...')
+    subprocess.run(['git', 'pull', repo_url, branch], check=True)
         
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_TRAINING_BUCKET") + "/" +timestampTraining])
     subprocess.run(["dvc", "commit"])
