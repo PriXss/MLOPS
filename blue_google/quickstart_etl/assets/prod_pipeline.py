@@ -994,7 +994,7 @@ def trainLudwigModelRegression(context) -> None:
     
     
     subprocess.run(["git", "commit", "-m", "Trainings run from: "+timestampTraining_string+" with data from: "+data+" and the model: "+model+"." ])
-    subprocess.run(["git", "push", "-u", "origin", "dev/blue_google_regression"])
+    subprocess.run(["git", "push", "-u", "origin", os.getenv("BRANCH_NAME")])
 
 
 ##-----------------training area ----------------------------------------------------
