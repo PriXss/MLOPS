@@ -254,6 +254,11 @@ def create_and_write_dockerfile():
 ##---------------------training area----------------------------------------------
 @asset(group_name="DVCVersioning", compute_kind="DVC")
 def setupDVCandVersioningBucketForTraining(context) -> None:
+    
+    # Load env vars
+    load_dotenv(dotenv_path=".env")
+    load_dotenv(dotenv_path=".env.secrets")
+    
     context.log.info('Settings for DVC and S3 for Training')
     
     # setup default remote
