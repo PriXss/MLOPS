@@ -28,6 +28,12 @@ import sys
 import time
 import json
 import csv
+from dotenv import load_dotenv
+
+# Load env vars
+load_dotenv(dotenv_path=".env")
+load_dotenv(dotenv_path=".env.secrets")
+
 
 timestamp=""
 timestampTraining=""
@@ -35,7 +41,6 @@ model = os.getenv("MODEL_NAME")
 data = os.getenv("STOCK_NAME")
 timestamp_string= str(timestamp)
 timestampTraining_string = str(timestampTraining)
-
 
 session = boto3.session.Session()
 s3_client = session.client(
@@ -268,9 +273,8 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     subprocess.run(["git", "config", "--global", "user.name", "PriXss"])
     subprocess.run(["git", "config", "--global", "user.email", "73349327+PriXss@users.noreply.github.com"])
     
-    context.log.info(os.getenv("TOKEN"))
-    context.log.info('Pulling changes...')
     
+    context.log.info('Pulling changes...')
     subprocess.run(['git', 'pull', repo_url, branch], check=True)
         
     subprocess.run(["dvc", "remote", "modify", "versioning", "url", "s3://"+ os.getenv("VERSIONING_TRAINING_BUCKET") + "/" +timestampTraining])
