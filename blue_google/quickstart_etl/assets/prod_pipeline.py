@@ -278,7 +278,6 @@ def setupDVCandVersioningBucketForTraining(context) -> None:
     subprocess.run(["git", "config", "--global", "user.name", "PriXss"])
     subprocess.run(["git", "config", "--global", "user.email", "73349327+PriXss@users.noreply.github.com"])
     
-    context.log.info(os.getenv("TOKEN"))
     context.log.info('Pulling changes...')
     subprocess.run(['git', 'pull', repo_url, branch], check=True)
         
