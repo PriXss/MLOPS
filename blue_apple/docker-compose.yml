@@ -7,7 +7,7 @@ services:
     environment:
       - TOKEN: ${TOKEN}   
     ports:
-      - 3033:3000
+      - 3032:3000
     
   dagster-daemon:
     build:
@@ -24,7 +24,7 @@ services:
   dagster-postgres:
     image: postgres:13.3
     ports:
-      - 5733:5432
+      - 5732:5432
     environment:
       - POSTGRES_PASSWORD=demopass
     volumes:
