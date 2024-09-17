@@ -11,12 +11,12 @@ RUN pip install python-dotenv
 
 ARG TOKEN=invalidtoken
 
-RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=blue_amazon_new .
-
-COPY /usr/src/app/blue_amazon_new ~/admin/.env.secrets 
+RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=blue_amazon_new .                                                                                                                                                             google .
 
 WORKDIR /usr/src/app/blue_amazon_new
 
+COPY .env.secrets /usr/src/app/blue_amazon_new
+
 EXPOSE 3000
 
-CMD ["dagster-webserver" , "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000"]
+CMD ["dagster-webserver" , "-w", "workspace.yaml", "-h", "0.0.0.0", "-p", "3000"                                                                                                                                                             ]
