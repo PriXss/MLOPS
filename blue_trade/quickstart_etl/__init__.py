@@ -26,16 +26,16 @@ trade_job = define_asset_job(
 
 
 train_schedule = ScheduleDefinition(
-    job=training_job, cron_schedule="0 0 0 29 2 ?"
+    job=training_job, cron_schedule="0 0 * 2 4"
     )
 
 
 prod_schedule = ScheduleDefinition(
-    job=prod_job, cron_schedule="0 0 0 29 2 ?"
+    job=prod_job, cron_schedule="0 0 * 2 4"
     )
 
 serve_schedule = ScheduleDefinition(
-    job=serve_job, cron_schedule="0 0 0 29 2 ?"
+    job=serve_job, cron_schedule="0 0 * 2 4"
 )
 
 trade_schedule = ScheduleDefinition(
