@@ -4,8 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    env_file:
-      .env.secrets
+    environment:
+      - TOKEN=${TOKEN}
     ports:
       - 3036:3000
     
