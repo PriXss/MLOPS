@@ -13,7 +13,7 @@ ARG TOKEN=invalidtoken
 
 RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=blue_trade_new .
 
-COPY .env.secrets /usr/src/app/blue_trade_new
+COPY .env.secrets /usr/src/app/blue_trade
 
 WORKDIR /usr/src/app/blue_trade
 
