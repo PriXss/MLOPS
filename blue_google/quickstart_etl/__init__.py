@@ -19,10 +19,6 @@ serve_job = define_asset_job(
     "serve_job", AssetSelection.groups("ServingPhase")
 )
 
-trade_job = define_asset_job(
-    "trade_job", AssetSelection.groups("TradingPhase")
-)
-
 prod_schedule = ScheduleDefinition(
     job=prod_job, cron_schedule="0 19 * * 1-5"
     )
