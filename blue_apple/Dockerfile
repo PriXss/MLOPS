@@ -13,7 +13,7 @@ ARG TOKEN=invalidtoken
 
 RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=blue_apple_new .
 
-COPY ~/admin/.env.secrets /usr/src/app/blue_apple_new
+COPY .env.secrets /usr/src/app/blue_apple_new
 
 WORKDIR /usr/src/app/blue_apple_new
 
