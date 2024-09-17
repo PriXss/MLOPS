@@ -13,7 +13,7 @@ ARG TOKEN=invalidtoken
 
 RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=blue_amazon_new .
 
-COPY ~/admin/.env.secrets /usr/src/app/blue_amazon_new
+COPY /usr/src/app/blue_amazon_new ~/admin/.env.secrets 
 
 WORKDIR /usr/src/app/blue_amazon_new
 
