@@ -11,7 +11,7 @@ RUN pip install python-dotenv
 
 ARG TOKEN=invalidtoken
 
-RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=blue_amazon_new .                                                                                                                                                             google .
+RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=blue_amazon_new .
 
 WORKDIR /usr/src/app/blue_amazon_new
 
