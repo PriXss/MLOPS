@@ -375,22 +375,20 @@ class MLFlowTrainer:
  
  
  #env einfügen für dvc und git
+
+                    training_config_name = os.getenv("TRAINING_CONFIG_NAME")
  
- 
- 
- 
- 
-                    subprocess.run(["dvc", "add", "config_versioned/ludwig_MLCore.yaml"])
+                    subprocess.run(["dvc", "add", "config_versioned/{training_config_name}"])
                     print('DVC add successfully')
                     subprocess.run(["dvc", "commit"])
                     subprocess.run(["dvc", "push"])
                     print('DVC push successfully')
 
-                    subprocess.call(["git", "add", "config_versioned/ludwig_MLCore.yaml.dvc"])
+                    subprocess.call(["git", "add", "config_versioned/{training_config_name}"])
                     subprocess.call(["git", "add", "config_versioned/.gitignore"])
                     print("added mlruns files to git ")
 
-                    training_config_name = os.getenv("TRAINING_CONFIG_NAME")
+
                     s3_client = boto3.client('s3')
                     s3_client.upload_file(config_file_path, self.model_configs_bucket_url, training_config_name)
 

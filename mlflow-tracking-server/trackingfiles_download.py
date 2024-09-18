@@ -27,7 +27,7 @@ def download_mlflow_runs(mlflow_bucket_name, modelconfigs_bucket_name, local_dir
 
     logger.info("Ludwig-Konfigurationsdatei und Modellnamen extrahieren...")
     # Ludwig-Konfigurationsdatei und Modellname extrahieren
-    ludwig_config_file_name = "ludwig_MLCore.yaml"
+    ludwig_config_file_name = os.getenv("TRAINING_CONFIG_NAME")
     # model_name = extract_model_name_from_s3(modelconfigs_bucket_name, ludwig_config_file_name, s3_client)
 
     # Lokales Verzeichnis für mlruns erstellen, falls es nicht existiert
