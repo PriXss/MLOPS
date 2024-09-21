@@ -1,7 +1,7 @@
 FROM glennverhaag/mlops:mlops-base-latest
 
 WORKDIR /usr/src/app
-ENV DAGSTER_HOME=/usr/src/app/blue_sap
+ENV DAGSTER_HOME=/usr/src/app/red_sap
 
 RUN pip install dvc_s3
 RUN pip install alpaca-trade-api
@@ -11,11 +11,11 @@ RUN pip install python-dotenv
 
 ARG TOKEN=invalidtoken
 
-RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=blue_sap_new .
+RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=red_sap .
 
-COPY .env.secrets /usr/src/app/blue_sap
+COPY .env.secrets /usr/src/app/red_sap
 
-WORKDIR /usr/src/app/blue_sap
+WORKDIR /usr/src/app/red_sap
 
 EXPOSE 3000
 
