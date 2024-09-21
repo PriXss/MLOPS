@@ -1,7 +1,7 @@
 FROM glennverhaag/mlops:mlops-base-latest
 
 WORKDIR /usr/src/app
-ENV DAGSTER_HOME=/usr/src/app/blue_trade
+ENV DAGSTER_HOME=/usr/src/app/red_trade
 
 RUN pip install dvc_s3
 RUN pip install alpaca-trade-api
@@ -11,11 +11,11 @@ RUN pip install python-dotenv
 
 ARG TOKEN=invalidtoken
 
-RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=blue_trade_new .
+RUN git clone https://PriXss:${TOKEN}@github.com/PriXss/MLOPS.git --branch=red_trade .
 
-COPY .env.secrets /usr/src/app/blue_trade
+COPY .env.secrets /usr/src/app/red_trade
 
-WORKDIR /usr/src/app/blue_trade
+WORKDIR /usr/src/app/red_trade
 
 EXPOSE 3000
 
