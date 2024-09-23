@@ -1,26 +1,29 @@
 import pandas as pd
-import numpy as np
+import os
 import boto3
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 session = boto3.session.Session()
 s3_client = session.client(
     service_name= "s3",
-    aws_access_key_id="test",
-    aws_secret_access_key="testpassword",
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
     endpoint_url="http://85.215.53.91:9000",
     )
 sessionRequest = requests.Session()
 
 startdate = "2024-01-02" # Stock market closed on 01.01., so were using 02.01.
-timeperiod = 100 # in days
+timeperiod = 40 # in days
 stocks = {
-    "Google":["http://85.215.53.91:8193/predict"],
-    # IBM ,
+    "Google":["http://85.215.53.91:8041/predict"],
+    #"IBM":["http://85.215.53.91:8043/predict"],
     "Apple" : ["http://85.215.53.91:8095/predict"],
-    #"Tesla",
-    #"SAP",
-    #"Amazon"
+    #"Tesla":[],
+    #"SAP":[],
+    #"Amazon:[]"
 } 
 
 dataframes = {}
@@ -29,17 +32,18 @@ errors = {}
 gain_or_loss_correct_predictions = {} 
 
 def determine_correct_gain_loss_predictions(stock, model):
-        print(stock, model, expected_profit, actual_gain_or_loss)
-        print(gain_or_loss_correct_predictions)
+        print(stock + ", Model " + str(model+1) + ":  \n Predicted Gain/Loss: " + str(round(expected_profit,2)) + "\n Actual Gain/Loss: " + str(round(actual_gain_or_loss,2)))
         if (expected_profit < 0 and actual_gain_or_loss < 0):
             gain_or_loss_correct_predictions[stock][model] += 1 
         elif expected_profit > 0 and actual_gain_or_loss > 0:
             gain_or_loss_correct_predictions[stock][model] += 1
         elif expected_profit == 0 and actual_gain_or_loss == 0:
             gain_or_loss_correct_predictions[stock][model] += 1          
+ 
+print("\n Starting simulation...")
                 
 for days in range(timeperiod):
-    
+    print("\n Day " + str(days+1) + ":")
     for stock in stocks:
         obj = s3_client.get_object(Bucket="data", Key= "data_"+stock+".csv" )
         dataframes[stock]=(pd.read_csv(obj['Body']))
@@ -75,7 +79,7 @@ print("\nSimulation period: " + startdate + " + " + str(timeperiod) + " days")
 for key in errors:
     for model_error in range(len(errors[key])):
         print("\n" + key + ", Model " + str(model_error+1))
-        print("Mean Absolute Error (MAE): " + str(errors[key][model_error]/timeperiod)) 
+        print("Mean Absolute Error (MAE): " + str(round((errors[key][model_error]/timeperiod),4))) 
         print("Percentage of correct Gain/Loss predictions: " + str(round(((gain_or_loss_correct_predictions[key][model]/timeperiod)*100), 2 )) + "%")
 print("\n----------------------------------------------------------------------------")  
 print("\n")

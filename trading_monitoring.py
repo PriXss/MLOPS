@@ -1,10 +1,13 @@
 import alpaca_trade_api as tradeapi
 import logging
 from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 # Deine API-Schlüssel und die Basis-URL
-API_KEY = 'PK8UWS2GA9U2TZSDYCU3'
-API_SECRET = 'n14a3wy2tGKwGd70KHSAnXFrtuJVcuUmURoraplz'
+API_KEY = os.getenv("API_KEY")
+API_SECRET = os.getenv("API_SECRET")
 BASE_URL = 'https://paper-api.alpaca.markets'  # Papierhandel; ändern für Live-Handel
 
 # Logging-Einstellungen
