@@ -53,7 +53,7 @@ output_features:
 
 training:
   batch_size: 32  # Smaller batch size for potentially better convergence
-  epochs: 200  # More epochs for better learning with early stopping
+  epochs: 210  # More epochs for better learning with early stopping
   early_stop: 10  # Stops if no improvement after 10 epochs
   learning_rate: 0.0001  # Lower learning rate for finer weight adjustments
   optimizer:
