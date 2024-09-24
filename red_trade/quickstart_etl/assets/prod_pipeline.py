@@ -602,6 +602,8 @@ class CSVProcessor:
 
             # Überprüfen, ob der Dateiname den Team-Namen enthält
             if self.team_name.lower() in file_name.lower():
+                print(self.team_name)
+                print(file_name)
                 local_file_path = os.path.join(self.local_download_path, file_name)
                 self.minio_client.download_file(self.bucket_name, obj['Key'], local_file_path)
                 downloaded_files.append(local_file_path)
