@@ -687,7 +687,7 @@ class AlpacaTrader:
         Initialisiert den AlpacaTrader mit API-Schlüsseln, Basis-URL, Schwellenwert und Aktieninformationen.
         """
         self.api = tradeapi.REST(api_key, api_secret, base_url, api_version='v2')
-        self.threshold = threshold
+        self.threshold = float(threshold)
         self.stocks = stocks  # Dictionary mit Aktienkürzeln und deren Vorhersagen
         self.context = context
         self.logger = context.log
@@ -811,6 +811,7 @@ class AlpacaTrader:
                 continue
 
             price_difference = (predicted_close - latest_close) / latest_close
+            price_difference = float(price_difference)
             self.logger.info(f"Price difference for {ticker}: {price_difference}")
 
             # Apply the threshold filter

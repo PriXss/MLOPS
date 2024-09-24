@@ -1,2 +1,3 @@
 /mlruns
 /results
+.env.secrets
