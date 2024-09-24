@@ -9,54 +9,56 @@ input_features:
   - name: Eroeffnung
     type: numerical
     preprocessing:
-      normalization: zscore
+      normalization: minmax
   - name: Tageshoch
     type: numerical
     preprocessing:
-      normalization: zscore
+      normalization: minmax
   - name: Tagestief
     type: numerical
     preprocessing:
-      normalization: zscore
+      normalization: minmax
   - name: Umsatz
     type: numerical
     preprocessing:
-      normalization: zscore
+      normalization: minmax
   - name: RSI
     type: numerical
     preprocessing:
-      normalization: zscore
+      normalization: minmax
   - name: SMA
     type: numerical
     preprocessing:
-      normalization: zscore
+      normalization: minmax
   - name: EMA
     type: numerical
     preprocessing:
-      normalization: zscore
+      normalization: minmax
   - name: DEMA
     type: numerical
     preprocessing:
-      normalization: zscore
+      normalization: minmax
   - name: Schluss
     type: numerical
     preprocessing:
-      normalization: zscore
+      normalization: minmax
   - name: Differenz
     type: numerical
     preprocessing:
-      normalization: zscore
+      normalization: minmax
 
 output_features:
-  - name: "Schluss naechster Tag"
+  - name: "Schlusskurs naechster Tag"
     type: numerical
 
 training:
-  batch_size: 64
-  epochs: 100
-  learning_rate: 0.0005
+  batch_size: 32  # Smaller batch size for potentially better convergence
+  epochs: 200  # More epochs for better learning with early stopping
+  early_stop: 10  # Stops if no improvement after 10 epochs
+  learning_rate: 0.0001  # Lower learning rate for finer weight adjustments
   optimizer:
-    type: adam
+    type: adamw  # Using AdamW optimizer for better regularization
+    weight_decay: 0.01  # Adding weight decay to reduce overfitting
 
 preprocessing:
   split:
@@ -67,9 +69,11 @@ preprocessing:
 model:
   type: regressor
   layers:
+    - fc_size: 512  # Larger first layer for more feature extraction
+      dropout: 0.5  # Increased dropout for better regularization
     - fc_size: 256
-      dropout: 0.3
-    - fc_size: 256
-      dropout: 0.3
+      dropout: 0.4  # Slightly lower dropout for middle layer
     - fc_size: 128
+      dropout: 0.3
+    - fc_size: 64  # Added an extra layer to refine learning
       dropout: 0.3
