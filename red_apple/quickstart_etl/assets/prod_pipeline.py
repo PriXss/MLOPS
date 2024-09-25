@@ -613,7 +613,7 @@ class CSVProcessor:
         df = pd.read_csv(file_path)
 
         # Filtere nur die Spalten, die wir behalten wollen
-        columns_to_keep = ['Schluss_predictions']
+        columns_to_keep = ['Schlusskurs naechster Tag_predictions']
         df_filtered = df[columns_to_keep]
 
         # Extrahiere die letzte Zeile
@@ -1116,7 +1116,7 @@ def requestToModel(context):
     
     os.makedirs("predictionValue", exist_ok=True)
     predictionVariable = response.json()
-    prediction_value = predictionVariable['Schluss_predictions']
+    prediction_value = predictionVariable['Schlusskurs naechster Tag_predictions']
     context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
     
     df_result = pd.DataFrame(resultJson, index=[0])
