@@ -1116,7 +1116,7 @@ def requestToModel(context):
     
     os.makedirs("predictionValue", exist_ok=True)
     predictionVariable = response.json()
-    prediction_value = predictionVariable['Schluss_predictions']
+    prediction_value = predictionVariable['Schlusskurs naechster Tag_predictions']
     context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
     
     df_result = pd.DataFrame(resultJson, index=[0])
