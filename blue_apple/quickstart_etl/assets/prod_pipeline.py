@@ -1118,10 +1118,8 @@ def requestToModel(context):
     predictionVariable = response.json()
     prediction_value = predictionVariable['Schluss naechster Tag_predictions']
     context.log.info(f"!!!Prediction ist!!!: {prediction_value}")
-
-    key_mapping = {'Schluss_predictions': 'Schluss naechster Tag_predictions'}
-    updated_json = {key_mapping.get(key, key): value for key, value in resultJson}
-    df_result = pd.DataFrame(updated_json, index=[0])
+    resultJson['Schluss_predictions'] = resultJson.pop('Schluss naechster Tag_predictions')
+    df_result = pd.DataFrame(resultJson, index=[0])
 
     ##### Upload prediction to S3 bucket #####
     path = f"predictions/{result_file_name}"
