@@ -1,7 +1,4 @@
-# MLOPS
+# MLOPS - Admin branch
 
-To use the scripts in this branch, you need to create a local .env file including the following secrets:
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- API_KEY
-- API_SECRET
+This branch includes the slide deck used in our final presentation at the HHZ project day.  
+It also includes python scripts used for testing the performance of the deployed models and verifying the conncetion to our Alpaca account. For more information, see the [scripts directory](/scripts).

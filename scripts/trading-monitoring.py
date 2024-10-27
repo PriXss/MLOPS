@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-# Deine API-Schlüssel und die Basis-URL
+# API-Schlüssel und Basis-URL
 API_KEY = os.getenv("API_KEY")
 API_SECRET = os.getenv("API_SECRET")
 BASE_URL = 'https://paper-api.alpaca.markets'  # Papierhandel; ändern für Live-Handel

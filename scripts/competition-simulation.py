@@ -84,6 +84,4 @@ for key in errors:
 print("\n----------------------------------------------------------------------------")  
 print("\n")
                      
-# print("Buying stock " + max(expected_profits, key=expected_profits.get) + " with expected profit of " + str(max(expected_profits.values())) + "€" )
-# print("Actual profit: " + actual_profit)           
-    
+
