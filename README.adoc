@@ -1,0 +1,88 @@
+= MLOPS
+:toc:
+
+Repository for the MLOPS project @ Reutlingen University 
+
+Students: Simon Jakschitz, Marcel Thomas, Alexander Wallner, Vincent Mattes, Kristian Paulic and Glenn Verhaag
+
+Professor: Christian Decker
+
+== Repository structure 
+This repository is structured with the following branching concept: 
+
+image::branching.png[width=600]
+
+=== Master branch 
+* Default branch including pipeline code
+* Used to develop new feature used by both teams
+* Base for the red vs. blue competition branches 
+
+=== Red/Blue branches
+* One branch per team per stock 
+* Includes pipeline code 
+* Used by the teams to configure .yml config files for stock specific pipelines
+
+=== Admin branch 
+* Includes additional scripts and further documentation about the developement process
+
+== Dependecies/Tools used
+The following tools are used within the pipelines:
+
+* *Model training and serving:* Ludwig
+* *Tracking of experiments/model training:* mlflow tracking server
+* *Storage of models, input data, predictions and reports:* Minio + Boto 3
+* *Versioning of all artifacts:* Git + DVC
+* *Papertrading:* Alpaca API + one Alpaca account per team
+* *Build and deployment of pipelines:* Docker and Dagster
+* *Monitoring and reporting:* evidently.ai
+
+image::tools.png[width=800]
+
+== Getting started
+To start a pipeline without any prior runs (on first startup or after a crash and sytem reset), deploy the follwing services first:
+
+[cols="1,1"]
+|=================
+|Service |Docker compose file 
+
+|Minio Server
+|docker-compose.yml
+
+|Dagster Dagit, Dagster Daemon & Postgres DB
+|my-dagster-project\docker-compose.yml
+
+|MLFlow tracking Server
+|mlflow-tracking-server\docker-compose.yml
+|================= 
+
+Make sure all secrets are setup correctly according to the <<secrets>> section.
+
+As soon as all services are deployed, execute the pipeline steps in the following order:
+
+1. Run **setupDVCandVersioningBucket** to initialize DVC and create the required S3 buckets.
+2. Run **fetchStockDataFromSource** to pull the input data via the stock data API.
+3. Run **trainLudwigModelRegression** to train a model.
+4. Run the remaining pipeline steps (**ModelPhase** and **MonitoringPhase**) to create a prediction and a report (reports are only created after the second pipeline run).
+
+== Secret handling [[secrets]]
+To ensure secure operation of the pipelines and to avoid storing unencrypted secrets in the github repository, all secrets are stored in a local *.env.secrets* file.
+The individual pipeline branches include a *.env.secrets.template* file. To run a pipeline, asign your secret values to the variables inside this file. Then remane the file to *.env.secrets* (delete the *.template* suffix).
+The following secrets need to be set:
+
+* TOKEN
+* AWS_ACCESS_KEY_ID
+* AWS_SECRET_ACCESS_KEY
+* API_KEY 
+* API_SECRET
+
+== Pipeline steps 
+**Further information on the pipeline steps here**
+
+== Additional documentation
+For further information on the pipelines and the development process, see the https://github.com/PriXss/MLOPS/tree/admin[admin branch].
+
+It includes:
+
+* Additional scripts
+* Slide deck used for the final project presentation
+* Report about implementation decisions, challenges and lessons learned
