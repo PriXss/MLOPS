@@ -18,12 +18,9 @@ sessionRequest = requests.Session()
 startdate = "2024-01-02" # Stock market closed on 01.01., so were using 02.01.
 timeperiod = 40 # in days
 stocks = {
-    "Google":["http://85.215.53.91:8041/predict"],
-    #"IBM":["http://85.215.53.91:8043/predict"],
-    "Apple" : ["http://85.215.53.91:8095/predict"],
-    #"Tesla":[],
-    #"SAP":[],
-    #"Amazon:[]"
+    "Apple" : ["MODEL 1 URL HERE", "MODEL 2 URL HERE"],
+    "SAP":["MODEL 1 URL HERE"],
+    "Amazon":["MODEL 1 URL HERE"]
 } 
 
 dataframes = {}
