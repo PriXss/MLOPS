@@ -8,9 +8,8 @@ Students: Simon Jakschitz, Marcel Thomas, Alexander Wallner, Vincent Mattes, Kri
 Professor: Christian Decker
 
 == Repository structure 
-This repository is structured with the following branching concept: 
 
-image::branching.png[width=600]
+image::branching.png[width=400]
 
 === Master branch 
 * Default branch including pipeline code
