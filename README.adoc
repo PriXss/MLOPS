@@ -274,6 +274,13 @@ Deletes all files in `local_download_path` and removes the directory. This is us
 * *csv*, *json*: For working with CSV and JSON files.
 * *os*: For handling file paths and directories.
 
+=== Serving
+
+The task of the Serving Component is to make the trained models available via a web-API. 
+
+Therefore, a pipelinestep called "serve_job" was created. Here, the in the .env file configured model gets pulled from the minio service and gets served via docker command and made available through the port configured in the .env file.
+Since it was targeted by the team to serve the model via Docker, a workaround was necessary, since this means that a Docker container (the pipeline) has to start another container (the model). The workaround was to add a Docker binary (comparable to a .exe file in windows) into the pipeline container and mount the Docker.sock into it. Thus, the pipeline gains access to the Docker environment from the underlying system (the provided virtual machine) and can manage images and containers.
+
 === Monitoring
 To track the performance of deployed models, we decided to integrate a basic monitoring setup into our pipelines. We use the tool *evidently.ai* as a plug-and-play solution to create reports based on our models predictions. The report is updated everytime the pipeline code is executed/a new prediction is made. This approach allows us to montitor prediction performance based on metrics like the Mean Absolute Error (MAE), Mean Squared Error (MSE) or even more advanced metrics like target- and data drift. These metrics could be used to automatically trigger a re-training of the model once a certain performance threshold is reached. We decided, however, to keep a human in the loop and only trigger re-training manually as needed. This approach fits our solutions monitoring needs, without creating additional complexity.
 
