@@ -122,6 +122,7 @@ The `train_model` method performs training and logging in several steps:
 * *DVC (Data Version Control)*: For versioning models and configuration files.
 * *boto3*: For communication with AWS S3.
 * *AWS S3*: For storing and loading training data and models.
+* *AlphaVantage API* For extracting stock data.
 
 === Alpaca Trader
 
@@ -221,6 +222,14 @@ Initializes the following parameters:
 * `team_name`: The team name to search for in filenames.
 
 The constructor also creates the download folder if it does not exist and connects to the S3-compatible storage using the MinIO API.
+
+=== Method `process_and_upload_symbol_data`
+
+Download of stock-data from AplhaVantage API and data-preperation for model training
+- use of technical indicators like (RSI, EMA, DMA etc.)
+- creation of dataframe and new for use-case customized columns
+- quality control
+- storage of pandas dataframe in Minio S3 Bucket
 
 ===== Method `download_files`
 
